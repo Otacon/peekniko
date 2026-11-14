@@ -41,12 +41,11 @@ Add the dependencies to your app module's `build.gradle.kts` (replace the versio
 dependencies {
     debugImplementation("io.github.otacon.peekniko:client-okhttp:<peekniko-version>")
     debugImplementation("io.github.otacon.peekniko:storage-sqldelight:<peekniko-version>")
+    // If your app doesn't already depend on SQLDelight, add these dependencies with debugImplementation.
+    debugImplementation("app.cash.sqldelight:runtime:<sqldelight-version>")
+    debugImplementation("app.cash.sqldelight:coroutines-extensions:<sqldelight-version>")
+    debugImplementation("app.cash.sqldelight:android-driver:<sqldelight-version>")
     releaseImplementation("io.github.otacon.peekniko:client-noop:<peekniko-version>")
-
-    implementation("com.squareup.okhttp3:okhttp:<okhttp-version>")
-    implementation("app.cash.sqldelight:runtime:<sqldelight-version>")
-    implementation("app.cash.sqldelight:coroutines-extensions:<sqldelight-version>")
-    implementation("app.cash.sqldelight:android-driver:<sqldelight-version>")
 }
 ```
 
