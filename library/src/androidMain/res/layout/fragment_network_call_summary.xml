@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ProgressBar
+        android:id="@+id/summaryProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        android:indeterminate="true"
+        android:layout_gravity="center"/>
+
+    <ScrollView
+        android:id="@+id/summaryScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/summaryGeneralTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Peekniko.HeaderSectionTitle"
+                android:text="@string/peekniko_summary_general"/>
+
+            <TextView
+                android:id="@+id/summaryGeneralContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Peekniko.HeaderSectionContent"/>
+
+            <TextView
+                android:id="@+id/summaryRequestHeadersTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Peekniko.HeaderSectionTitle"
+                android:text="@string/peekniko_summary_request_headers"/>
+
+            <TextView
+                android:id="@+id/summaryRequestHeadersContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Peekniko.HeaderSectionContent"/>
+
+            <TextView
+                android:id="@+id/summaryResponseHeadersTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Peekniko.HeaderSectionTitle"
+                android:text="@string/peekniko_summary_response_headers"/>
+
+            <TextView
+                android:id="@+id/summaryResponseHeadersContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Peekniko.HeaderSectionContent"/>
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

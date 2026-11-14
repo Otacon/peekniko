@@ -1,0 +1,47 @@
+<resources>
+    <style name="Theme.Peekniko" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:colorBackground">@color/peekniko_surface</item>
+        <item name="android:colorForeground">@color/peekniko_colorControlPrimary</item>
+        <item name="android:textColorPrimary">@color/peekniko_colorControlPrimary</item>
+        <item name="android:textColorSecondary">@color/peekniko_colorControlNormal</item>
+        <item name="android:textColorHighlight">@color/peekniko_textSelection</item>
+
+        <item name="colorPrimary">@color/peekniko_colorPrimary</item>
+        <item name="colorAccent">@color/peekniko_colorControlActivated</item>
+        <item name="colorControlHighlight">@color/peekniko_textSelection</item>
+        <item name="colorControlNormal">@color/peekniko_colorControlNormal</item>
+        <item name="colorControlActivated">@color/peekniko_colorControlActivated</item>
+        <item name="toolbarStyle">@style/Widget.Peekniko.Toolbar</item>
+    </style>
+
+    <style name="Widget.Peekniko.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="titleTextColor">@color/peekniko_toolbarTitle</item>
+    </style>
+
+    <style name="Widget.Peekniko.HeaderSectionTitle" parent="TextAppearance.AppCompat.Title">
+        <item name="android:background">@color/peekniko_sectionHeadingBackground</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    <style name="Widget.Peekniko.HeaderSectionContent" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textScaleX">0.9</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:textIsSelectable">true</item>
+    </style>
+
+    <style name="Widget.Peekniko.DetailTab" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:textColor">@color/detail_tab_text</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:gravity">center</item>
+    </style>
+</resources>

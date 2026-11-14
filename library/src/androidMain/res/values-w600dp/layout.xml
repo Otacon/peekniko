@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="peekniko_two_panes">true</bool>
+    <item name="peekniko_detail_navigation_icon" type="drawable">@null</item>
+</resources>

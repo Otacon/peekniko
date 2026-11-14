@@ -1,0 +1,4 @@
+# Default owners for everything in the repository.
+# These users will be automatically requested for review when someone opens a pull request.
+* @posix88 @Otacon @FabL0
+

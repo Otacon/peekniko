@@ -1,0 +1,42 @@
+CREATE TABLE network_call (
+  id TEXT NOT NULL PRIMARY KEY,
+  scheme TEXT NOT NULL,
+  host TEXT NOT NULL,
+  port INTEGER,
+  endpoint TEXT NOT NULL,
+  query_params TEXT NOT NULL,
+  method TEXT NOT NULL,
+  request_body BLOB,
+  response_body BLOB,
+  response_code INTEGER,
+  exception_message TEXT,
+  request_timestamp INTEGER NOT NULL,
+  response_timestamp INTEGER,
+  stack_trace TEXT
+);
+
+CREATE INDEX network_call_timestamp ON network_call(request_timestamp DESC);
+
+selectAll:
+SELECT * FROM network_call ORDER BY request_timestamp DESC;
+
+selectLatest:
+SELECT * FROM network_call ORDER BY request_timestamp DESC LIMIT ?;
+
+selectById:
+SELECT * FROM network_call WHERE id = ?;
+
+insertCall:
+INSERT INTO network_call VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateCall:
+UPDATE network_call SET scheme = ?, host = ?, port = ?, endpoint = ?, query_params = ?,
+  method = ?, request_body = ?, response_body = ?,
+  response_code = ?, exception_message = ?, request_timestamp = ?, response_timestamp = ?,
+  stack_trace = ? WHERE id = ?;
+
+deleteCall:
+DELETE FROM network_call WHERE id = ?;
+
+clearCalls:
+DELETE FROM network_call;

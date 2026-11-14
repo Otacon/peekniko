@@ -1,0 +1,15 @@
+<resources>
+    <color name="peekniko_colorPrimary">#FFFFFF</color>
+    <color name="peekniko_colorControlActivated">#000000</color>
+    <color name="peekniko_colorControlNormal">#666666</color>
+    <color name="peekniko_colorControlPrimary">#000000</color>
+    <color name="peekniko_divider">#E0E0E0</color>
+    <color name="peekniko_error">#B00020</color>
+    <color name="peekniko_onError">#FFFFFF</color>
+    <color name="peekniko_sectionHeadingBackground">#F2F2F2</color>
+    <color name="peekniko_surface">#FFFFFF</color>
+    <color name="peekniko_textSelection">#33000000</color>
+    <color name="peekniko_toolbarTitle">#000000</color>
+    <color name="peekniko_toolbarUnselectedTitle">#666666</color>
+
+</resources>

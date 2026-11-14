@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menuSearch"
+        android:icon="@drawable/ic_search"
+        android:title="@string/peekniko_menu_search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="always|collapseActionView" />
+
+    <item
+        android:id="@+id/menuFilters"
+        android:icon="@drawable/ic_filter"
+        android:title="@string/peekniko_menu_filters"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item android:title="@string/peekniko_filter_method">
+                <menu>
+                    <item
+                        android:id="@+id/filterMethodAll"
+                        android:title="@string/peekniko_filter_all" />
+                    <item
+                        android:id="@+id/filterMethodGet"
+                        android:title="@string/peekniko_method_get" />
+                    <item
+                        android:id="@+id/filterMethodHead"
+                        android:title="@string/peekniko_method_head" />
+                    <item
+                        android:id="@+id/filterMethodPost"
+                        android:title="@string/peekniko_method_post" />
+                    <item
+                        android:id="@+id/filterMethodPut"
+                        android:title="@string/peekniko_method_put" />
+                    <item
+                        android:id="@+id/filterMethodPatch"
+                        android:title="@string/peekniko_method_patch" />
+                    <item
+                        android:id="@+id/filterMethodDelete"
+                        android:title="@string/peekniko_method_delete" />
+                    <item
+                        android:id="@+id/filterMethodOptions"
+                        android:title="@string/peekniko_method_options" />
+                    <item
+                        android:id="@+id/filterMethodTrace"
+                        android:title="@string/peekniko_method_trace" />
+                    <item
+                        android:id="@+id/filterMethodConnect"
+                        android:title="@string/peekniko_method_connect" />
+                </menu>
+            </item>
+            <item android:title="@string/peekniko_filter_state">
+                <menu>
+                    <item
+                        android:id="@+id/filterStateAll"
+                        android:title="@string/peekniko_filter_all" />
+                    <item
+                        android:id="@+id/filterState2xx"
+                        android:title="@string/peekniko_filter_2xx" />
+                    <item
+                        android:id="@+id/filterStateNonSuccess"
+                        android:title="@string/peekniko_filter_non_success" />
+                    <item
+                        android:id="@+id/filterStateException"
+                        android:title="@string/peekniko_filter_exception" />
+                </menu>
+            </item>
+            <item
+                android:id="@+id/filterClear"
+                android:visible="false"
+                android:title="@string/peekniko_clear_filters" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menuClear"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/peekniko_menu_clear"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+</menu>

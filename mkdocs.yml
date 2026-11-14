@@ -1,0 +1,53 @@
+site_name: Peekniko
+site_url: https://otacon.github.io/peekniko
+extra:
+  version:
+    provider: mike
+nav:
+  - Overview: index.md
+  - HTTP Clients:
+      - OkHttp:
+          - Android: android-okhttp.md
+          - Desktop: desktop-okhttp.md
+      - Ktor:
+          - iOS: ios-ktor.md
+          - Android: android-ktor.md
+          - Desktop: desktop-ktor.md
+      - URLSession (iOS): ios-urlsession.md
+  - Storage:
+      - iOS: storage-ios.md
+      - Android: storage-android.md
+      - Desktop: storage-desktop.md
+
+markdown_extensions:
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: false
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences
+
+theme:
+  logo: assets/peekniko-logo.svg
+  favicon: assets/peekniko.svg
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      color: indigo
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    - media: "(prefers-color-scheme: light)"
+      color: indigo
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      color: indigo
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference

@@ -1,0 +1,17 @@
+CREATE TABLE network_header (
+  call_id TEXT NOT NULL REFERENCES network_call(id) ON DELETE CASCADE,
+  is_response INTEGER NOT NULL CHECK (is_response IN (0, 1)),
+  ordinal INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  value TEXT NOT NULL,
+  PRIMARY KEY (call_id, is_response, ordinal)
+);
+
+selectHeaders:
+SELECT is_response, name, value FROM network_header WHERE call_id = ? ORDER BY is_response, ordinal;
+
+deleteHeaders:
+DELETE FROM network_header WHERE call_id = ?;
+
+insertHeader:
+INSERT INTO network_header VALUES (?, ?, ?, ?, ?);

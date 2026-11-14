@@ -1,0 +1,59 @@
+<resources>
+    <string name="peekniko_title" translatable="false">Peekniko</string>
+    <string name="peekniko_detail_title">Call details</string>
+
+    <!-- Notification -->
+    <string name="peekniko_notification_channel">Network calls</string>
+    <string name="peekniko_notification_title">Peekniko Network Monitor</string>
+
+    <!-- List -->
+    <string name="peekniko_menu_clear">Clear</string>
+    <string name="peekniko_menu_search">Search Endpoint</string>
+    <string name="peekniko_menu_filters">Filters</string>
+    <string name="peekniko_menu_filters_applied">Filters applied</string>
+    <string name="peekniko_filter_method">Method</string>
+    <string name="peekniko_filter_state">State</string>
+    <string name="peekniko_filter_all">All</string>
+    <string name="peekniko_clear_filters">Clear Filters</string>
+    <string name="peekniko_method_get" translatable="false">GET</string>
+    <string name="peekniko_method_head" translatable="false">HEAD</string>
+    <string name="peekniko_method_post" translatable="false">POST</string>
+    <string name="peekniko_method_put" translatable="false">PUT</string>
+    <string name="peekniko_method_patch" translatable="false">PATCH</string>
+    <string name="peekniko_method_delete" translatable="false">DELETE</string>
+    <string name="peekniko_method_options" translatable="false">OPTIONS</string>
+    <string name="peekniko_method_trace" translatable="false">TRACE</string>
+    <string name="peekniko_method_connect" translatable="false">CONNECT</string>
+    <string name="peekniko_filter_2xx">Success (2xx)</string>
+    <string name="peekniko_filter_non_success">Non-success (non-2xx)</string>
+    <string name="peekniko_filter_exception">Request exceptions</string>
+
+    <string name="peekniko_clear_calls_title">Clear all network calls?</string>
+    <string name="peekniko_clear_calls_message">All captured network calls will be deleted. This cannot be undone.</string>
+    <string name="peekniko_empty_calls">No network calls yet. Make a request to see it here.</string>
+    <string name="peekniko_empty_filtered_calls">No calls match your filters. Change or clear the filters to see captured calls.</string>
+
+    <!-- Empty states -->
+
+    <!-- Summary -->
+    <string name="peekniko_summary_general">General</string>
+    <string name="peekniko_summary_request_headers">Request headers</string>
+    <string name="peekniko_summary_response_headers">Response headers</string>
+
+    <!-- Tabs -->
+    <string name="peekniko_tab_headers">Headers</string>
+    <string name="peekniko_tab_request">Request</string>
+    <string name="peekniko_tab_response">Response</string>
+
+    <!-- Errors -->
+    <string name="peekniko_call_not_found">Network call not found</string>
+    <string name="peekniko_empty_body">Empty body</string>
+
+    <!-- Status indicators -->
+    <string name="peekniko_status_error" translatable="false">!!!</string>
+    <string name="peekniko_status_pending" translatable="false">...</string>
+
+    <!-- Accessibility -->
+    <string name="peekniko_status_error_description">Request failed</string>
+    <string name="peekniko_status_pending_description">Request pending</string>
+</resources>

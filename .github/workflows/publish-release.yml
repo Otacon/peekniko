@@ -1,0 +1,128 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (e.g. 1.0.0-alpha01)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+  ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+  ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK Temurin 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Build JVM targets
+        run: |
+          ./gradlew \
+            :library-client-ktor:compileKotlinJvm \
+            :library-client-okhttp:compileKotlinJvm \
+            :library-client-noop:compileKotlinJvm \
+            :library-storage-sqldelight:compileKotlinJvm
+
+      - name: Build Android targets
+        run: |
+          ./gradlew \
+            :library-client-ktor:compileAndroidMain \
+            :library-client-okhttp:compileAndroidMain \
+            :library-client-noop:compileAndroidMain \
+            :library-storage-sqldelight:compileAndroidMain
+
+      - name: Guard library runtime dependencies
+        run: ./gradlew dependencyGuard
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version || github.ref_name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact: Core
+            project: library
+          - artifact: Ktor Plugin
+            project: library-client-ktor
+          - artifact: OkHttp Interceptor
+            project: library-client-okhttp
+          - artifact: SqlDelight Storage
+            project: library-storage-sqldelight
+          - artifact: No-op Core
+            project: library-client-noop
+
+    name: Publish ${{ matrix.artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK Temurin 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Publish Android/JVM artifacts
+        run: bash .github/scripts/publish-android-jvm.sh "${{ matrix.project }}"
+
+  github-release:
+    name: Create GitHub release
+    needs: [build, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create release with generated release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          VERSION: ${{ inputs.version || github.ref_name }}
+        run: |
+          tag="$VERSION"
+          args=(--target "$COMMIT_SHA")
+          if [[ "$EVENT_NAME" == "push" ]]; then
+            tag="$REF_NAME"
+            args=(--verify-tag)
+          fi
+          if [[ "$VERSION" == *-* ]]; then
+            args+=(--prerelease)
+          fi
+          gh release create "$tag" \
+            --title "Peekniko ${VERSION}" \
+            --generate-notes \
+            "${args[@]}"

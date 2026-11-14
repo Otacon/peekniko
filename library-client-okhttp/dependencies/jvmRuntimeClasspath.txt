@@ -1,0 +1,12 @@
+:library
+com.formdev:flatlaf:3.8
+com.strumenta:antlr-kotlin-runtime-jvm:1.0.14
+com.strumenta:antlr-kotlin-runtime:1.0.14
+org.jetbrains.kotlin:kotlin-stdlib:2.4.21
+org.jetbrains.kotlinx:atomicfu-jvm:0.33.0
+org.jetbrains.kotlinx:atomicfu:0.33.0
+org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.9.0
+org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0
+org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0
+org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0
+org.jetbrains:annotations:23.0.0
