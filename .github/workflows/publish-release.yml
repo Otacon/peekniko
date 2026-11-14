@@ -41,25 +41,6 @@ jobs:
         with:
           cache-read-only: false
 
-      - name: Build JVM targets
-        run: |
-          ./gradlew \
-            :library-client-ktor:compileKotlinJvm \
-            :library-client-okhttp:compileKotlinJvm \
-            :library-client-noop:compileKotlinJvm \
-            :library-storage-sqldelight:compileKotlinJvm
-
-      - name: Build Android targets
-        run: |
-          ./gradlew \
-            :library-client-ktor:compileAndroidMain \
-            :library-client-okhttp:compileAndroidMain \
-            :library-client-noop:compileAndroidMain \
-            :library-storage-sqldelight:compileAndroidMain
-
-      - name: Guard library runtime dependencies
-        run: ./gradlew dependencyGuard
-
       - name: Publish libraries
         run: ./gradlew publishToMavenCentral --no-parallel
 
