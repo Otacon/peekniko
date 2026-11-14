@@ -41,8 +41,11 @@ jobs:
         with:
           cache-disabled: true
 
+      - name: Build
+        run: ./gradlew assemble --no-build-cache
+
       - name: Publish libraries
-        run: ./gradlew publishToMavenCentral --no-parallel --no-build-cache
+        run: ./gradlew publishToMavenCentral --no-parallel
 
   github-release:
     name: Create GitHub release

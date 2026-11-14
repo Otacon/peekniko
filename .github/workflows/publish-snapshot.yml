@@ -37,5 +37,8 @@ jobs:
         with:
           cache-disabled: true
 
+      - name: Build
+        run: ./gradlew assemble
+
       - name: Publish libraries
         run: ./gradlew publishToMavenCentral --no-parallel --no-build-cache
