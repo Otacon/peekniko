@@ -16,4 +16,4 @@ gradle_args=(
 project="$1"
 
 echo "Publishing Android/JVM artifacts for ${project}"
-./gradlew "${gradle_args[@]}" "${project}:publishAndReleaseToMavenCentral"
+./gradlew "${gradle_args[@]}" "${project}:publishToMavenCentral"
