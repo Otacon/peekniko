@@ -39,10 +39,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-read-only: false
+          cache-disabled: true
 
       - name: Publish libraries
-        run: ./gradlew publishToMavenCentral --no-parallel
+        run: ./gradlew publishToMavenCentral --no-parallel --no-build-cache
 
   github-release:
     name: Create GitHub release
