@@ -22,8 +22,10 @@ env:
   ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+    env:
+      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version || github.ref_name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,48 +60,12 @@ jobs:
       - name: Guard library runtime dependencies
         run: ./gradlew dependencyGuard
 
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    env:
-      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version || github.ref_name }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - artifact: Core
-            project: library
-          - artifact: Ktor Plugin
-            project: library-client-ktor
-          - artifact: OkHttp Interceptor
-            project: library-client-okhttp
-          - artifact: SqlDelight Storage
-            project: library-storage-sqldelight
-          - artifact: No-op Core
-            project: library-client-noop
-
-    name: Publish ${{ matrix.artifact }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup JDK Temurin 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-read-only: true
-
-      - name: Publish Android/JVM artifacts
-        run: bash .github/scripts/publish-android-jvm.sh "${{ matrix.project }}"
+      - name: Publish libraries
+        run: ./gradlew publishToMavenCentral --no-parallel
 
   github-release:
     name: Create GitHub release
-    needs: [build, publish]
+    needs: publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
