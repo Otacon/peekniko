@@ -3,13 +3,14 @@ package peekniko.ui.networkcalls
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
-import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
 import peekniko.NetworkMethod
 import peekniko.Peekniko
 import peekniko.internal.support.FlowCollectionFragment
@@ -24,7 +25,7 @@ internal class NetworkCallListFragment :
 
     private val viewModel: PeeknikoViewModel by viewModels { PeeknikoViewModel(Peekniko.networkRepository) }
 
-    private val callList by viewById<ListView>(R.id.callList)
+    private val callList by viewById<RecyclerView>(R.id.callList)
     private val progress by viewById<ProgressBar>(R.id.progress)
     private val emptyScreen by viewById<TextView>(R.id.emptyScreen)
     private val toolbar by viewById<Toolbar>(R.id.toolbar)
@@ -43,15 +44,14 @@ internal class NetworkCallListFragment :
         searchView = menu.findItem(R.id.menuSearch).actionView as? SearchView
         searchView?.setOnQueryTextListener(this)
         searchView?.queryHint = getString(R.string.peekniko_menu_search)
-        val networkCallAdapter = NetworkCallListAdapter(requireContext())
-        callList.adapter = networkCallAdapter
-        callList.setOnItemClickListener { _, _, position, _ ->
-            val call = networkCallAdapter.getItem(position)
+        val networkCallAdapter = NetworkCallListAdapter { call ->
             viewModel.onCallClick(call)
             (requireActivity() as PeeknikoActivity).onCallSelected(call.id)
         }
+        callList.setHasFixedSize(true)
+        callList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+        callList.adapter = networkCallAdapter
 
-        var previousState: State? = null
         collectInView {
             viewModel.state.collect { state ->
                 if (state.isLoading) {
@@ -70,9 +70,7 @@ internal class NetworkCallListFragment :
                         },
                     )
                 }
-                val animateNewItems = previousState?.let { !it.isLoading && !state.isLoading } == true
-                networkCallAdapter.submitList(state.calls, animateNewItems)
-                previousState = state
+                networkCallAdapter.submitList(state.calls)
                 clearMenuItem?.isVisible = state.showClearCalls
                 filtersMenuItem.setIcon(
                     if (state.hasActiveFilters) R.drawable.ic_filter_applied else R.drawable.ic_filter,
@@ -93,6 +91,7 @@ internal class NetworkCallListFragment :
     override fun onDestroyView() {
         searchView?.setOnQueryTextListener(null)
         searchView = null
+        callList.adapter = null
         super.onDestroyView()
     }
 
