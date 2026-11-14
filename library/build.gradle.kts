@@ -101,6 +101,7 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.recyclerview)
             implementation(libs.androidx.startup)
             implementation(libs.kotlinx.coroutines.android)
         }
