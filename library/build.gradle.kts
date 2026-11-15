@@ -81,9 +81,11 @@ kotlin {
     }
     js {
         browser()
+        binaries.executable()
     }
     wasmJs {
         browser()
+        binaries.executable()
     }
 
     sourceSets {
