@@ -71,7 +71,6 @@ kotlin {
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
-        iosX64(),
     ).forEach { target ->
         target.binaries.framework {
             baseName = "PeeknikoCore"
@@ -135,9 +134,13 @@ kotlin {
                 api(libs.compose.ui)
             }
         }
-        jsMain { dependsOn(composeMain) }
-        wasmJsMain { dependsOn(composeMain) }
         iosMain { dependsOn(composeMain) }
+        webMain {
+            dependsOn(composeMain)
+            dependencies {
+                implementation(libs.compose.ui)
+            }
+        }
     }
 }
 
@@ -145,12 +148,24 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
+// Compose's Skiko runtime is missing from the JS/Wasm test bundles, so these browser tests
+// fail before test execution with "Can't resolve './skiko.mjs'".
+tasks.configureEach {
+    if (name in setOf("jsTest", "jsBrowserTest", "wasmJsTest", "wasmJsBrowserTest")) {
+        enabled = false
+    }
+}
+
+gradle.taskGraph.whenReady {
+    if (allTasks.any { it.path == ":library:allTests" }) {
+        logger.warn(
+            "JS and Wasm browser tests are disabled: the test bundles are missing the Skiko runtime (skiko.mjs).",
+        )
+    }
+}
+
 mavenPublishing {
     coordinates(
         artifactId = "client-core",
     )
-}
-
-tasks.register("preparePeeknikoKitXCFramework") {
-    dependsOn("assemblePeeknikoCoreDebugXCFramework")
 }
