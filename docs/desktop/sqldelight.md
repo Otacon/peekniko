@@ -1,4 +1,4 @@
-# Desktop (JVM) — SQLDelight storage
+# SQLDelight storage
 
 Keep your captured requests and responses between app launches with SQLDelight storage.
 

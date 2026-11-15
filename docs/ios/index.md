@@ -1,36 +1,33 @@
-# iOS — Ktor
+# Getting Started
 
-Connect Peekniko to your Ktor client by installing its plugin in your shared Kotlin Multiplatform module.
+Peekniko helps you inspect network requests and responses in your app.
 
-## Gradle dependencies
+## Configure Peekniko
 
-```kotlin title="build.gradle.kts"
-kotlin {
-    sourceSets {
-        iosMain.dependencies {
-            implementation("io.github.otacon.peekniko:client-ktor:<peekniko-version>")
-            implementation("io.ktor:ktor-client-darwin:<ktor-version>")
-        }
-    }
-}
-```
-
-Keep your Peekniko dependencies on the same version, and do the same for your Ktor dependencies.
-
-## Install the Ktor plugin
+Configure Peekniko once when your app starts, before creating your HTTP client:
 
 ```kotlin
 import peekniko.Peekniko
-import peekniko.ktor.plugin
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.darwin.Darwin
 
-Peekniko.configure { }
-
-val client = HttpClient(Darwin) {
-    install(Peekniko.plugin)
+Peekniko.configure {
+    // Add any storage options here, or leave empty to use the defaults.
 }
 ```
+
+By default, Peekniko keeps captures in memory. To keep them between app launches, add [SQLDelight storage](sqldelight.md).
+
+From Swift:
+
+```swift
+Peekniko.shared.configure { configuration in
+    configuration.inMemoryStorage(maxApiCalls: 100)
+}
+```
+
+## Connect your HTTP client
+
+- [Ktor](ktor.md)
+- [URLSession](urlsession.md)
 
 ## Open Peekniko
 

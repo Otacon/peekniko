@@ -1,4 +1,4 @@
-# iOS — URLSession
+# URLSession
 
 Capture `URLSession` traffic by registering Peekniko's `URLProtocol`.
 
@@ -24,12 +24,9 @@ In a Swift-only app, build the framework and add the `library` folder to Xcode a
 
 ## Register the protocol
 
-Configure Peekniko and register the protocol once at startup, before creating requests:
+Register the protocol once at startup, after configuring Peekniko and before creating requests:
 
 ```swift
-Peekniko.shared.configure { configuration in
-    configuration.inMemoryStorage(maxApiCalls: 100)
-}
 Peekniko.shared.registerUrlProtocol()
 ```
 
@@ -41,11 +38,3 @@ Peekniko.shared.addUrlProtocol(configuration: configuration)
 ```
 
 From Kotlin, the same functions are `Peekniko.registerUrlProtocol()` and `Peekniko.addUrlProtocol(configuration)`.
-
-## Open Peekniko
-
-```swift
-Peekniko.shared.present(from: nil)
-```
-
-See [iOS — Ktor](ios-ktor.md#notifications) for notification setup.

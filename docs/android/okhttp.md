@@ -1,4 +1,4 @@
-# Android — OkHttp
+# OkHttp
 
 Connect Peekniko to your OkHttp client by adding its interceptor.
 

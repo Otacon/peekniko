@@ -1,4 +1,4 @@
-# Desktop (JVM) — Ktor
+# Ktor
 
 Connect Peekniko to your Ktor client by installing its plugin.
 

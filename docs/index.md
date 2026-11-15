@@ -1,9 +1,8 @@
-# Peekniko
+# Getting Started
 
-Peekniko helps you inspect network requests and responses in your Kotlin Multiplatform app.
-Choose a client integration below to get started.
+Peekniko helps you inspect network requests and responses in your app.
 
-## Basic configuration
+## Configure Peekniko
 
 Configure Peekniko once when your app starts, before creating your HTTP client:
 
@@ -15,29 +14,20 @@ Peekniko.configure {
 }
 ```
 
-By default, Peekniko keeps captures in memory. To keep them between app launches, choose a storage option below.
+By default, Peekniko keeps captures in memory. To keep them between app launches, add [SQLDelight storage](android/sqldelight.md).
 
-## Clients
+## Connect your HTTP client
 
-### OkHttp
+- [OkHttp](android/okhttp.md)
+- [Ktor](android/ktor.md)
 
-- [Android](android-okhttp.md)
-- [Desktop (JVM)](desktop-okhttp.md)
+## Open Peekniko
 
-### Ktor
+```kotlin
+import peekniko.Peekniko
+import peekniko.startPeeknikoActivity
 
-- [iOS](ios-ktor.md)
-- [Android](android-ktor.md)
-- [Desktop (JVM)](desktop-ktor.md)
+Peekniko.startPeeknikoActivity(context)
+```
 
-### Native URL loading
-
-- [iOS — URLSession](ios-urlsession.md)
-
-## Storage
-
-Want to keep your captures between app launches? Add SQLDelight storage for your platform:
-
-- [iOS](storage-ios.md)
-- [Android](storage-android.md)
-- [Desktop (JVM)](storage-desktop.md)
+Peekniko also posts a quiet notification listing the latest calls; tapping it opens the inspector. It asks for the notification permission the first time its screen opens, unless your app has already asked.
