@@ -89,8 +89,10 @@ internal class PeeknikoViewModelTest : FunSpec({
     )
 
     suspend fun withFixture(block: suspend PeeknikoViewModelFixture.() -> Unit) {
-        val fixture = PeeknikoViewModelFixture()
-        withViewModel(fixture.viewModel) { fixture.block() }
+        lateinit var fixture: PeeknikoViewModelFixture
+        withViewModel(
+            createViewModel = { PeeknikoViewModelFixture().also { fixture = it }.viewModel },
+        ) { fixture.block() }
     }
 
     context("initial state") {

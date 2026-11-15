@@ -19,16 +19,19 @@ internal class ResponseViewModelTest : FunSpec({
         val repository = mock<NetworkRepository> {
             every { observeById(any()) } returns transaction
         }
-        val viewModel = ResponseViewModel(
-            repository = repository,
-            themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
-            bodyRenderer = BodyRendererComposite(
-                renderers = emptyList(),
-                fallback = BodyRendererPlainText(defaultSpannedTextBuilderFactory()),
-            ),
-            transactionId = "response-id",
-        )
-        withViewModel(viewModel) { block(viewModel, transaction) }
+        withViewModel(
+            createViewModel = {
+                ResponseViewModel(
+                    repository = repository,
+                    themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
+                    bodyRenderer = BodyRendererComposite(
+                        renderers = emptyList(),
+                        fallback = BodyRendererPlainText(defaultSpannedTextBuilderFactory()),
+                    ),
+                    transactionId = "response-id",
+                )
+            },
+        ) { viewModel -> viewModel.block(transaction) }
     }
 
     context("initial state") {
