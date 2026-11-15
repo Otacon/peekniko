@@ -19,7 +19,7 @@ kotlin {
 In a Swift-only app, build the framework and add the `library` folder to Xcode as a local package, then `import PeeknikoCore`:
 
 ```sh
-./gradlew :library:preparePeeknikoKitXCFramework
+./gradlew :library:assemblePeeknikoCoreDebugXCFramework
 ```
 
 ## Register the protocol
