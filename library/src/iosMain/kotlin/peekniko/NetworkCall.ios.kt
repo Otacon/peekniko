@@ -53,7 +53,7 @@ public fun NetworkResponse.Error.Companion.create(
 )
 
 @OptIn(ExperimentalForeignApi::class)
-private fun NSData.toKotlinByteArray(): ByteArray? {
+internal fun NSData.toKotlinByteArray(): ByteArray? {
     if (length == 0UL) return null
     val source = bytes ?: return null
     return ByteArray(length.toInt()).also { result ->

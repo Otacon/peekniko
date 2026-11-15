@@ -22,6 +22,7 @@ composeCompiler {
         setOf(
             KotlinPlatformType.js,
             KotlinPlatformType.wasm,
+            KotlinPlatformType.native,
             KotlinPlatformType.common,
         )
     )
@@ -121,13 +122,22 @@ kotlin {
             implementation(libs.kotest.runner.junit5)
             runtimeOnly(libs.kotlinx.coroutines.swing)
         }
-        getByName("webMain").dependencies {
-            api(libs.compose.adaptive.layout)
-            api(libs.compose.foundation)
-            api(libs.compose.material3)
-            api(libs.compose.runtime)
-            api(libs.compose.ui)
+        iosTest.dependencies {
+            implementation(project(":library-client-contract-tests"))
         }
+        // Compose UI shared by the platforms without a native UI toolkit implementation (web and iOS).
+        val composeMain = create("composeMain") {
+            dependsOn(commonMain.get())
+            dependencies {
+                api(libs.compose.foundation)
+                api(libs.compose.material3)
+                api(libs.compose.runtime)
+                api(libs.compose.ui)
+            }
+        }
+        jsMain { dependsOn(composeMain) }
+        wasmJsMain { dependsOn(composeMain) }
+        iosMain { dependsOn(composeMain) }
     }
 }
 

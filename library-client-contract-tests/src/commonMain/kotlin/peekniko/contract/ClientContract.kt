@@ -148,6 +148,7 @@ public suspend fun verifyClientRequestContract(
     recorder: RequestRecorder,
     case: RequestCase,
     expectedRequestHeaders: List<NetworkHeader> = case.requestHeaders,
+    expectedResponseHeaders: List<NetworkHeader> = case.responseHeaders,
 ) {
     val call = recorder.record(case)
     val request = call.request
@@ -169,7 +170,7 @@ public suspend fun verifyClientRequestContract(
         val response = call.response as NetworkResponse.Response
         response.code shouldBe case.responseCode
         response.body?.decodeToString() shouldBe case.responseBody
-        response.headers shouldBe case.responseHeaders
+        response.headers shouldBe expectedResponseHeaders
     } else {
         (call.response is NetworkResponse.Error) shouldBe true
         val error = call.response as NetworkResponse.Error

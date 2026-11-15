@@ -5,6 +5,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 
+internal actual fun defaultSpannedTextBuilderFactory(): SpannedTextBuilderFactory =
+    SpannedTextBuilderFactory { ComposeSpannedTextBuilder() }
+
 internal class ComposeSpannedTextBuilder : SpannedTextBuilder {
     private val builder = AnnotatedString.Builder()
 
