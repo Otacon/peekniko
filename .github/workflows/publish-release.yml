@@ -23,7 +23,7 @@ env:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     env:
       ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version || github.ref_name }}
     steps:
