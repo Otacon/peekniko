@@ -36,40 +36,7 @@ jobs:
         run: ./gradlew dependencyGuard
 
       - name: Build
-        run: >-
-          ./gradlew
-          :appAndroid:compileDebugKotlin
-          :appAndroid:compileReleaseKotlin
-          :appDesktop:compileKotlinJvm
-          :app:compileAndroidMain
-          :app:compileKotlinJvm
-          :library:compileAndroidMain
-          :library:compileKotlinJvm
-          :library-client-ktor:compileAndroidMain
-          :library-client-ktor:compileKotlinJvm
-          :library-client-okhttp:compileAndroidMain
-          :library-client-okhttp:compileKotlinJvm
-          :library-client-noop:compileAndroidMain
-          :library-client-noop:compileKotlinJvm
-          :library-storage-sqldelight:compileAndroidMain
-          :library-storage-sqldelight:compileKotlinJvm
+        run: ./gradlew assemble
 
-      - name: Check debug/release API parity
-        run: ./gradlew :appAndroid:compileDebugKotlin :appAndroid:compileReleaseKotlin
-
-      - name: Run JVM unit tests
-        run: >-
-          ./gradlew
-          :library:jvmTest
-          :library-client-ktor:jvmTest
-          :library-client-okhttp:jvmTest
-          :library-client-noop:jvmTest
-          :library-storage-sqldelight:jvmTest
-
-      - name: Run Android unit tests
-        run: >-
-          ./gradlew
-          :library:testAndroidHostTest
-          :library-client-ktor:testAndroidHostTest
-          :library-client-okhttp:testAndroidHostTest
-          :library-storage-sqldelight:testAndroidHostTest
+      - name: Run JVM and Android tests
+        run: ./gradlew jvmTest testAndroidHostTest
