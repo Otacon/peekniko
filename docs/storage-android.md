@@ -4,22 +4,22 @@ Keep your captured requests and responses between app launches with SQLDelight s
 
 ## Gradle dependencies
 
-Add the Peekniko core and storage adapter, plus SQLDelight's:
-
-- runtime
-- coroutine extensions
-- Android driver
-
-Use the same Peekniko version for both artifacts and the same SQLDelight version for all SQLDelight artifacts:
+Add the Peekniko storage adapter for debug builds and the no-op client for release builds. Use the same Peekniko version for both artifacts:
 
 ```kotlin title="build.gradle.kts"
 dependencies {
     debugImplementation("io.github.otacon.peekniko:storage-sqldelight:<peekniko-version>")
     releaseImplementation("io.github.otacon.peekniko:client-noop:<peekniko-version>")
+}
+```
 
-    implementation("app.cash.sqldelight:runtime:<sqldelight-version>")
-    implementation("app.cash.sqldelight:coroutines-extensions:<sqldelight-version>")
-    implementation("app.cash.sqldelight:android-driver:<sqldelight-version>")
+If your app already uses SQLDelight, no additional SQLDelight dependencies are needed. Otherwise, add the runtime, coroutine extensions, and Android driver to debug builds, using the same SQLDelight version for all three:
+
+```kotlin title="build.gradle.kts"
+dependencies {
+    debugImplementation("app.cash.sqldelight:runtime:<sqldelight-version>")
+    debugImplementation("app.cash.sqldelight:coroutines-extensions:<sqldelight-version>")
+    debugImplementation("app.cash.sqldelight:android-driver:<sqldelight-version>")
 }
 ```
 

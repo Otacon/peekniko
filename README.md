@@ -22,6 +22,17 @@
   <img src="assets/screenshot_response.png" alt="Peekniko response details" width="30%" />
 </p>
 
+## Compatibility
+
+| Library              | Platform                        |
+|----------------------|---------------------------------|
+| OkHttp (Client)      | Android, Desktop                |
+| Ktor (Client)        | Android, Desktop (iOS, Web WIP) |
+| URLSession (Client)  | iOS (WIP)                       |
+| SQLDelight (Storage) | Android, Desktop (iOS, Web WIP) |
+
+[Documentation](https://otacon.github.io/peekniko/)
+
 ## Quick start: OkHttp + SQLDelight
 
 Ensure Maven Central is included in `settings.gradle.kts`:
@@ -41,11 +52,18 @@ Add the dependencies to your app module's `build.gradle.kts` (replace the versio
 dependencies {
     debugImplementation("io.github.otacon.peekniko:client-okhttp:<peekniko-version>")
     debugImplementation("io.github.otacon.peekniko:storage-sqldelight:<peekniko-version>")
-    // If your app doesn't already depend on SQLDelight, add these dependencies with debugImplementation.
+    releaseImplementation("io.github.otacon.peekniko:client-noop:<peekniko-version>")
+}
+```
+
+If your app already uses SQLDelight, you don't need to add any SQLDelight dependencies. Otherwise, add them with
+`debugImplementation`:
+
+```kotlin
+dependencies {
     debugImplementation("app.cash.sqldelight:runtime:<sqldelight-version>")
     debugImplementation("app.cash.sqldelight:coroutines-extensions:<sqldelight-version>")
     debugImplementation("app.cash.sqldelight:android-driver:<sqldelight-version>")
-    releaseImplementation("io.github.otacon.peekniko:client-noop:<peekniko-version>")
 }
 ```
 
@@ -64,5 +82,3 @@ val client = OkHttpClient.Builder()
     .addInterceptor(Peekniko.interceptor)
     .build()
 ```
-
-See the [documentation](https://otacon.github.io/peekniko/) for full setup instructions, platform details, and more integrations.
