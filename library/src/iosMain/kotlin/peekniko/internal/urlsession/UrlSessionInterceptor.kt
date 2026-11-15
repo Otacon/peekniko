@@ -1,7 +1,11 @@
 package peekniko.internal.urlsession
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
 import peekniko.*
 import platform.Foundation.*
+import platform.posix.memcpy
 import kotlin.time.Clock
 
 internal fun interface UrlSessionTransport {
@@ -41,6 +45,7 @@ internal class UrlSessionInterceptor(
     }
 }
 
+@OptIn(ExperimentalForeignApi::class)
 private fun NSURLRequest.toNetworkRequest(): NetworkRequest {
     val components = URL?.let { NSURLComponents.componentsWithURL(it, resolvingAgainstBaseURL = false) }
     val scheme = components?.scheme.orEmpty()
@@ -62,6 +67,7 @@ private fun NSURLRequest.toNetworkRequest(): NetworkRequest {
     )
 }
 
+@OptIn(ExperimentalForeignApi::class)
 private fun NSHTTPURLResponse.toNetworkResponse(data: NSData?): NetworkResponse.Response =
     NetworkResponse.Response(
         body = data?.toKotlinByteArray(),
@@ -80,3 +86,12 @@ private fun NSError.toNetworkError(): NetworkResponse.Error =
 private fun Map<Any?, *>?.toNetworkHeaders(): List<NetworkHeader> = orEmpty()
     .map { (name, value) -> NetworkHeader(name.toString(), value.toString()) }
     .sortedBy { it.name.lowercase() }
+
+@OptIn(ExperimentalForeignApi::class)
+private fun NSData.toKotlinByteArray(): ByteArray? {
+    if (length == 0UL) return null
+    val source = bytes ?: return null
+    return ByteArray(length.toInt()).also { result ->
+        result.usePinned { destination -> memcpy(destination.addressOf(0), source, length) }
+    }
+}

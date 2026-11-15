@@ -46,7 +46,6 @@ internal fun PeeknikoNavHost(
         onDispose { viewModel.clear() }
     }
     var selectedCallId by remember { mutableStateOf<String?>(null) }
-    // Keeps the list's scroll position while the detail pane replaces it on narrow windows.
     val stateHolder = rememberSaveableStateHolder()
 
     BoxWithConstraints(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.outlineVariant)) {

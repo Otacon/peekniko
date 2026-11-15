@@ -35,13 +35,6 @@ import kotlin.coroutines.resume
 
 internal actual fun createNotifications(): Notifications = IosNotifications()
 
-/**
- * Posts a single, quiet local notification listing the latest network calls.
- *
- * Like on Android, showing a notification never asks for permission: nothing is posted until the
- * app has been authorized, either by the host app itself or by [requestPermission], which runs
- * when the Peekniko screen opens.
- */
 internal class IosNotifications : Notifications {
     internal companion object {
         const val NOTIFICATION_ID = "peekniko_network_calls"
@@ -58,8 +51,6 @@ internal class IosNotifications : Notifications {
     private val delegate = PeeknikoNotificationCenterDelegate()
     private var latestCalls: List<NetworkCall> = emptyList()
 
-    // The notification center needs an app bundle, which command-line processes such as unit
-    // tests do not have.
     private val center: UNUserNotificationCenter?
         get() = NSBundle.mainBundle.bundleIdentifier?.let { UNUserNotificationCenter.currentNotificationCenter() }
 
@@ -115,8 +106,6 @@ internal class IosNotifications : Notifications {
         UNMutableNotificationContent().apply {
             setTitle(TITLE)
             setBody(calls.joinToString(separator = "\n", transform = ::formatCall))
-            // Passive notifications (iOS 15+) go straight to the notification list without a
-            // banner or sound, matching the low-importance channel used on Android.
             if (respondsToSelector(NSSelectorFromString("setInterruptionLevel:"))) {
                 setInterruptionLevel(UNNotificationInterruptionLevel.UNNotificationInterruptionLevelPassive)
             }
@@ -132,12 +121,6 @@ internal class IosNotifications : Notifications {
         return "$code ${call.request.method} $path"
     }
 
-    /**
-     * iOS drops notifications posted while the app is in the foreground unless a delegate opts in,
-     * and the delegate is also what receives taps. Apps that install their own delegate are left
-     * alone and can forward to [Peekniko.isPeeknikoNotification] and
-     * [Peekniko.handleNotificationResponse].
-     */
     private fun installDelegateIfAbsent(center: UNUserNotificationCenter) {
         if (center.delegate == null) center.delegate = delegate
     }

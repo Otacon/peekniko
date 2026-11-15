@@ -8,6 +8,16 @@ import platform.Foundation.*
 
 private const val HANDLED_KEY = "PeeknikoURLProtocolHandledKey"
 
+private val sharedSessionTransport = UrlSessionTransport { request, completion ->
+    val task = NSURLSession.sharedSession.dataTaskWithRequest(request, completionHandler = completion)
+    task.resume()
+    task::cancel
+}
+
+private val interceptor by lazy {
+    UrlSessionInterceptor(Peekniko.networkRepository, sharedSessionTransport)
+}
+
 internal class PeeknikoURLProtocol @OverrideInit constructor(
     request: NSURLRequest,
     cachedResponse: NSCachedURLResponse?,
@@ -30,14 +40,6 @@ internal class PeeknikoURLProtocol @OverrideInit constructor(
     }
 
     companion object : NSURLProtocolMeta() {
-        private val sharedSessionTransport = UrlSessionTransport { request, completion ->
-            val task = NSURLSession.sharedSession.dataTaskWithRequest(request, completionHandler = completion)
-            task.resume()
-            task::cancel
-        }
-
-        private val interceptor by lazy { UrlSessionInterceptor(Peekniko.networkRepository, sharedSessionTransport) }
-
         override fun canInitWithRequest(request: NSURLRequest): Boolean {
             val scheme = request.URL?.scheme?.lowercase()
             return (scheme == "http" || scheme == "https") &&

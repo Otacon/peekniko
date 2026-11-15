@@ -39,16 +39,13 @@ public fun Peekniko.handleNotificationResponse(response: UNNotificationResponse)
     return true
 }
 
-@OptIn(BetaInteropApi::class)
 public fun Peekniko.registerUrlProtocol(): Boolean =
     NSURLProtocol.registerClass(PeeknikoURLProtocol.`class`()!!)
 
-@OptIn(BetaInteropApi::class)
 public fun Peekniko.unregisterUrlProtocol() {
     NSURLProtocol.unregisterClass(PeeknikoURLProtocol.`class`()!!)
 }
 
-@OptIn(BetaInteropApi::class)
 public fun Peekniko.addUrlProtocol(configuration: NSURLSessionConfiguration) {
     configuration.protocolClasses = listOf(PeeknikoURLProtocol.`class`()!!) + configuration.protocolClasses.orEmpty()
 }
