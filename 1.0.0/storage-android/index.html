@@ -875,30 +875,27 @@
 <h1 id="android-sqldelight-storage">Android — SQLDelight storage</h1>
 <p>Keep your captured requests and responses between app launches with SQLDelight storage.</p>
 <h2 id="gradle-dependencies">Gradle dependencies</h2>
-<p>Add the Peekniko core and storage adapter, plus SQLDelight's:</p>
-<ul>
-<li>runtime</li>
-<li>coroutine extensions</li>
-<li>Android driver</li>
-</ul>
-<p>Use the same Peekniko version for both artifacts and the same SQLDelight version for all SQLDelight artifacts:</p>
+<p>Add the Peekniko storage adapter for debug builds and the no-op client for release builds. Use the same Peekniko version for both artifacts:</p>
 <div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-0-1"><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
 </span><span id="__span-0-2"><span class="w">    </span><span class="n">debugImplementation</span><span class="p">(</span><span class="s">"io.github.otacon.peekniko:storage-sqldelight:&lt;peekniko-version&gt;"</span><span class="p">)</span>
 </span><span id="__span-0-3"><span class="w">    </span><span class="n">releaseImplementation</span><span class="p">(</span><span class="s">"io.github.otacon.peekniko:client-noop:&lt;peekniko-version&gt;"</span><span class="p">)</span>
-</span><span id="__span-0-4">
-</span><span id="__span-0-5"><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"app.cash.sqldelight:runtime:&lt;sqldelight-version&gt;"</span><span class="p">)</span>
-</span><span id="__span-0-6"><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"app.cash.sqldelight:coroutines-extensions:&lt;sqldelight-version&gt;"</span><span class="p">)</span>
-</span><span id="__span-0-7"><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="s">"app.cash.sqldelight:android-driver:&lt;sqldelight-version&gt;"</span><span class="p">)</span>
-</span><span id="__span-0-8"><span class="p">}</span>
+</span><span id="__span-0-4"><span class="p">}</span>
+</span></code></pre></div>
+<p>If your app already uses SQLDelight, no additional SQLDelight dependencies are needed. Otherwise, add the runtime, coroutine extensions, and Android driver to debug builds, using the same SQLDelight version for all three:</p>
+<div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-1-1"><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><span class="w">    </span><span class="n">debugImplementation</span><span class="p">(</span><span class="s">"app.cash.sqldelight:runtime:&lt;sqldelight-version&gt;"</span><span class="p">)</span>
+</span><span id="__span-1-3"><span class="w">    </span><span class="n">debugImplementation</span><span class="p">(</span><span class="s">"app.cash.sqldelight:coroutines-extensions:&lt;sqldelight-version&gt;"</span><span class="p">)</span>
+</span><span id="__span-1-4"><span class="w">    </span><span class="n">debugImplementation</span><span class="p">(</span><span class="s">"app.cash.sqldelight:android-driver:&lt;sqldelight-version&gt;"</span><span class="p">)</span>
+</span><span id="__span-1-5"><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="configure-peekniko-and-storage">Configure Peekniko and storage</h2>
 <p>Add storage to your startup configuration before creating your HTTP client.</p>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.Peekniko</span>
-</span><span id="__span-1-2"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.storage.sqldelight.sqlDelightStorage</span>
-</span><span id="__span-1-3">
-</span><span id="__span-1-4"><span class="n">Peekniko</span><span class="p">.</span><span class="na">configure</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-5"><span class="w">    </span><span class="n">sqlDelightStorage</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"peekniko.db"</span><span class="p">)</span>
-</span><span id="__span-1-6"><span class="p">}</span>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.Peekniko</span>
+</span><span id="__span-2-2"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.storage.sqldelight.sqlDelightStorage</span>
+</span><span id="__span-2-3">
+</span><span id="__span-2-4"><span class="n">Peekniko</span><span class="p">.</span><span class="na">configure</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-5"><span class="w">    </span><span class="n">sqlDelightStorage</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"peekniko.db"</span><span class="p">)</span>
+</span><span id="__span-2-6"><span class="p">}</span>
 </span></code></pre></div>
 <p>Peekniko saves the database in your app's database directory using the name you provide.</p>
 
