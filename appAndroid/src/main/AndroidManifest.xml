@@ -18,6 +18,8 @@
     -->
     <uses-sdk
         tools:overrideLibrary="
+            androidx.activity,
+            androidx.activity.compose,
             androidx.compose.animation,
             androidx.compose.animation.core,
             androidx.compose.foundation,
@@ -34,8 +36,20 @@
             androidx.compose.ui.text,
             androidx.compose.ui.unit,
             androidx.compose.ui.util,
+            androidx.core,
+            androidx.core.ktx,
+            androidx.lifecycle.livedata,
+            androidx.lifecycle.livedata.core,
+            androidx.lifecycle.process,
+            androidx.lifecycle.runtime,
+            androidx.lifecycle.runtime.compose,
+            androidx.lifecycle.viewmodel,
+            androidx.lifecycle.viewmodel.compose,
+            androidx.lifecycle.viewmodel.savedstate,
             androidx.navigationevent,
             androidx.navigationevent.compose,
+            androidx.savedstate,
+            androidx.savedstate.compose,
             androidx.window,
             androidx.window.core" />
 
