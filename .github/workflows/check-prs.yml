@@ -63,3 +63,12 @@ jobs:
 
       - name: Build and test
         run: ./gradlew ${{ matrix.tasks }}
+
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    needs: build
+    if: always() && github.event.pull_request.draft == false
+    steps:
+      - name: Check every target passed
+        run: test "${{ needs.build.result }}" = "success"
