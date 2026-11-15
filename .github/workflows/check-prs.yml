@@ -34,6 +34,8 @@ jobs:
             tasks: >-
               compileKotlinJs
               compileKotlinWasmJs
+              :library:jsBrowserTest
+              :library:wasmJsBrowserTest
           - target: iOS
             os: macos-latest
             tasks: >-

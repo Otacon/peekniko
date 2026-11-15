@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.antlr)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.peeknikoRuntimeDependencies)
     alias(libs.plugins.kotest)
     alias(libs.plugins.kotlinMultiplatform)
@@ -146,22 +147,6 @@ kotlin {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
-}
-
-// Compose's Skiko runtime is missing from the JS/Wasm test bundles, so these browser tests
-// fail before test execution with "Can't resolve './skiko.mjs'".
-tasks.configureEach {
-    if (name in setOf("jsTest", "jsBrowserTest", "wasmJsTest", "wasmJsBrowserTest")) {
-        enabled = false
-    }
-}
-
-gradle.taskGraph.whenReady {
-    if (allTasks.any { it.path == ":library:allTests" }) {
-        logger.warn(
-            "JS and Wasm browser tests are disabled: the test bundles are missing the Skiko runtime (skiko.mjs).",
-        )
-    }
 }
 
 mavenPublishing {
