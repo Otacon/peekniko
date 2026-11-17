@@ -1,22 +1,14 @@
 package peekniko.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
@@ -48,7 +40,11 @@ internal fun PeeknikoNavHost(
     var selectedCallId by remember { mutableStateOf<String?>(null) }
     val stateHolder = rememberSaveableStateHolder()
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.outlineVariant)) {
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.outlineVariant)
+    ) {
         val twoPanes = maxWidth >= TwoPaneMinWidth
         val listPane = @Composable {
             stateHolder.SaveableStateProvider("list") {
@@ -60,9 +56,9 @@ internal fun PeeknikoNavHost(
                 )
             }
         }
-        val detailPane = @Composable {
+        val detailPane = @Composable { callId: String? ->
             CallDetailsScreen(
-                callId = selectedCallId,
+                callId = callId,
                 showBackButton = !twoPanes,
                 onBackPressed = { selectedCallId = null },
             )
@@ -72,12 +68,37 @@ internal fun PeeknikoNavHost(
             Row(modifier = Modifier.fillMaxSize()) {
                 Box(modifier = Modifier.width(ListPaneWidth).fillMaxHeight()) { listPane() }
                 Spacer(modifier = Modifier.width(1.dp))
-                Box(modifier = Modifier.weight(1f).fillMaxHeight()) { detailPane() }
+                Box(modifier = Modifier.weight(1f).fillMaxHeight()) { detailPane(selectedCallId) }
             }
-        } else if (selectedCallId == null) {
-            listPane()
         } else {
-            detailPane()
+            AnimatedContent(
+                targetState = selectedCallId,
+                modifier = Modifier.fillMaxSize(),
+                contentKey = { it != null },
+                transitionSpec = {
+                    val toDetail = targetState != null
+                    if (toDetail) {
+                        slideInHorizontally { width -> width } togetherWith
+                                slideOutHorizontally { width -> -width / 3 }
+                    } else {
+                        slideInHorizontally { width -> -width / 3 } togetherWith
+                                slideOutHorizontally { width -> width }
+                    }.apply {
+                        targetContentZIndex = if (toDetail) {
+                            1f
+                        } else {
+                            0f
+                        }
+                    }
+                },
+                label = "PeeknikoListDetail",
+            ) { callId ->
+                if (callId == null) {
+                    listPane()
+                } else {
+                    detailPane(callId)
+                }
+            }
         }
     }
 }
