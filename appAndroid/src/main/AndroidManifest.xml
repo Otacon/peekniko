@@ -1,57 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools">
-
-    <!--
-        This sample app keeps minSdk 22 so the Peekniko library, which supports API 22, can be
-        tried on such devices. Compose, which only this sample uses on Android (the library does
-        not), declares minSdk 23 from version 1.10, and the build would normally refuse to merge
-        a library with a higher minSdk than the app.
-
-        tools:overrideLibrary tells the manifest merger to skip that check for the libraries
-        listed below (Compose and the AndroidX libraries it pulls in). It has no wildcard, so every library has to be
-        named by its package: if a build fails with "minSdkVersion 22 cannot be smaller than version 23 declared in
-        library", add the package the error suggests to this list.
-
-        This only silences the build check. Compose is not guaranteed to work on API 22, so the
-        sample screen may crash there.
-    -->
-    <uses-sdk
-        tools:overrideLibrary="
-            androidx.activity,
-            androidx.activity.compose,
-            androidx.compose.animation,
-            androidx.compose.animation.core,
-            androidx.compose.foundation,
-            androidx.compose.foundation.layout,
-            androidx.compose.material.ripple,
-            androidx.compose.material3,
-            androidx.compose.runtime,
-            androidx.compose.runtime.annotation,
-            androidx.compose.runtime.retain,
-            androidx.compose.runtime.saveable,
-            androidx.compose.ui,
-            androidx.compose.ui.geometry,
-            androidx.compose.ui.graphics,
-            androidx.compose.ui.text,
-            androidx.compose.ui.unit,
-            androidx.compose.ui.util,
-            androidx.core,
-            androidx.core.ktx,
-            androidx.lifecycle.livedata,
-            androidx.lifecycle.livedata.core,
-            androidx.lifecycle.process,
-            androidx.lifecycle.runtime,
-            androidx.lifecycle.runtime.compose,
-            androidx.lifecycle.viewmodel,
-            androidx.lifecycle.viewmodel.compose,
-            androidx.lifecycle.viewmodel.savedstate,
-            androidx.navigationevent,
-            androidx.navigationevent.compose,
-            androidx.savedstate,
-            androidx.savedstate.compose,
-            androidx.window,
-            androidx.window.core" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
 

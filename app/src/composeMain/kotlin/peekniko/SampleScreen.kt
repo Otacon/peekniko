@@ -1,31 +1,19 @@
 package peekniko
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 internal fun SampleScreen(
-    viewModelFactory: ViewModelProvider.Factory,
+    viewModel: SampleViewModel,
     onOpenPeekniko: (() -> Unit)?,
 ) {
-    val viewModel: SampleViewModel = viewModel(factory = viewModelFactory)
     val state by viewModel.state.collectAsState()
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -46,7 +34,6 @@ internal fun SampleScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 internal fun SampleScreenContent(
     state: SampleUiState,
     onLocalServerToggled: (Boolean) -> Unit,

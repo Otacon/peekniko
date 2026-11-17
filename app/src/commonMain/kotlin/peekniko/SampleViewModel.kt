@@ -1,12 +1,13 @@
 package peekniko
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import peekniko.playground.PlaygroundHttpClient
 import peekniko.playground.connectionFailureRequest
 import peekniko.playground.playgroundRequests
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -15,12 +16,25 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-internal class SampleViewModel(
-    private val mockServer: MockServer? = AppModule.mockServer,
-    private val okHttpClient: PlaygroundHttpClient? = AppModule.okhttp,
-    private val urlSessionClient: PlaygroundHttpClient? = AppModule.urlSession,
-    private val ktorClient: PlaygroundHttpClient? = AppModule.ktor,
-) : ViewModel() {
+/**
+ * Shared state and actions of the sample screen. Each platform's UI owns one instance and calls [clear]
+ * when it is gone for good (Compose on iOS, desktop and web; Android Views in appAndroid).
+ */
+class SampleViewModel internal constructor(
+    private val mockServer: MockServer?,
+    private val okHttpClient: PlaygroundHttpClient?,
+    private val urlSessionClient: PlaygroundHttpClient?,
+    private val ktorClient: PlaygroundHttpClient?,
+) {
+    constructor() : this(
+        mockServer = AppModule.mockServer,
+        okHttpClient = AppModule.okhttp,
+        urlSessionClient = AppModule.urlSession,
+        ktorClient = AppModule.ktor,
+    )
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
     private val _state = MutableStateFlow(
         SampleUiState(
             showOkHttpButton = okHttpClient != null,
@@ -33,7 +47,7 @@ internal class SampleViewModel(
     val events = _events.asSharedFlow()
 
     init {
-        viewModelScope.launch {
+        scope.launch {
             if (mockServer == null) {
                 _state.update {
                     it.copy(
@@ -67,16 +81,15 @@ internal class SampleViewModel(
         }
     }
 
-    fun onRunKtor() = viewModelScope.launch {
-        ktorClient?.let { runPlayground("Ktor", it) }
-    }
+    fun onRunKtor() = runScenarios("Ktor", ktorClient)
 
-    fun onRunOkHttp() = viewModelScope.launch {
-        okHttpClient?.let { runPlayground("OkHttp", it) }
-    }
+    fun onRunOkHttp() = runScenarios("OkHttp", okHttpClient)
 
-    fun onRunUrlSession() {
-        urlSessionClient?.let { client -> viewModelScope.launch { runPlayground("URLSession", client) } }
+    fun onRunUrlSession() = runScenarios("URLSession", urlSessionClient)
+
+    private fun runScenarios(clientName: String, client: PlaygroundHttpClient?) {
+        client ?: return
+        scope.launch { runPlayground(clientName, client) }
     }
 
     private suspend fun runPlayground(clientName: String, client: PlaygroundHttpClient) {
@@ -102,11 +115,12 @@ internal class SampleViewModel(
         _state.update { it.copy(isLoading = false, status = message) }
     }
 
-    fun onOpenPeeknikoClick() = viewModelScope.launch {
-        _events.emit(SampleEvent.OpenPeekniko)
+    fun onOpenPeeknikoClick() {
+        scope.launch { _events.emit(SampleEvent.OpenPeekniko) }
     }
 
-    override fun onCleared() {
+    fun clear() {
+        scope.cancel()
         mockServer?.close()
         okHttpClient?.close()
         ktorClient?.close()
@@ -123,7 +137,7 @@ data class SampleUiState(
     val status: String = "",
 )
 
-internal sealed interface SampleEvent {
+sealed interface SampleEvent {
     data object OpenPeekniko : SampleEvent
 
 }
