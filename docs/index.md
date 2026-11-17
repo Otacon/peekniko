@@ -25,9 +25,9 @@ By default, Peekniko keeps captures in memory. To keep them between app launches
 
 ```kotlin
 import peekniko.Peekniko
-import peekniko.startPeeknikoActivity
+import peekniko.open
 
-Peekniko.startPeeknikoActivity(context)
+Peekniko.open(context)
 ```
 
 Peekniko also posts a quiet notification listing the latest calls; tapping it opens the inspector. It asks for the notification permission the first time its screen opens, unless your app has already asked.

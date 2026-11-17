@@ -22,6 +22,7 @@ composeCompiler {
     targetKotlinPlatforms.set(
         setOf(
             KotlinPlatformType.js,
+            KotlinPlatformType.jvm,
             KotlinPlatformType.wasm,
             KotlinPlatformType.native,
             KotlinPlatformType.common,
@@ -108,10 +109,6 @@ kotlin {
             implementation(libs.androidx.startup)
             implementation(libs.kotlinx.coroutines.android)
         }
-        jvmMain.dependencies {
-            implementation(libs.flatlaf)
-            implementation(libs.kotlinx.coroutines.swing)
-        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.kotest.framework.engine)
@@ -122,7 +119,6 @@ kotlin {
         }
         jvmTest.dependencies {
             implementation(libs.kotest.runner.junit5)
-            runtimeOnly(libs.kotlinx.coroutines.swing)
         }
         iosTest.dependencies {
             implementation(project(":library-client-contract-tests"))
@@ -137,6 +133,12 @@ kotlin {
             }
         }
         iosMain { dependsOn(composeMain) }
+        jvmMain {
+            dependsOn(composeMain)
+            dependencies {
+                implementation(libs.kotlinx.coroutines.swing)
+            }
+        }
         webMain {
             dependsOn(composeMain)
             dependencies {

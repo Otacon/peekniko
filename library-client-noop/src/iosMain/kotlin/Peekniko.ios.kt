@@ -5,9 +5,7 @@ import platform.UIKit.UIViewController
 import platform.UserNotifications.UNNotification
 import platform.UserNotifications.UNNotificationResponse
 
-public fun Peekniko.viewController(onClose: () -> Unit): UIViewController = UIViewController()
-
-public fun Peekniko.present(from: UIViewController? = null): Unit = Unit
+public fun Peekniko.open(from: UIViewController? = null): Unit = Unit
 
 public fun Peekniko.isPeeknikoNotification(notification: UNNotification): Boolean = false
 

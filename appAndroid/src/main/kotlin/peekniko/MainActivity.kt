@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SampleApp(onOpenPeekniko = {
-                Peekniko.startPeeknikoActivity(this@MainActivity)
+                Peekniko.open(this@MainActivity)
             })
         }
     }

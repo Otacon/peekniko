@@ -4,7 +4,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.res.painterResource
 import peekniko.storage.sqldelight.sqlDelightStorage
-import peekniko.ui.openPeeknikoWindow as openLibraryWindow
 import java.awt.Taskbar
 import javax.imageio.ImageIO
 
@@ -20,7 +19,7 @@ fun main() {
             title = "Sample Peekniko app",
             icon = painterResource("icon.png"),
         ) {
-            SampleApp(onOpenPeekniko = { openLibraryWindow() })
+            SampleApp(onOpenPeekniko = { Peekniko.open() })
         }
     }
 }

@@ -2,8 +2,9 @@ package peekniko.internal.notifications
 
 import peekniko.NetworkCall
 import peekniko.NetworkResponse
-import peekniko.ui.isPeeknikoWindowActive
-import peekniko.ui.openPeeknikoWindow
+import peekniko.Peekniko
+import peekniko.internal.support.PeeknikoWindow
+import peekniko.open
 import java.awt.Color
 import java.awt.Font
 import java.awt.GraphicsEnvironment
@@ -36,7 +37,7 @@ private class JvmNotifications : Notifications {
 
     @Synchronized
     override fun show(calls: List<NetworkCall>) {
-        if (trayIcon == null || isPeeknikoWindowActive() || GraphicsEnvironment.isHeadless()) return
+        if (trayIcon == null || PeeknikoWindow.isActive || GraphicsEnvironment.isHeadless()) return
         if (calls.isEmpty()) unreadCalls.clear()
         calls.forEach { call ->
             unreadCalls[call.id] = when (val response = call.response) {
@@ -58,14 +59,14 @@ private class JvmNotifications : Notifications {
         if (!SystemTray.isSupported()) return null
         return runCatching {
             val menu = PopupMenu().apply {
-                add(MenuItem("Open Peekniko").apply { addActionListener { openPeeknikoWindow() } })
+                add(MenuItem("Open Peekniko").apply { addActionListener { Peekniko.open() } })
             }
             TrayIcon(createTrayImage(), "Peekniko", menu).apply {
                 isImageAutoSize = true
                 toolTip = "Peekniko — no new network calls"
                 addMouseListener(object : MouseAdapter() {
                     override fun mouseClicked(event: MouseEvent) {
-                        if (event.button == MouseEvent.BUTTON1) openPeeknikoWindow()
+                        if (event.button == MouseEvent.BUTTON1) Peekniko.open()
                     }
                 })
                 SystemTray.getSystemTray().add(this)

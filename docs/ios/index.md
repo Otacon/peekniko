@@ -35,18 +35,18 @@ The inspector is a Compose Multiplatform screen. Present it from the main thread
 
 ```kotlin
 import peekniko.Peekniko
-import peekniko.present
+import peekniko.open
 
-Peekniko.present()
+Peekniko.open()
 ```
 
 From Swift, with the framework exporting Peekniko:
 
 ```swift
-Peekniko.shared.present(from: nil)
+Peekniko.shared.open(from: nil)
 ```
 
-To embed it yourself, use `Peekniko.viewController(onClose)` or, inside Compose, `Peekniko.Screen()`.
+To embed it in your own Compose UI, use `Peekniko.Screen()`.
 
 ## Notifications
 

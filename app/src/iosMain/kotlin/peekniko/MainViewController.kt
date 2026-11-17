@@ -13,6 +13,6 @@ fun MainViewController(): UIViewController {
         isAppModuleInitialized = true
     }
     return ComposeUIViewController {
-        SampleApp(onOpenPeekniko = { Peekniko.present() })
+        SampleApp(onOpenPeekniko = { Peekniko.open() })
     }
 }

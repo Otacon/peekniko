@@ -2,4 +2,4 @@ package peekniko
 
 import android.content.Context
 
-public fun Peekniko.startPeeknikoActivity(context: Context): Unit = Unit
+public fun Peekniko.open(context: Context): Unit = Unit
