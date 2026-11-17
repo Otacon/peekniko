@@ -18,11 +18,9 @@ internal class SummaryViewModelTest : FunSpec({
         val repository = mock<NetworkRepository> {
             every { observeById(any()) } returns transaction
         }
-        val viewModel = SummaryViewModel(
-            repository = repository,
-            transactionId = "summary-id",
-        )
-        withViewModel(viewModel) { block(viewModel, transaction) }
+        withViewModel(
+            createViewModel = { SummaryViewModel(repository = repository, transactionId = "summary-id") },
+        ) { viewModel -> viewModel.block(transaction) }
     }
 
     context("initial state") {

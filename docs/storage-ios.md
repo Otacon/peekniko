@@ -1,3 +1,0 @@
-# iOS — SQLDelight storage
-
-TBD

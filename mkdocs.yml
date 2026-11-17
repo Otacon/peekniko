@@ -4,20 +4,27 @@ extra:
   version:
     provider: mike
 nav:
-  - Overview: index.md
-  - HTTP Clients:
-      - OkHttp:
-          - Android: android-okhttp.md
-          - Desktop: desktop-okhttp.md
-      - Ktor:
-          - iOS: ios-ktor.md
-          - Android: android-ktor.md
-          - Desktop: desktop-ktor.md
-      - URLSession (iOS): ios-urlsession.md
-  - Storage:
-      - iOS: storage-ios.md
-      - Android: storage-android.md
-      - Desktop: storage-desktop.md
+  - Android:
+      - Getting Started: index.md
+      - Client:
+          - OkHttp: android/okhttp.md
+          - Ktor: android/ktor.md
+      - Storage:
+          - SQLDelight: android/sqldelight.md
+  - iOS:
+      - Getting Started: ios/index.md
+      - Client:
+          - Ktor: ios/ktor.md
+          - URLSession: ios/urlsession.md
+      - Storage:
+          - SQLDelight: ios/sqldelight.md
+  - Desktop:
+      - Getting Started: desktop/index.md
+      - Client:
+          - OkHttp: desktop/okhttp.md
+          - Ktor: desktop/ktor.md
+      - Storage:
+          - SQLDelight: desktop/sqldelight.md
 
 markdown_extensions:
   - md_in_html
@@ -31,6 +38,9 @@ theme:
   logo: assets/peekniko-logo.svg
   favicon: assets/peekniko.svg
   name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
   palette:
     - media: "(prefers-color-scheme)"
       color: indigo

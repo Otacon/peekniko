@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.antlr)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.peeknikoRuntimeDependencies)
     alias(libs.plugins.kotest)
     alias(libs.plugins.kotlinMultiplatform)
@@ -22,6 +23,7 @@ composeCompiler {
         setOf(
             KotlinPlatformType.js,
             KotlinPlatformType.wasm,
+            KotlinPlatformType.native,
             KotlinPlatformType.common,
         )
     )
@@ -70,7 +72,6 @@ kotlin {
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
-        iosX64(),
     ).forEach { target ->
         target.binaries.framework {
             baseName = "PeeknikoCore"
@@ -80,9 +81,11 @@ kotlin {
     }
     js {
         browser()
+        binaries.executable()
     }
     wasmJs {
         browser()
+        binaries.executable()
     }
 
     sourceSets {
@@ -121,12 +124,24 @@ kotlin {
             implementation(libs.kotest.runner.junit5)
             runtimeOnly(libs.kotlinx.coroutines.swing)
         }
-        getByName("webMain").dependencies {
-            api(libs.compose.adaptive.layout)
-            api(libs.compose.foundation)
-            api(libs.compose.material3)
-            api(libs.compose.runtime)
-            api(libs.compose.ui)
+        iosTest.dependencies {
+            implementation(project(":library-client-contract-tests"))
+        }
+        val composeMain = create("composeMain") {
+            dependsOn(commonMain.get())
+            dependencies {
+                api(libs.compose.foundation)
+                api(libs.compose.material3)
+                api(libs.compose.runtime)
+                api(libs.compose.ui)
+            }
+        }
+        iosMain { dependsOn(composeMain) }
+        webMain {
+            dependsOn(composeMain)
+            dependencies {
+                implementation(libs.compose.ui)
+            }
         }
     }
 }
@@ -139,8 +154,4 @@ mavenPublishing {
     coordinates(
         artifactId = "client-core",
     )
-}
-
-tasks.register("preparePeeknikoKitXCFramework") {
-    dependsOn("assemblePeeknikoCoreDebugXCFramework")
 }

@@ -1,7 +1,5 @@
-import Foundation
 import SwiftUI
 import Peekniko
-import Observation
 
 @main
 struct PeeknikoApp: App {
@@ -9,87 +7,22 @@ struct PeeknikoApp: App {
         Peekniko.shared.configure { configuration in
             configuration.sqlDelightStorage(name: "peekniko.db")
         }
-        precondition(
-            URLProtocol.registerClass(Peekniko.shared.urlProtocol),
-            "Failed to register Peekniko URLProtocol",
-        )
+        precondition(Peekniko.shared.registerUrlProtocol(), "Failed to register Peekniko URLProtocol")
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SampleAppView()
+                .ignoresSafeArea()
         }
     }
 }
 
-private struct ContentView: View {
-    @State private var isShowingLibrary = false
-    @State private var viewModel = SampleViewViewModel()
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            Button {
-                viewModel.launchKtor()
-            } label: {
-                Text("KTOR")
-            }
-            .buttonStyle(.borderedProminent)
-
-            Button {
-                viewModel.launchURLSession()
-            } label: {
-                Text("URLSession")
-            }
-            .buttonStyle(.borderedProminent)
-            
-            Button {
-                isShowingLibrary.toggle()
-            } label: {
-                Text("Open inspector")
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .ignoresSafeArea()
-        .sheet(isPresented: $isShowingLibrary) {
-           PeeknikoScreen()
-        }
+/// Hosts the shared Compose sample UI from the `app` module.
+private struct SampleAppView: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        MainViewControllerKt.MainViewController()
     }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
-
-
-@Observable
-final class SampleViewViewModel {
-    
-    @ObservationIgnored
-    let commonViewModel = SampleViewModelBridge()
-    
-    var isLoading = false
-    var showUrlSessionButton = true
-    
-    init() {
-        commonViewModel.observeState { [weak self] state in
-            guard let self else { return }
-            self.isLoading = state.isLoading
-            self.showUrlSessionButton = state.showUrlSessionButton
-        }
-    }
-    
-    func launchKtor() {
-        commonViewModel.launchKtor()
-    }
-    
-    func launchURLSession() {
-        commonViewModel.launchUrlSession()
-    }
-    
-    deinit {
-        commonViewModel.clear()
-    }
-}
-
-
-#if DEBUG
-#Preview {
-    ContentView()
-}
-#endif

@@ -5,17 +5,12 @@ let package = Package(
     name: "PeeknikoKit",
     platforms: [.iOS(.v17)],
     products: [
-        .library(name: "PeeknikoKit", targets: ["PeeknikoKit"]),
+        .library(name: "PeeknikoKit", targets: ["PeeknikoCore"]),
     ],
     targets: [
         .binaryTarget(
             name: "PeeknikoCore",
             path: "build/XCFrameworks/debug/PeeknikoCore.xcframework"
-        ),
-        .target(
-            name: "PeeknikoKit",
-            dependencies: ["PeeknikoCore"],
-            path: "src/iosMain/swift"
         ),
     ]
 )

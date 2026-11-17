@@ -9,9 +9,39 @@ permissions:
 
 jobs:
   build:
-    name: Build and test
-    runs-on: ubuntu-latest
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
     if: github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: Android
+            os: ubuntu-latest
+            tasks: >-
+              dependencyGuard
+              compileAndroidMain
+              :appAndroid:compileDebugKotlin
+              :appAndroid:compileReleaseKotlin
+              testAndroidHostTest
+          - target: Desktop
+            os: ubuntu-latest
+            tasks: >-
+              compileKotlinJvm
+              jvmTest
+          - target: Web
+            os: ubuntu-latest
+            tasks: >-
+              compileKotlinJs
+              compileKotlinWasmJs
+              :library:jsBrowserTest
+              :library:wasmJsBrowserTest
+          - target: iOS
+            os: macos-latest
+            tasks: >-
+              compileKotlinIosArm64
+              :app:linkDebugFrameworkIosSimulatorArm64
+              iosSimulatorArm64Test
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -23,6 +53,7 @@ jobs:
           java-version: 21
 
       - name: Set up Android SDK
+        if: matrix.target == 'Android'
         uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
@@ -32,11 +63,14 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Guard library runtime dependencies
-        run: ./gradlew dependencyGuard
+      - name: Build and test
+        run: ./gradlew ${{ matrix.tasks }}
 
-      - name: Build
-        run: ./gradlew assemble
-
-      - name: Run JVM and Android tests
-        run: ./gradlew jvmTest testAndroidHostTest
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    needs: build
+    if: always() && github.event.pull_request.draft == false
+    steps:
+      - name: Check every target passed
+        run: test "${{ needs.build.result }}" = "success"
