@@ -127,7 +127,6 @@ kotlin {
         iosTest.dependencies {
             implementation(project(":library-client-contract-tests"))
         }
-        // Compose UI shared by the platforms without a native UI toolkit implementation (web and iOS).
         val composeMain = create("composeMain") {
             dependsOn(commonMain.get())
             dependencies {
