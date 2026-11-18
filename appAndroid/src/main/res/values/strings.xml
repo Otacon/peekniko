@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Peekniko</string>
+    <string name="sample_title">Sample Peekniko app</string>
+    <string name="use_local_server">Use local server</string>
+    <string name="open_peekniko">Open Peekniko</string>
+    <string name="run_okhttp">Run OkHttp requests</string>
+    <string name="run_ktor">Run Ktor requests</string>
 </resources>

@@ -1,10 +1,22 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeCompiler)
+}
+
+composeCompiler {
+    targetKotlinPlatforms.set(
+        setOf(
+            KotlinPlatformType.common,
+            KotlinPlatformType.js,
+            KotlinPlatformType.jvm,
+            KotlinPlatformType.native,
+        )
+    )
 }
 
 kotlin {
@@ -41,11 +53,6 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.ui)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.ktor.client.core)
             implementation(libs.sqldelight.coroutines.extensions)
@@ -63,6 +70,18 @@ kotlin {
                 compileOnly(project(":library-storage-sqldelight"))
             }
         }
+        val composeMain = create("composeMain") {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.material3)
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.ui)
+            }
+        }
+        jsMain {
+            dependsOn(composeMain)
+        }
         jsMain.dependencies {
             implementation(libs.ktor.client.js)
             api(project(":library-client-ktor"))
@@ -75,15 +94,19 @@ kotlin {
         }
         jvmMain {
             dependsOn(androidJvmMain)
+            dependsOn(composeMain)
             dependencies {
                 implementation(libs.sqldelight.sqlite.driver)
             }
         }
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            api(project(":library"))
-            api(project(":library-client-ktor"))
-            api(project(":library-storage-sqldelight"))
+        iosMain {
+            dependsOn(composeMain)
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+                api(project(":library"))
+                api(project(":library-client-ktor"))
+                api(project(":library-storage-sqldelight"))
+            }
         }
     }
 }
