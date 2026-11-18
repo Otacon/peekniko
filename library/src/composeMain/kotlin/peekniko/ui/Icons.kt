@@ -33,6 +33,16 @@ internal object Icons {
         pathData = "M3,6H21V8H3ZM6,11H14V13H6ZM10,16H13V18H10ZM16.5,20L13.5,17L14.9,15.6L16.5,17.2L21.1,12.6L22.5,14Z",
     )
 
+    val PrettyPrint by toolbarIcon(
+        name = "pretty_print",
+        pathData = "M8,18L2,12L8,6L9.43,7.43L4.83,12.03L9.4,16.6L8,18ZM16,18L14.58,16.58L19.18,11.98L14.6,7.4L16,6L22,12L16,18Z",
+    )
+
+    val PrettyPrintOff by toolbarIcon(
+        name = "pretty_print_off",
+        pathData = "M8,18L2,12L8,6L9.43,7.43L4.83,12.03L9.4,16.6L8,18ZM16,18L14.58,16.58L19.18,11.98L14.6,7.4L16,6L22,12L16,18ZM4.4,2.99L21.01,19.6L19.6,21.01L2.99,4.4Z",
+    )
+
     val Search by toolbarIcon(
         name = "search",
         pathData = "M19.6,21l-6.3-6.3q-0.75,0.6-1.72,0.95T9.5,16q-2.72,0-4.61-1.89Q3,12.23 3,9.5Q3,6.77 4.89,4.89T9.5,3t4.61,1.89T16,9.5q0,1.1-0.35,2.07T14.7,13.3L21,19.6L19.6,21ZM9.5,14q1.88,0 3.19-1.31T14,9.5T12.69,6.31T9.5,5T6.31,6.31T5,9.5t1.31,3.19T9.5,14Z",

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.PrimaryTabRow
@@ -15,7 +14,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -26,44 +25,50 @@ import androidx.compose.ui.Modifier
 import peekniko.Peekniko
 import peekniko.ui.details.NetworkCallDetailViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CallDetailsScreen(
     callId: String?,
     showBackButton: Boolean,
     onBackPressed: () -> Unit,
 ) {
-    val viewModel = remember(callId) { Peekniko.createNetworkCallDetailViewModel(callId) }
-    DisposableEffect(viewModel) {
-        onDispose { viewModel.clear() }
-    }
+    val viewModel = rememberViewModel(callId) { Peekniko.createNetworkCallDetailViewModel(callId) }
     val state by viewModel.state.collectAsState()
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(state.title) },
-                navigationIcon = {
-                    if (showBackButton) {
-                        IconButton(onClick = onBackPressed) {
-                            Icon(
-                                imageVector = Icons.ArrowBack,
-                                contentDescription = "Back",
-                            )
+    val tabViewModelStore = rememberViewModelStore(callId)
+    val topBarActions = remember { TopBarActions() }
+    CompositionLocalProvider(
+        LocalViewModelStore provides tabViewModelStore,
+        LocalTopBarActions provides topBarActions,
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(state.title) },
+                    navigationIcon = {
+                        if (showBackButton) {
+                            IconButton(onClick = onBackPressed) {
+                                Icon(
+                                    imageVector = Icons.ArrowBack,
+                                    contentDescription = "Back",
+                                )
+                            }
                         }
-                    }
-                },
+                    },
+                    actions = { topBarActions.content?.invoke(this) },
+                )
+            },
+        ) { contentPadding ->
+            CallDetailsContent(
+                callId = callId,
+                state = state,
+                modifier = Modifier.padding(contentPadding),
             )
-        },
-    ) { contentPadding ->
-        CallDetailsContent(
-            state = state,
-            modifier = Modifier.padding(contentPadding),
-        )
+        }
     }
 }
 
 @Composable
 private fun CallDetailsContent(
+    callId: String?,
     state: NetworkCallDetailViewModel.State,
     modifier: Modifier = Modifier
 ) {
@@ -77,9 +82,11 @@ private fun CallDetailsContent(
             }
         }
 
-        state.transaction != null -> {
+        callId != null && state.transaction != null -> {
+            // Not state.transaction.id: right after the selection changes, collectAsState() can still hold the
+            // previous call's state, which would create the tab ViewModels for the wrong call.
             CallDetailsTabView(
-                callId = state.transaction.id,
+                callId = callId,
                 modifier = modifier,
             )
         }

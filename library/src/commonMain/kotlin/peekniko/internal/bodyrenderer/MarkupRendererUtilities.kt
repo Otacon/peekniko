@@ -48,29 +48,14 @@ internal object MarkupRendererUtilities {
         "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr",
     )
 
-    fun format(payload: String, tokens: List<MarkupToken>): String =
-        runCatching { formatTokens(payload, tokens) }
-            .fold(
-                onSuccess = { it },
-                onFailure = { payload },
-            )
+    fun format(payload: String, tokens: List<MarkupToken>): String = formatTokens(payload, tokens)
 
     fun syntaxHighlight(
         payload: String,
         tokens: List<MarkupToken>,
         theme: BodyRendererTheme,
         output: SpannedTextBuilder,
-    ): SpannedTextBuilder = runCatching {
-        highlightTokens(payload, tokens, theme, output)
-        output
-    }
-            .fold(
-                onSuccess = { it },
-                onFailure = {
-                    output.append(payload)
-                    output
-                },
-            )
+    ) = highlightTokens(payload, tokens, theme, output)
 
     private fun formatTokens(payload: String, tokens: List<MarkupToken>): String {
         val output = StringBuilder()

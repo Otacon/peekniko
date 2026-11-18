@@ -11,7 +11,7 @@ internal class BodyRendererXmlTest : FunSpec({
     lateinit var renderer: BodyRendererXml
 
     beforeTest {
-        renderer = BodyRendererXml { SpannedTextBuilderBBText() }
+        renderer = BodyRendererXml()
     }
 
     context("content type support") {
@@ -31,10 +31,6 @@ internal class BodyRendererXmlTest : FunSpec({
             renderer.supports("application/xml; charset=utf-8") shouldBe true
         }
 
-        test("does not support a missing media type") {
-            renderer.supports(null) shouldBe false
-        }
-
         test("does not support an unrelated media type") {
             renderer.supports("text/plain") shouldBe false
         }
@@ -45,7 +41,7 @@ internal class BodyRendererXmlTest : FunSpec({
             val payload = "<item id=\"a\">text</item>"
 
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, payload, "application/xml")
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.separator]<[/c][c=Light.tag]item[/c] " +
                     "[c=Light.attributeName]id[/c][c=Light.separator]=[/c]" +
                     "[c=Light.boolean]\"a\"[/c][c=Light.separator]>[/c]" +
@@ -56,7 +52,7 @@ internal class BodyRendererXmlTest : FunSpec({
         test("uses color roles from the selected theme") {
             val output = renderer.syntaxHighlight(BodyRendererTheme.Dark, "<item>value</item>", "text/xml")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Dark.separator]<[/c][c=Dark.boolean]item[/c][c=Dark.separator]>[/c]" +
                     "[c=Dark.separator]value[/c][c=Dark.separator]<[/c]" +
                     "[c=Dark.separator]/[/c][c=Dark.boolean]item[/c][c=Dark.separator]>[/c]"
@@ -66,7 +62,7 @@ internal class BodyRendererXmlTest : FunSpec({
             val payload = "<root><!--remark--></root>"
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, payload, "application/xml")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.separator]<[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]" +
                     "[c=Light.comment]<!--remark-->[/c]" +
                     "[c=Light.separator]<[/c][c=Light.separator]/[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]"
@@ -76,7 +72,7 @@ internal class BodyRendererXmlTest : FunSpec({
             val payload = "<root><![CDATA[raw text]]></root>"
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, payload, "application/xml")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.separator]<[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]" +
                     "[c=Light.text]<!\\[CDATA\\[raw text\\]\\]>[/c]" +
                     "[c=Light.separator]<[/c][c=Light.separator]/[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]"
@@ -100,7 +96,7 @@ internal class BodyRendererXmlTest : FunSpec({
 
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, malformedXml, "application/xml")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe "[c=Light.text]not XML [/c][c=Light.separator]<[/c]"
+            output.bbText shouldBe "[c=Light.text]not XML [/c][c=Light.separator]<[/c]"
         }
     }
 

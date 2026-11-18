@@ -1,13 +1,8 @@
 package peekniko
 
-import peekniko.internal.bodyrenderer.BodyRendererComposite
-import peekniko.internal.bodyrenderer.BodyRendererFormUrlEncoded
-import peekniko.internal.bodyrenderer.BodyRendererHtml
-import peekniko.internal.bodyrenderer.BodyRendererJson
-import peekniko.internal.bodyrenderer.BodyRendererPlainText
-import peekniko.internal.bodyrenderer.BodyRendererThemeProvider
-import peekniko.internal.bodyrenderer.BodyRendererXml
-import peekniko.internal.bodyrenderer.defaultSpannedTextBuilderFactory
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import peekniko.internal.bodyrenderer.*
 import peekniko.internal.notifications.Notifications
 import peekniko.internal.notifications.RepositoryNotificationObserver
 import peekniko.internal.notifications.createNotifications
@@ -20,8 +15,6 @@ import peekniko.ui.details.RequestViewModel
 import peekniko.ui.details.ResponseViewModel
 import peekniko.ui.details.SummaryViewModel
 import peekniko.ui.networkcalls.PeeknikoViewModel
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 
 public object Peekniko {
     private val initializationLock = SynchronizedObject()
@@ -54,16 +47,14 @@ public object Peekniko {
         }
     }
 
-    internal val bodyRenderer: BodyRendererComposite by lazy {
-        val spannedTextFactory = defaultSpannedTextBuilderFactory()
+    internal val bodyRenderer: BodyRenderer by lazy {
         BodyRendererComposite(
             renderers = listOf(
-                BodyRendererJson(spannedTextFactory),
-                BodyRendererXml(spannedTextFactory),
-                BodyRendererHtml(spannedTextFactory),
-                BodyRendererFormUrlEncoded(spannedTextFactory),
+                BodyRendererJson(),
+                BodyRendererXml(),
+                BodyRendererHtml(),
+                BodyRendererFormUrlEncoded(),
             ),
-            fallback = BodyRendererPlainText(spannedTextFactory),
         )
     }
 
@@ -77,24 +68,26 @@ public object Peekniko {
         store.getOrCreate(PeeknikoViewModel::class, peeknikoViewModel)
 
     internal fun createNetworkCallDetailViewModel(transactionId: String?): NetworkCallDetailViewModel =
-        NetworkCallDetailViewModel(networkRepository, bodyRenderer, transactionId)
+        NetworkCallDetailViewModel(networkRepository, transactionId)
 
     internal fun createSummaryViewModel(transactionId: String): SummaryViewModel =
         SummaryViewModel(networkRepository, transactionId)
 
-    internal fun createRequestViewModel(transactionId: String): RequestViewModel =
-        RequestViewModel(
+    internal fun createRequestViewModel(transactionId: String): RequestViewModel {
+        return RequestViewModel(
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
             transactionId = transactionId
         )
+    }
 
-    internal fun createResponseViewModel(transactionId: String): ResponseViewModel =
-        ResponseViewModel(
+    internal fun createResponseViewModel(transactionId: String): ResponseViewModel {
+        return ResponseViewModel(
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
             transactionId = transactionId,
         )
+    }
 }

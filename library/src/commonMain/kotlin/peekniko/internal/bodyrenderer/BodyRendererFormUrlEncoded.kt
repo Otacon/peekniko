@@ -2,55 +2,52 @@ package peekniko.internal.bodyrenderer
 
 import peekniko.internal.json.generated.FormUrlEncodedLexer
 import peekniko.internal.json.generated.FormUrlEncodedLexer.Tokens
-import peekniko.ui.details.BodyContentType
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.Token
 
-internal class BodyRendererFormUrlEncoded(
-    private val spannedTextFactory: SpannedTextBuilderFactory,
-) : BodyRenderer {
-    override val contentType: BodyContentType = BodyContentType.FORM_URL_ENCODED
-
-    override fun supports(contentType: String?): Boolean =
-        contentType?.substringBefore(';')?.trim()?.equals(
-            "application/x-www-form-urlencoded",
-            ignoreCase = true,
-        ) == true
-
-    override fun format(payload: String, contentType: String?): String = buildString {
-        for (token in tokenize(payload)) {
-            append(
-                when (token.type) {
-                    Tokens.AMPERSAND, Tokens.LINE_BREAK -> "\n"
-                    Tokens.EQUALS -> " = "
-                    Tokens.PLUS -> " "
-                    else -> token.text
-                }
-            )
-        }
+internal class BodyRendererFormUrlEncoded : BodyRenderer {
+    override fun supports(contentType: String): Boolean {
+        val mediaType = contentType.substringBefore(';').trim()
+        return mediaType.equals("application/x-www-form-urlencoded", ignoreCase = true)
     }
 
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedTextBuilder {
-        val spanned = spannedTextFactory.create()
-        var isValue = false
-        for (token in tokenize(payload)) {
-            val color = when (token.type) {
-                Tokens.AMPERSAND, Tokens.LINE_BREAK -> {
-                    isValue = false
-                    if (token.type == Tokens.AMPERSAND) theme.separator else null
-                }
-
-                Tokens.EQUALS -> {
-                    isValue = true
-                    theme.separator
-                }
-
-                else -> if (isValue) theme.attributeValue else theme.key
+    override fun format(payload: String, contentType: String): String? = runCatching {
+        buildString {
+            for (token in tokenize(payload)) {
+                append(
+                    when (token.type) {
+                        Tokens.AMPERSAND, Tokens.LINE_BREAK -> "\n"
+                        Tokens.EQUALS -> " = "
+                        Tokens.PLUS -> " "
+                        else -> token.text
+                    }
+                )
             }
-            spanned.append(token.text.orEmpty(), color)
         }
-        return spanned
-    }
+    }.getOrNull()
+
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String): SpannedText? =
+        runCatching {
+            spannedText {
+                var isValue = false
+                for (token in tokenize(payload)) {
+                    val color = when (token.type) {
+                        Tokens.AMPERSAND, Tokens.LINE_BREAK -> {
+                            isValue = false
+                            if (token.type == Tokens.AMPERSAND) theme.separator else null
+                        }
+
+                        Tokens.EQUALS -> {
+                            isValue = true
+                            theme.separator
+                        }
+
+                        else -> if (isValue) theme.attributeValue else theme.key
+                    }
+                    append(token.text.orEmpty(), color)
+                }
+            }
+        }.getOrNull()
 
     private fun tokenize(payload: String): Sequence<Token> {
         val lexer = FormUrlEncodedLexer(CharStreams.fromString(payload))

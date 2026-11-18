@@ -2,7 +2,6 @@ package peekniko
 
 import peekniko.internal.bodyrenderer.BodyRendererHtml
 import peekniko.internal.bodyrenderer.BodyRendererTheme
-import peekniko.ui.details.BodyContentType
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -10,7 +9,7 @@ internal class BodyRendererHtmlTest : FunSpec({
     lateinit var renderer: BodyRendererHtml
 
     beforeTest {
-        renderer = BodyRendererHtml { SpannedTextBuilderBBText() }
+        renderer = BodyRendererHtml()
     }
 
     context("content type support") {
@@ -34,10 +33,6 @@ internal class BodyRendererHtmlTest : FunSpec({
             renderer.supports("  TEXT/HTML  ") shouldBe true
         }
 
-        test("does not support a missing media type") {
-            renderer.supports(null) shouldBe false
-        }
-
         test("does not support unrelated media types") {
             renderer.supports("text/plain") shouldBe false
         }
@@ -49,7 +44,7 @@ internal class BodyRendererHtmlTest : FunSpec({
 
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, payload, "text/html")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.separator]<[/c][c=Light.tag]p[/c] " +
                     "[c=Light.attributeName]class[/c][c=Light.separator]=[/c]" +
                     "[c=Light.boolean]\"x\"[/c][c=Light.separator]>[/c]" +
@@ -60,7 +55,7 @@ internal class BodyRendererHtmlTest : FunSpec({
         test("highlights comments") {
             val output = renderer.syntaxHighlight(BodyRendererTheme.Dark, "<div><!--note--></div>", "text/html")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Dark.separator]<[/c][c=Dark.boolean]div[/c][c=Dark.separator]>[/c]" +
                     "[c=Dark.comment]<!--note-->[/c]" +
                     "[c=Dark.separator]<[/c][c=Dark.separator]/[/c][c=Dark.boolean]div[/c][c=Dark.separator]>[/c]"
@@ -69,7 +64,7 @@ internal class BodyRendererHtmlTest : FunSpec({
         test("highlights the doctype with the doctype theme role") {
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<!DOCTYPE html><html></html>", "text/html")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.doctype]<!DOCTYPE html>[/c]" +
                     "[c=Light.separator]<[/c][c=Light.tag]html[/c][c=Light.separator]>[/c]" +
                     "[c=Light.separator]<[/c][c=Light.separator]/[/c]" +
@@ -88,7 +83,6 @@ internal class BodyRendererHtmlTest : FunSpec({
                 </div>
             """.trimIndent()
 
-            renderer.contentType shouldBe BodyContentType.HTML
             renderer.format(payload, "text/html") shouldBe expected
         }
 

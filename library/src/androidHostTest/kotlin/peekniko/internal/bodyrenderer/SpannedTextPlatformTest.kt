@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldBe
 
 internal class SpannedTextPlatformTest : FunSpec({
     test("builds Android spanned text with color and bold style") {
-        val builder = defaultSpannedTextBuilderFactory().create()
+        val builder = platformSpannedTextBuilderFactory().create()
         builder.append("plain ")
         builder.append("bold", Color(255, 0, 0), isBold = true)
 

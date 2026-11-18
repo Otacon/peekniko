@@ -5,7 +5,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 
-internal actual fun defaultSpannedTextBuilderFactory(): SpannedTextBuilderFactory =
+internal actual fun platformSpannedTextBuilderFactory(): SpannedTextBuilderFactory =
     SpannedTextBuilderFactory { ComposeSpannedTextBuilder() }
 
 internal class ComposeSpannedTextBuilder : SpannedTextBuilder {
@@ -27,8 +27,8 @@ internal class ComposeSpannedTextBuilder : SpannedTextBuilder {
         }
     }
 
-    override fun append(other: SpannedTextBuilder) {
-        builder.append((other as ComposeSpannedTextBuilder).builder.toAnnotatedString())
+    override fun append(other: SpannedText) {
+        builder.append(other.toAnnotatedString())
     }
 
     override fun build(): ComposeSpannedText = ComposeSpannedText(builder.toAnnotatedString())

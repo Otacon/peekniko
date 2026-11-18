@@ -4,6 +4,7 @@ import peekniko.internal.bodyrenderer.BodyRendererTheme
 import peekniko.internal.bodyrenderer.Color
 import peekniko.internal.bodyrenderer.SpannedText
 import peekniko.internal.bodyrenderer.SpannedTextBuilder
+import peekniko.internal.bodyrenderer.SpannedTextBuilderFactory
 
 internal class SpannedTextBuilderBBText : SpannedTextBuilder {
     private val content = StringBuilder()
@@ -16,12 +17,11 @@ internal class SpannedTextBuilderBBText : SpannedTextBuilder {
         if (isBold) content.append("[/b]")
     }
 
-    override fun append(other: SpannedTextBuilder) {
-        content.append(other as SpannedTextBuilderBBText)
+    override fun append(other: SpannedText) {
+        content.append(other.bbText)
     }
 
-    @Deprecated("Does not work on tests", replaceWith = ReplaceWith("buildText"))
-    override fun build(): SpannedText = throw IllegalStateException("Use buildText() instead")
+    override fun build(): SpannedText = SpannedTextBBText(buildText())
 
     fun buildText(): String = content.toString()
 
@@ -64,3 +64,10 @@ internal class SpannedTextBuilderBBText : SpannedTextBuilder {
             .replace("[", "\\[")
             .replace("]", "\\]")
 }
+
+internal data class SpannedTextBBText(val text: String) : SpannedText
+
+internal val SpannedText?.bbText: String
+    get() = (this as SpannedTextBBText).text
+
+internal val SpannedTextBuilderFactoryBBText = SpannedTextBuilderFactory { SpannedTextBuilderBBText() }

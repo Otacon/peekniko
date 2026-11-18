@@ -1,74 +1,90 @@
 package peekniko.ui.details
 
-import peekniko.NetworkRepository
-import peekniko.NetworkResponse
-import peekniko.internal.bodyrenderer.BodyRendererComposite
-import peekniko.internal.bodyrenderer.BodyRendererTheme
-import peekniko.internal.bodyrenderer.BodyRendererThemeProvider
-import peekniko.internal.bodyrenderer.SpannedText
-import peekniko.internal.bodyrenderer.spannedText
-import peekniko.internal.support.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
+import peekniko.NetworkRepository
+import peekniko.NetworkResponse
+import peekniko.internal.bodyrenderer.*
+import peekniko.internal.support.ViewModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class ResponseViewModel(
     repository: NetworkRepository,
     private val themeProvider: BodyRendererThemeProvider,
-    private val bodyRenderer: BodyRendererComposite,
+    private val bodyRenderer: BodyRenderer,
     transactionId: String,
 ) : ViewModel() {
 
     private val theme = MutableStateFlow(themeProvider.theme)
+    private val isPrettyPrintEnabled = MutableStateFlow(true)
     private val transaction = repository.observeById(transactionId)
 
-    val state: StateFlow<State> = combine(transaction, theme) { call, theme -> call?.response to theme }
-        .mapLatest { (response, theme) -> response.toState(theme) }
-        .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
+    val state: StateFlow<State> = combine(
+        transaction,
+        theme,
+        isPrettyPrintEnabled
+    ) { call, theme, prettyPrintEnabled ->
+        Triple(call?.response, theme, prettyPrintEnabled)
+    }.mapLatest { (response, theme, prettyPrintEnabled) ->
+        response.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled)
+    }.stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
     fun onViewCreated() {
         theme.value = themeProvider.theme
     }
 
-    private suspend fun NetworkResponse?.toState(theme: BodyRendererTheme) = withContext(Dispatchers.Default) {
+    fun onPrettyPrintClick(enabled: Boolean) {
+        isPrettyPrintEnabled.value = enabled
+    }
+
+    private suspend fun NetworkResponse?.toState(
+        theme: BodyRendererTheme,
+        prettyPrintEnabled: Boolean,
+    ) = withContext(Dispatchers.Default) {
         when (this@toState) {
             is NetworkResponse.Error -> {
-                val errorText = spannedText { append("${exceptionMessage}\n$stackTrace") }.build()
+                val payload = "${exceptionMessage}\n$stackTrace"
                 State(
                     isLoading = false,
-                    body = errorText,
-                    contentType = BodyContentType.PLAIN_TEXT,
+                    body = spannedText { append(payload) },
+                    prettyPrintState = PrettyPrintState.Unavailable,
                 )
             }
 
             is NetworkResponse.Response -> {
-                val body = body?.decodeToString().orEmpty()
-                val rawContentType =
-                    headers.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value
-                val formatted = bodyRenderer.format(body, rawContentType)
-                val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, rawContentType)
-                val contentType = bodyRenderer.contentType(rawContentType)
+                val bodyText = body?.decodeToString().orEmpty()
+                val rawContentType = headers
+                    .firstOrNull { it.name.equals("content-type", ignoreCase = true) }
+                    ?.value
+                val supportedContentType = rawContentType?.takeIf { bodyText.isNotBlank() && bodyRenderer.supports(it) }
+                val (renderedBody, prettyPrintState) = when {
+                    supportedContentType == null -> spannedText { append(bodyText) } to PrettyPrintState.Unavailable
+
+                    prettyPrintEnabled -> {
+                        val formatted = bodyRenderer.format(bodyText, supportedContentType) ?: bodyText
+                        val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, supportedContentType)
+                        val highlightedOrPlain = highlighted ?: spannedText { append(formatted) }
+                        highlightedOrPlain to PrettyPrintState.Enabled
+                    }
+
+                    else -> spannedText { append(bodyText) } to PrettyPrintState.Disabled
+                }
                 State(
                     isLoading = false,
-                    body = highlighted,
-                    contentType = contentType
+                    body = renderedBody,
+                    prettyPrintState = prettyPrintState,
                 )
             }
 
-            null -> State(isLoading = false)
+            null -> State(isLoading = false, body = null, prettyPrintState = PrettyPrintState.Unavailable)
         }
     }
 
     internal data class State(
         val isLoading: Boolean = true,
         val body: SpannedText? = null,
-        val contentType: BodyContentType = BodyContentType.PLAIN_TEXT,
+        val prettyPrintState: PrettyPrintState = PrettyPrintState.Unavailable,
     )
 }

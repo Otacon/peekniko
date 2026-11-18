@@ -4,33 +4,25 @@ import peekniko.internal.json.generated.JSONBaseVisitor
 import peekniko.internal.json.generated.JSONLexer
 import peekniko.internal.json.generated.JSONLexer.Tokens
 import peekniko.internal.json.generated.JSONParser
-import peekniko.ui.details.BodyContentType
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.Token
 
-internal class BodyRendererJson(
-    private val spannedTextFactory: SpannedTextBuilderFactory
-) : BodyRenderer {
-    override val contentType: BodyContentType = BodyContentType.JSON
-
-    override fun supports(contentType: String?): Boolean {
-        val mediaType = contentType?.substringBefore(';')?.trim()?.lowercase()
-        return mediaType == "application/json" || mediaType == "text/json" || mediaType?.endsWith("+json") == true
+internal class BodyRendererJson : BodyRenderer {
+    override fun supports(contentType: String): Boolean {
+        val mediaType = contentType.substringBefore(';').trim().lowercase()
+        return mediaType == "application/json" || mediaType == "text/json" || mediaType.endsWith("+json")
     }
 
-    override fun format(payload: String, contentType: String?): String =
-        runCatching {
-            with(FormatVisitor()) {
-                visit(parse(payload))
-                formattedText()
-            }
+    override fun format(payload: String, contentType: String): String? = runCatching {
+        with(FormatVisitor()) {
+            visit(parse(payload))
+            formattedText()
+        }
+    }.getOrNull()
 
-        }.getOrElse { payload }
-
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedTextBuilder =
-        runCatching { highlight(payload, theme) }
-            .getOrElse { spannedTextFactory.create().apply { append(payload) } }
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String): SpannedText? =
+        runCatching { highlight(payload, theme) }.getOrNull()
 
     private fun parse(payload: String): JSONParser.JsonContext {
         val lexer = JSONLexer(CharStreams.fromString(payload))
@@ -41,8 +33,7 @@ internal class BodyRendererJson(
         return tree
     }
 
-    private fun highlight(payload: String, theme: BodyRendererTheme): SpannedTextBuilder {
-        val spanned = spannedTextFactory.create()
+    private fun highlight(payload: String, theme: BodyRendererTheme): SpannedText = spannedText {
         val lexer = JSONLexer(CharStreams.fromString(payload))
         lexer.removeErrorListeners()
         var token = lexer.nextToken()
@@ -55,17 +46,17 @@ internal class BodyRendererJson(
                     val text = token.text.orEmpty()
                     if (text.contains('.') || text.contains('e', ignoreCase = true)) theme.number else theme.integer
                 }
+
                 Tokens.BOOLEAN -> theme.boolean
                 Tokens.NULL -> theme.nullValue
                 else -> theme.separator
             }
-            spanned.append(payload.substring(cursor, token.startIndex))
+            append(payload.substring(cursor, token.startIndex))
             cursor = token.stopIndex + 1
-            spanned.append(payload.substring(token.startIndex, cursor), color)
+            append(payload.substring(token.startIndex, cursor), color)
             token = next
         }
-        spanned.append(payload.substring(cursor))
-        return spanned
+        append(payload.substring(cursor))
     }
 
 }

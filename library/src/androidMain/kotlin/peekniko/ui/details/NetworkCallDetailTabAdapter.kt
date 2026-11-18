@@ -7,6 +7,7 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
 import peekniko.library.R
 
 internal const val ARG_TRANSACTION_ID: String = "transaction_id"
@@ -50,12 +51,14 @@ internal class NetworkCallDetailTabAdapter(
             }
         }
         fragmentManager.fragments
-            .filter { it.id == containerId }
+            .filter { it.id == containerId && it !== selected }
             .forEach { fragment ->
                 transaction.hide(fragment)
+                transaction.setMaxLifecycle(fragment, Lifecycle.State.STARTED)
             }
 
         if (selected.isAdded) transaction.show(selected) else transaction.add(containerId, selected, tag(index))
+        transaction.setMaxLifecycle(selected, Lifecycle.State.RESUMED)
         transaction.commitNow()
         selectedTab = index
     }

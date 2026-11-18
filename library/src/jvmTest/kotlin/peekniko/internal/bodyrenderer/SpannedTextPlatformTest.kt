@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldBe
 
 internal class SpannedTextPlatformTest : FunSpec({
     test("builds styled Compose text") {
-        val builder = defaultSpannedTextBuilderFactory().create()
+        val builder = platformSpannedTextBuilderFactory().create()
         builder.append("plain ")
         builder.append("bold", Color(255, 0, 0), isBold = true)
 
@@ -22,11 +22,11 @@ internal class SpannedTextPlatformTest : FunSpec({
     }
 
     test("copies styles when appending another builder") {
-        val inner = defaultSpannedTextBuilderFactory().create()
+        val inner = platformSpannedTextBuilderFactory().create()
         inner.append("red", Color(255, 0, 0))
-        val outer = defaultSpannedTextBuilderFactory().create()
+        val outer = platformSpannedTextBuilderFactory().create()
         outer.append("> ")
-        outer.append(inner)
+        outer.append(inner.build())
 
         val text = outer.build().toAnnotatedString()
 

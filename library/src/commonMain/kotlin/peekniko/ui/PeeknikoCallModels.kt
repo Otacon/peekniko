@@ -1,7 +1,6 @@
 package peekniko.ui
 
 import peekniko.NetworkHeader
-import peekniko.ui.details.BodyContentType
 
 public data class PeeknikoCallRowItem(
     public val id: String,
@@ -38,8 +37,6 @@ public data class PeeknikoCallDetailItem(
     public val requestHeaders: List<NetworkHeader>,
     public val responseHeaders: List<NetworkHeader>,
     public val overviewHeaders: List<NetworkHeader>,
-    public val requestContentType: BodyContentType,
-    public val responseContentType: BodyContentType,
     public val rawRequestBody: String?,
     public val rawResponseBody: String?,
     public val curl: String,

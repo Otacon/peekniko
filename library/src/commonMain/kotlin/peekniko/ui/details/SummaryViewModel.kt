@@ -13,7 +13,6 @@ import peekniko.NetworkResponse
 import peekniko.fullUrl
 import peekniko.internal.bodyrenderer.SpannedText
 import peekniko.internal.bodyrenderer.SpannedTextBuilder
-import peekniko.internal.bodyrenderer.emptySpannedText
 import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.http.httpMessage
 import peekniko.internal.support.ViewModel
@@ -61,7 +60,7 @@ internal class SummaryViewModel(
             appendKeyValue("Full URL", request.fullUrl, "\n")
             appendKeyValue("Method", request.method.name, "\n")
             appendKeyValue("Status code", status)
-        }.build()
+        }
         val requestHeadersText = request.headers.toPlainText()
         val responseHeadersText = responseHeaders.toPlainText()
         return State(
@@ -92,7 +91,7 @@ internal class SummaryViewModel(
                 appendKeyValue(header.name, header.value, suffix)
             }
         }
-    }.build()
+    }
 
     private fun SpannedTextBuilder.appendKeyValue(name: String, value: String, suffix: String = "") {
         append("$name: ", isBold = true)
@@ -101,9 +100,9 @@ internal class SummaryViewModel(
 
     internal data class State(
         val isLoading: Boolean = true,
-        val general: SpannedText = emptySpannedText(),
-        val responseHeaders: SpannedText = emptySpannedText(),
-        val requestHeaders: SpannedText = emptySpannedText(),
+        val general: SpannedText = spannedText(),
+        val responseHeaders: SpannedText = spannedText(),
+        val requestHeaders: SpannedText = spannedText(),
         val generalText: String = "",
         val requestHeadersText: String = "",
         val responseHeadersText: String = "",
