@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,36 +32,38 @@ internal fun CallDetailsScreen(
     showBackButton: Boolean,
     onBackPressed: () -> Unit,
 ) {
-    val viewModel = rememberViewModel(callId) { Peekniko.createNetworkCallDetailViewModel(callId) }
-    val state by viewModel.state.collectAsState()
-    val tabViewModelStore = rememberViewModelStore(callId)
-    val topBarActions = remember { TopBarActions() }
-    CompositionLocalProvider(
-        LocalViewModelStore provides tabViewModelStore,
-        LocalTopBarActions provides topBarActions,
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(state.title) },
-                    navigationIcon = {
-                        if (showBackButton) {
-                            IconButton(onClick = onBackPressed) {
-                                Icon(
-                                    imageVector = Icons.ArrowBack,
-                                    contentDescription = "Back",
-                                )
+    key(callId) {
+        val viewModel = rememberViewModel(callId) { Peekniko.createNetworkCallDetailViewModel(callId) }
+        val state by viewModel.state.collectAsState()
+        val tabViewModelStore = rememberViewModelStore(callId)
+        val topBarActions = remember { TopBarActions() }
+        CompositionLocalProvider(
+            LocalViewModelStore provides tabViewModelStore,
+            LocalTopBarActions provides topBarActions,
+        ) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(state.title) },
+                        navigationIcon = {
+                            if (showBackButton) {
+                                IconButton(onClick = onBackPressed) {
+                                    Icon(
+                                        imageVector = Icons.ArrowBack,
+                                        contentDescription = "Back",
+                                    )
+                                }
                             }
-                        }
-                    },
-                    actions = { topBarActions.content?.invoke(this) },
+                        },
+                        actions = { topBarActions.content?.invoke(this) },
+                    )
+                },
+            ) { contentPadding ->
+                CallDetailsContent(
+                    state = state,
+                    modifier = Modifier.padding(contentPadding),
                 )
-            },
-        ) { contentPadding ->
-            CallDetailsContent(
-                state = state,
-                modifier = Modifier.padding(contentPadding),
-            )
+            }
         }
     }
 }
