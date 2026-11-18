@@ -25,26 +25,25 @@ internal class BodyRendererFormUrlEncoded : BodyRenderer {
         }
     }
 
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String): SpannedText =
-        spannedText {
-            var isValue = false
-            for (token in tokenize(payload)) {
-                val color = when (token.type) {
-                    Tokens.AMPERSAND, Tokens.LINE_BREAK -> {
-                        isValue = false
-                        if (token.type == Tokens.AMPERSAND) theme.separator else null
-                    }
-
-                    Tokens.EQUALS -> {
-                        isValue = true
-                        theme.separator
-                    }
-
-                    else -> if (isValue) theme.attributeValue else theme.key
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String) = spannedText {
+        var isValue = false
+        for (token in tokenize(payload)) {
+            val color = when (token.type) {
+                Tokens.AMPERSAND, Tokens.LINE_BREAK -> {
+                    isValue = false
+                    if (token.type == Tokens.AMPERSAND) theme.separator else null
                 }
-                append(token.text.orEmpty(), color)
+
+                Tokens.EQUALS -> {
+                    isValue = true
+                    theme.separator
+                }
+
+                else -> if (isValue) theme.attributeValue else theme.key
             }
+            append(token.text.orEmpty(), color)
         }
+    }
 
     private fun tokenize(payload: String): Sequence<Token> {
         val lexer = FormUrlEncodedLexer(CharStreams.fromString(payload))
