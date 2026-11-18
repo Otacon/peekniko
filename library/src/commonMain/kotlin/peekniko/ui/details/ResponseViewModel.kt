@@ -24,8 +24,8 @@ internal class ResponseViewModel(
         transaction,
         theme,
         isPrettyPrintEnabled
-    ) { call, theme, prettyPrint ->
-        call?.response.toState(theme, prettyPrint)
+    ) { call, theme, prettyPrintEnabled ->
+        call?.response.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled)
     }.stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
     fun onViewCreated() {
@@ -38,7 +38,7 @@ internal class ResponseViewModel(
 
     private suspend fun NetworkResponse?.toState(
         theme: BodyRendererTheme,
-        prettyPrint: Boolean,
+        prettyPrintEnabled: Boolean,
     ) = withContext(Dispatchers.Default) {
         when (this@toState) {
             is NetworkResponse.Error -> {
@@ -52,32 +52,51 @@ internal class ResponseViewModel(
                     isLoading = false,
                     body = errorText,
                     contentType = BodyContentType.PLAIN_TEXT,
-                    isPrettyPrintEnabled = prettyPrint,
+                    prettyPrintState = PrettyPrintState.Unavailable,
                 )
             }
 
             is NetworkResponse.Response -> {
-                val body = body?.decodeToString().orEmpty()
+                val bodyText = body?.decodeToString().orEmpty()
                 val rawContentType = headers
                     .firstOrNull { it.name.equals("content-type", ignoreCase = true) }
                     ?.value
+                val isContentTypeSupported = bodyRenderer.supports(rawContentType)
+                val (renderedBody, prettyPrintState) = when {
+                    !isContentTypeSupported || bodyText.isBlank() -> {
+                        val text = noopBodyRenderer.syntaxHighlight(
+                            theme = theme,
+                            payload = bodyText,
+                            contentType = null
+                        ).build()
+                        text to PrettyPrintState.Unavailable
+                    }
 
-                val renderedBody = if (prettyPrint) {
-                    val formatted = bodyRenderer.format(body, rawContentType)
-                    bodyRenderer.syntaxHighlight(theme, formatted, rawContentType)
-                } else {
-                    noopBodyRenderer.syntaxHighlight(theme = theme, payload = body, contentType = null).build()
+                    prettyPrintEnabled -> {
+                        val formatted = bodyRenderer.format(bodyText, rawContentType)
+                        val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, rawContentType)
+                        highlighted to PrettyPrintState.Enabled
+                    }
+
+                    else -> {
+                        val text = noopBodyRenderer.syntaxHighlight(
+                            theme = theme,
+                            payload = bodyText,
+                            contentType = null
+                        ).build()
+                        text to PrettyPrintState.Disabled
+                    }
                 }
                 val contentType = bodyRenderer.contentType(rawContentType)
                 State(
                     isLoading = false,
                     body = renderedBody,
                     contentType = contentType,
-                    isPrettyPrintEnabled = prettyPrint,
+                    prettyPrintState = prettyPrintState,
                 )
             }
 
-            null -> State(isLoading = false, isPrettyPrintEnabled = prettyPrint)
+            null -> State(isLoading = false, prettyPrintState = PrettyPrintState.Unavailable)
         }
     }
 
@@ -85,6 +104,6 @@ internal class ResponseViewModel(
         val isLoading: Boolean = true,
         val body: SpannedText? = null,
         val contentType: BodyContentType = BodyContentType.PLAIN_TEXT,
-        val isPrettyPrintEnabled: Boolean = true,
+        val prettyPrintState: PrettyPrintState = PrettyPrintState.Unavailable,
     )
 }

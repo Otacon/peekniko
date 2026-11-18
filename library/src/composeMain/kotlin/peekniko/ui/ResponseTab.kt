@@ -24,8 +24,8 @@ internal fun ResponseTab(callId: String, modifier: Modifier = Modifier) {
     val state by viewModel.state.collectAsState()
     TopBarActionsEffect {
         PrettyPrintAction(
-            isPrettyPrintEnabled = state.isPrettyPrintEnabled,
-            onClick = { viewModel.onPrettyPrintClick(!state.isPrettyPrintEnabled) },
+            prettyPrintState = state.prettyPrintState,
+            onPrettyPrintClick = viewModel::onPrettyPrintClick,
         )
     }
     val body = (state.body ?: emptySpannedText()).toAnnotatedString()

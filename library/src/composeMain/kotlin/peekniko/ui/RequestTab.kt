@@ -25,8 +25,8 @@ internal fun RequestTab(callId: String, modifier: Modifier = Modifier) {
     val state by viewModel.state.collectAsState()
     TopBarActionsEffect {
         PrettyPrintAction(
-            isPrettyPrintEnabled = state.isPrettyPrintEnabled,
-            onClick = { viewModel.onPrettyPrintClick(!state.isPrettyPrintEnabled) },
+            prettyPrintState = state.prettyPrintState,
+            onPrettyPrintClick = viewModel::onPrettyPrintClick,
         )
     }
     BodyText((state.body ?: emptySpannedText()).toAnnotatedString(), modifier)

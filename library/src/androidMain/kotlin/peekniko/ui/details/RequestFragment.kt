@@ -34,7 +34,7 @@ internal class RequestFragment : FlowCollectionFragment(
     private val body: TextView by viewById(R.id.requestBody)
 
     private val menuHost: MenuHost get() = (requireParentFragment() as NetworkCallDetailFragment).menuHost
-    private var menuPrettyPrintEnabled: Boolean = false
+    private var menuPrettyPrintState = PrettyPrintState.Unavailable
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -48,19 +48,33 @@ internal class RequestFragment : FlowCollectionFragment(
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_call_request, menu)
         menu.findItem(R.id.menuRequestPrettyPrint).apply {
-            if (menuPrettyPrintEnabled) {
-                setIcon(R.drawable.ic_pretty_print)
-                setTitle(R.string.peekniko_menu_pretty_print_enabled)
-            } else {
-                setIcon(R.drawable.ic_pretty_print_off)
-                setTitle(R.string.peekniko_menu_pretty_print_disabled)
+            when (menuPrettyPrintState) {
+                PrettyPrintState.Enabled -> {
+                    isVisible = true
+                    setIcon(R.drawable.ic_pretty_print)
+                    setTitle(R.string.peekniko_menu_pretty_print_enabled)
+                }
+
+                PrettyPrintState.Disabled -> {
+                    isVisible = true
+                    setIcon(R.drawable.ic_pretty_print_off)
+                    setTitle(R.string.peekniko_menu_pretty_print_disabled)
+                }
+
+                PrettyPrintState.Unavailable -> {
+                    isVisible = false
+                }
             }
         }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
         R.id.menuRequestPrettyPrint -> {
-            viewModel.onPrettyPrintClick(!menuPrettyPrintEnabled)
+            when (menuPrettyPrintState) {
+                PrettyPrintState.Enabled -> viewModel.onPrettyPrintClick(false)
+                PrettyPrintState.Disabled -> viewModel.onPrettyPrintClick(true)
+                PrettyPrintState.Unavailable -> Unit
+            }
             true
         }
 
@@ -68,8 +82,8 @@ internal class RequestFragment : FlowCollectionFragment(
     }
 
     private fun bind(state: RequestViewModel.State) {
-        if (state.isPrettyPrintEnabled != menuPrettyPrintEnabled) {
-            menuPrettyPrintEnabled = state.isPrettyPrintEnabled
+        if (state.prettyPrintState != menuPrettyPrintState) {
+            menuPrettyPrintState = state.prettyPrintState
             menuHost.invalidateMenu()
         }
         val platformText = (state.body ?: emptySpannedText()).platformText

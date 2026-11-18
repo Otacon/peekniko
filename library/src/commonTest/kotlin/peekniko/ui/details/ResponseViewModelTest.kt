@@ -148,6 +148,23 @@ internal class ResponseViewModelTest : FunSpec({
             }
         }
 
+        test("makes pretty print unavailable") {
+            withFixture { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(
+                        sampleCall(
+                            id = "response-id",
+                            request = sampleRequest(),
+                            response = sampleError(),
+                        ),
+                    )
+                    awaitItem().prettyPrintState shouldBe PrettyPrintState.Unavailable
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
         test("shows the exception message and stack trace as plain text when pretty print is disabled") {
             withFixture { transaction ->
                 state.test {
@@ -161,7 +178,7 @@ internal class ResponseViewModelTest : FunSpec({
                         ),
                     )
                     val error = awaitItem()
-                    error.isPrettyPrintEnabled shouldBe false
+                    error.prettyPrintState shouldBe PrettyPrintState.Unavailable
                     error.body.bbText shouldBe "connection failed\ntrace line 1\ntrace line 2"
                     cancelAndIgnoreRemainingEvents()
                 }
@@ -175,44 +192,146 @@ internal class ResponseViewModelTest : FunSpec({
             "[c=Light.separator]{[/c]\n" +
                 "  [c=Light.key]\"name\"[/c][c=Light.separator]:[/c] [c=Light.string]\"Ada\"[/c]\n" +
                 "[c=Light.separator]}[/c]"
-        val jsonCall = sampleCall(
+
+        fun responseCall(body: String?, contentType: String?) = sampleCall(
             id = "response-id",
             request = sampleRequest(),
             response = sampleResponse(
-                body = rawJson.encodeToByteArray(),
-                headers = listOf(NetworkHeader("Content-Type", "application/json")),
+                body = body?.encodeToByteArray(),
+                headers = listOfNotNull(contentType?.let { NetworkHeader("Content-Type", it) }),
             ),
         )
 
-        test("is enabled by default") {
-            withFixture { state.value.isPrettyPrintEnabled shouldBe true }
+        val jsonCall = responseCall(body = rawJson, contentType = "application/json")
+
+        test("is unavailable before the response arrives") {
+            withFixture { state.value.prettyPrintState shouldBe PrettyPrintState.Unavailable }
         }
 
-        test("formats and highlights the body when enabled") {
+        test("is unavailable when the transaction is absent") {
             withFixture { transaction ->
                 state.test {
                     awaitItem()
-                    transaction.emit(jsonCall)
-                    val loaded = awaitItem()
-                    loaded.isPrettyPrintEnabled shouldBe true
-                    loaded.body.bbText shouldBe prettyJson
+                    transaction.emit(null)
+                    awaitItem().prettyPrintState shouldBe PrettyPrintState.Unavailable
                     cancelAndIgnoreRemainingEvents()
                 }
             }
         }
 
-        test("shows the raw body when disabled") {
-            withFixture { transaction ->
-                state.test {
-                    awaitItem()
-                    transaction.emit(jsonCall)
-                    awaitItem()
-                    onPrettyPrintClick(false)
-                    val raw = awaitItem()
-                    raw.isPrettyPrintEnabled shouldBe false
-                    raw.body.bbText shouldBe rawJson
-                    raw.contentType shouldBe BodyContentType.JSON
-                    cancelAndIgnoreRemainingEvents()
+        context("supported content type") {
+            test("is enabled by default, formatting and highlighting the body") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(jsonCall)
+                        val loaded = awaitItem()
+                        loaded.prettyPrintState shouldBe PrettyPrintState.Enabled
+                        loaded.body.bbText shouldBe prettyJson
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+            test("shows the raw body, neither formatted nor highlighted, when disabled") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(jsonCall)
+                        awaitItem()
+                        onPrettyPrintClick(false)
+                        val raw = awaitItem()
+                        raw.prettyPrintState shouldBe PrettyPrintState.Disabled
+                        raw.body.bbText shouldBe rawJson
+                        raw.contentType shouldBe BodyContentType.JSON
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+            test("formats and highlights the body again when re-enabled") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(jsonCall)
+                        awaitItem()
+                        onPrettyPrintClick(false)
+                        awaitItem().prettyPrintState shouldBe PrettyPrintState.Disabled
+                        onPrettyPrintClick(true)
+                        val pretty = awaitItem()
+                        pretty.prettyPrintState shouldBe PrettyPrintState.Enabled
+                        pretty.body.bbText shouldBe prettyJson
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+        }
+
+        context("unavailable") {
+            test("for an unsupported content type, showing the raw body") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(responseCall(body = rawJson, contentType = "text/plain"))
+                        val loaded = awaitItem()
+                        loaded.prettyPrintState shouldBe PrettyPrintState.Unavailable
+                        loaded.body.bbText shouldBe rawJson
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+            test("for a missing content type, showing the raw body") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(responseCall(body = rawJson, contentType = null))
+                        val loaded = awaitItem()
+                        loaded.prettyPrintState shouldBe PrettyPrintState.Unavailable
+                        loaded.body.bbText shouldBe rawJson
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+            test("for a blank body, even with a supported content type") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(responseCall(body = "  ", contentType = "application/json"))
+                        val loaded = awaitItem()
+                        loaded.prettyPrintState shouldBe PrettyPrintState.Unavailable
+                        loaded.body.bbText shouldBe "  "
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+            test("for a missing body, even with a supported content type") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(responseCall(body = null, contentType = "application/json"))
+                        val loaded = awaitItem()
+                        loaded.prettyPrintState shouldBe PrettyPrintState.Unavailable
+                        loaded.body.bbText shouldBe ""
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+            test("regardless of the toggle, for an unsupported content type") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        onPrettyPrintClick(false)
+                        transaction.emit(responseCall(body = rawJson, contentType = "text/plain"))
+                        val loaded = awaitItem()
+                        loaded.prettyPrintState shouldBe PrettyPrintState.Unavailable
+                        loaded.body.bbText shouldBe rawJson
+                        cancelAndIgnoreRemainingEvents()
+                    }
                 }
             }
         }
