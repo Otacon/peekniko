@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.MenuHost
 import androidx.core.view.isVisible
 import peekniko.Peekniko
 import peekniko.internal.support.FlowCollectionFragment
@@ -24,6 +25,7 @@ internal class NetworkCallDetailFragment : FlowCollectionFragment(R.layout.fragm
     private val detailTabs: TabView by viewById(R.id.detail_tabs)
     private val emptyState: TextView by viewById(R.id.detail_empty_state)
     private val content: View by viewById(R.id.detail_content)
+    internal val menuHost: MenuHost get() = toolbar
     private var selectedTabIndex: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {

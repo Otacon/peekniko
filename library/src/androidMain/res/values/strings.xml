@@ -45,6 +45,10 @@
     <string name="peekniko_tab_request">Request</string>
     <string name="peekniko_tab_response">Response</string>
 
+    <!-- Body -->
+    <string name="peekniko_menu_pretty_print_enabled">Pretty print enabled</string>
+    <string name="peekniko_menu_pretty_print_disabled">Pretty print disabled</string>
+
     <!-- Errors -->
     <string name="peekniko_call_not_found">Network call not found</string>
     <string name="peekniko_empty_body">Empty body</string>
