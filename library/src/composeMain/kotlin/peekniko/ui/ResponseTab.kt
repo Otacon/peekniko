@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
-import peekniko.internal.bodyrenderer.emptySpannedText
+import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.bodyrenderer.toAnnotatedString
 import peekniko.ui.details.ResponseViewModel
 
@@ -28,7 +28,7 @@ internal fun ResponseTab(callId: String, modifier: Modifier = Modifier) {
             onPrettyPrintClick = viewModel::onPrettyPrintClick,
         )
     }
-    val body = (state.body ?: emptySpannedText()).toAnnotatedString()
+    val body = (state.body ?: spannedText()).toAnnotatedString()
     SelectionContainer {
         if (body.isEmpty()) {
             Text("Empty body", modifier = modifier.fillMaxSize().padding(16.dp))

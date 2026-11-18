@@ -48,15 +48,14 @@ public object Peekniko {
     }
 
     internal val bodyRenderer: BodyRendererComposite by lazy {
-        val spannedTextFactory = defaultSpannedTextBuilderFactory()
         BodyRendererComposite(
             renderers = listOf(
-                BodyRendererJson(spannedTextFactory),
-                BodyRendererXml(spannedTextFactory),
-                BodyRendererHtml(spannedTextFactory),
-                BodyRendererFormUrlEncoded(spannedTextFactory),
+                BodyRendererJson(),
+                BodyRendererXml(),
+                BodyRendererHtml(),
+                BodyRendererFormUrlEncoded(),
             ),
-            fallback = BodyRendererPlainText(spannedTextFactory),
+            fallback = BodyRendererPlainText(),
         )
     }
 
@@ -76,23 +75,21 @@ public object Peekniko {
         SummaryViewModel(networkRepository, transactionId)
 
     internal fun createRequestViewModel(transactionId: String): RequestViewModel {
-        val spannedTextFactory = defaultSpannedTextBuilderFactory()
         return RequestViewModel(
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
-            noopBodyRenderer = BodyRendererPlainText(spannedTextFactory),
+            noopBodyRenderer = BodyRendererPlainText(),
             transactionId = transactionId
         )
     }
 
     internal fun createResponseViewModel(transactionId: String): ResponseViewModel {
-        val spannedTextFactory = defaultSpannedTextBuilderFactory()
         return ResponseViewModel(
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
-            noopBodyRenderer = BodyRendererPlainText(spannedTextFactory),
+            noopBodyRenderer = BodyRendererPlainText(),
             transactionId = transactionId,
         )
     }

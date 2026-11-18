@@ -47,7 +47,7 @@ internal class ResponseViewModel(
                     theme = theme,
                     payload = payload,
                     contentType = null,
-                ).build()
+                )
                 State(
                     isLoading = false,
                     body = errorText,
@@ -68,7 +68,7 @@ internal class ResponseViewModel(
                             theme = theme,
                             payload = bodyText,
                             contentType = null
-                        ).build()
+                        )
                         text to PrettyPrintState.Unavailable
                     }
 
@@ -83,7 +83,7 @@ internal class ResponseViewModel(
                             theme = theme,
                             payload = bodyText,
                             contentType = null
-                        ).build()
+                        )
                         text to PrettyPrintState.Disabled
                     }
                 }

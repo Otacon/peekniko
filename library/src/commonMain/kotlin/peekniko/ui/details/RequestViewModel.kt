@@ -43,7 +43,7 @@ internal class RequestViewModel(
         if (this@toState == null) {
             return@withContext State(
                 isLoading = false,
-                body = emptySpannedText(),
+                body = spannedText(),
                 prettyPrintState = PrettyPrintState.Unavailable,
             )
         }
@@ -56,7 +56,7 @@ internal class RequestViewModel(
                     theme = theme,
                     payload = bodyText,
                     contentType = null
-                ).build()
+                )
                 text to PrettyPrintState.Unavailable
             }
 
@@ -71,7 +71,7 @@ internal class RequestViewModel(
                     theme = theme,
                     payload = bodyText,
                     contentType = null
-                ).build()
+                )
                 text to PrettyPrintState.Disabled
             }
         }

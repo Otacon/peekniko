@@ -8,7 +8,7 @@ import android.text.style.StyleSpan
 import android.graphics.Typeface
 import android.widget.TextView
 
-internal actual fun defaultSpannedTextBuilderFactory(): SpannedTextBuilderFactory =
+internal actual fun platformSpannedTextBuilderFactory(): SpannedTextBuilderFactory =
     SpannedTextBuilderFactory { SpannedTextBuilderDefault() }
 
 internal class SpannedTextBuilderDefault : SpannedTextBuilder {
@@ -26,8 +26,8 @@ internal class SpannedTextBuilderDefault : SpannedTextBuilder {
         }
     }
 
-    override fun append(other: SpannedTextBuilder) {
-        platformText.append((other as SpannedTextBuilderDefault).platformText)
+    override fun append(other: SpannedText) {
+        platformText.append(other.platformText)
     }
 
     override fun build(): SpannedText = NativeSpannedText(AndroidSpannedString(platformText))
@@ -39,5 +39,5 @@ internal val SpannedText.platformText: AndroidSpannedString
     get() = (this as NativeSpannedText).platformText
 
 internal fun TextView.setSpannedText(text: SpannedText?) {
-    this.text = (text ?: emptySpannedText()).platformText
+    this.text = (text ?: spannedText()).platformText
 }

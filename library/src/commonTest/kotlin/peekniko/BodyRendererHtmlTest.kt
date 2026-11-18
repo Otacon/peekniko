@@ -7,10 +7,12 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 internal class BodyRendererHtmlTest : FunSpec({
+    useBBTextSpannedText()
+
     lateinit var renderer: BodyRendererHtml
 
     beforeTest {
-        renderer = BodyRendererHtml { SpannedTextBuilderBBText() }
+        renderer = BodyRendererHtml()
     }
 
     context("content type support") {
@@ -49,7 +51,7 @@ internal class BodyRendererHtmlTest : FunSpec({
 
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, payload, "text/html")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.separator]<[/c][c=Light.tag]p[/c] " +
                     "[c=Light.attributeName]class[/c][c=Light.separator]=[/c]" +
                     "[c=Light.boolean]\"x\"[/c][c=Light.separator]>[/c]" +
@@ -60,7 +62,7 @@ internal class BodyRendererHtmlTest : FunSpec({
         test("highlights comments") {
             val output = renderer.syntaxHighlight(BodyRendererTheme.Dark, "<div><!--note--></div>", "text/html")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Dark.separator]<[/c][c=Dark.boolean]div[/c][c=Dark.separator]>[/c]" +
                     "[c=Dark.comment]<!--note-->[/c]" +
                     "[c=Dark.separator]<[/c][c=Dark.separator]/[/c][c=Dark.boolean]div[/c][c=Dark.separator]>[/c]"
@@ -69,7 +71,7 @@ internal class BodyRendererHtmlTest : FunSpec({
         test("highlights the doctype with the doctype theme role") {
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<!DOCTYPE html><html></html>", "text/html")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.doctype]<!DOCTYPE html>[/c]" +
                     "[c=Light.separator]<[/c][c=Light.tag]html[/c][c=Light.separator]>[/c]" +
                     "[c=Light.separator]<[/c][c=Light.separator]/[/c]" +

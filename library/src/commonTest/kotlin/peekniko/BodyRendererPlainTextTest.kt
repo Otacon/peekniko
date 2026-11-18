@@ -7,11 +7,13 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 internal class BodyRendererPlainTextTest : FunSpec({
+    useBBTextSpannedText()
+
 
     lateinit var renderer: BodyRendererPlainText
 
     beforeTest {
-        renderer = BodyRendererPlainText { SpannedTextBuilderBBText() }
+        renderer = BodyRendererPlainText()
     }
 
     context("renderer metadata") {
@@ -47,7 +49,7 @@ internal class BodyRendererPlainTextTest : FunSpec({
         test("writes the payload to the injected BBText builder") {
             val payload = "[plain text]\n雪 ☃"
             val builder = renderer.syntaxHighlight(BodyRendererTheme.Light, payload, "text/plain")
-            val actual = (builder as SpannedTextBuilderBBText).buildText()
+            val actual = builder.bbText
             actual shouldBe """
                 \[plain text\]
                 雪 ☃

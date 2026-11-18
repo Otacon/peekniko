@@ -9,9 +9,7 @@ import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.Token
 
-internal class BodyRendererJson(
-    private val spannedTextFactory: SpannedTextBuilderFactory
-) : BodyRenderer {
+internal class BodyRendererJson : BodyRenderer {
     override val contentType: BodyContentType = BodyContentType.JSON
 
     override fun supports(contentType: String?): Boolean {
@@ -28,9 +26,9 @@ internal class BodyRendererJson(
 
         }.getOrElse { payload }
 
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedTextBuilder =
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedText =
         runCatching { highlight(payload, theme) }
-            .getOrElse { spannedTextFactory.create().apply { append(payload) } }
+            .getOrElse { spannedText { append(payload) } }
 
     private fun parse(payload: String): JSONParser.JsonContext {
         val lexer = JSONLexer(CharStreams.fromString(payload))
@@ -41,8 +39,7 @@ internal class BodyRendererJson(
         return tree
     }
 
-    private fun highlight(payload: String, theme: BodyRendererTheme): SpannedTextBuilder {
-        val spanned = spannedTextFactory.create()
+    private fun highlight(payload: String, theme: BodyRendererTheme): SpannedText = spannedText {
         val lexer = JSONLexer(CharStreams.fromString(payload))
         lexer.removeErrorListeners()
         var token = lexer.nextToken()
@@ -59,13 +56,12 @@ internal class BodyRendererJson(
                 Tokens.NULL -> theme.nullValue
                 else -> theme.separator
             }
-            spanned.append(payload.substring(cursor, token.startIndex))
+            append(payload.substring(cursor, token.startIndex))
             cursor = token.stopIndex + 1
-            spanned.append(payload.substring(token.startIndex, cursor), color)
+            append(payload.substring(token.startIndex, cursor), color)
             token = next
         }
-        spanned.append(payload.substring(cursor))
-        return spanned
+        append(payload.substring(cursor))
     }
 
 }

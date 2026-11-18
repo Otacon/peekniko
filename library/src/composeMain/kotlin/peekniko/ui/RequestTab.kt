@@ -15,7 +15,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
-import peekniko.internal.bodyrenderer.emptySpannedText
+import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.bodyrenderer.toAnnotatedString
 import peekniko.ui.details.RequestViewModel
 
@@ -29,7 +29,7 @@ internal fun RequestTab(callId: String, modifier: Modifier = Modifier) {
             onPrettyPrintClick = viewModel::onPrettyPrintClick,
         )
     }
-    BodyText((state.body ?: emptySpannedText()).toAnnotatedString(), modifier)
+    BodyText((state.body ?: spannedText()).toAnnotatedString(), modifier)
 }
 
 @Composable

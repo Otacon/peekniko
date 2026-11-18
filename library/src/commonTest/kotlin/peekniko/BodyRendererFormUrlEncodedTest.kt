@@ -7,10 +7,12 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 internal class BodyRendererFormUrlEncodedTest : FunSpec({
+    useBBTextSpannedText()
+
     lateinit var renderer: BodyRendererFormUrlEncoded
 
     beforeTest {
-        renderer = BodyRendererFormUrlEncoded { SpannedTextBuilderBBText() }
+        renderer = BodyRendererFormUrlEncoded()
     }
 
     context("content type support") {
@@ -39,7 +41,7 @@ internal class BodyRendererFormUrlEncodedTest : FunSpec({
         test("highlights a key, separator, and value with theme roles") {
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "k=v", "application/x-www-form-urlencoded")
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Light.key]k[/c][c=Light.separator]=[/c][c=Light.boolean]v[/c]"
         }
 
@@ -50,7 +52,7 @@ internal class BodyRendererFormUrlEncodedTest : FunSpec({
                 "application/x-www-form-urlencoded",
             )
 
-            (output as SpannedTextBuilderBBText).buildText() shouldBe
+            output.bbText shouldBe
                     "[c=Dark.key]a[/c][c=Dark.separator]=[/c][c=Dark.string]1[/c]" +
                     "[c=Dark.separator]&[/c][c=Dark.key]b[/c][c=Dark.separator]=[/c][c=Dark.string]2[/c]"
         }

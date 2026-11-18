@@ -16,7 +16,7 @@ internal class BodyRendererComposite(
         renderer(contentType).format(payload, contentType)
 
     fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedText =
-        renderer(contentType).syntaxHighlight(theme, payload, contentType).build()
+        renderer(contentType).syntaxHighlight(theme, payload, contentType)
 
     private fun renderer(contentType: String?): BodyRenderer =
         renderers.firstOrNull { it.supports(contentType) } ?: fallback

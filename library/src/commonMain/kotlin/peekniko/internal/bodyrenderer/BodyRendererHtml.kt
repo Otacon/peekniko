@@ -5,9 +5,7 @@ import peekniko.internal.json.generated.HTMLLexer.Tokens
 import peekniko.ui.details.BodyContentType
 import org.antlr.v4.kotlinruntime.CharStreams
 
-internal class BodyRendererHtml(
-    private val spannedTextFactory: SpannedTextBuilderFactory,
-) : BodyRenderer {
+internal class BodyRendererHtml : BodyRenderer {
     override val contentType: BodyContentType = BodyContentType.HTML
 
     override fun supports(contentType: String?): Boolean {
@@ -19,15 +17,17 @@ internal class BodyRendererHtml(
         runCatching { MarkupRendererUtilities.format(payload, tokenize(payload)) }
             .getOrElse { payload }
 
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedTextBuilder =
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedText =
         runCatching {
-            MarkupRendererUtilities.syntaxHighlight(
-                payload = payload,
-                tokens = tokenize(payload),
-                theme = theme,
-                output = spannedTextFactory.create()
-            )
-        }.getOrElse { spannedTextFactory.create().apply { append(payload) } }
+            spannedText {
+                MarkupRendererUtilities.syntaxHighlight(
+                    payload = payload,
+                    tokens = tokenize(payload),
+                    theme = theme,
+                    output = this,
+                )
+            }
+        }.getOrElse { spannedText { append(payload) } }
 
     private fun tokenize(payload: String): List<MarkupToken> =
         MarkupRendererUtilities.tokenize(payload, HTMLLexer(CharStreams.fromString(payload))) { type ->

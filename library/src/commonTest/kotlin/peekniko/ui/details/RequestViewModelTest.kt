@@ -8,10 +8,10 @@ import dev.mokkery.mock
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.MutableSharedFlow
+import peekniko.useBBTextSpannedText
 import peekniko.NetworkCall
 import peekniko.NetworkHeader
 import peekniko.NetworkRepository
-import peekniko.SpannedTextBuilderBBText
 import peekniko.internal.bodyrenderer.*
 import peekniko.bbText
 import peekniko.sampleCall
@@ -19,6 +19,8 @@ import peekniko.sampleRequest
 import peekniko.withViewModel
 
 internal class RequestViewModelTest : FunSpec({
+    useBBTextSpannedText()
+
 
     suspend fun withFixture(block: suspend RequestViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
@@ -32,10 +34,10 @@ internal class RequestViewModelTest : FunSpec({
                     repository = repository,
                     themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
                     bodyRenderer = BodyRendererComposite(
-                        renderers = listOf(BodyRendererJson { SpannedTextBuilderBBText() }),
-                        fallback = BodyRendererPlainText { SpannedTextBuilderBBText() },
+                        renderers = listOf(BodyRendererJson()),
+                        fallback = BodyRendererPlainText(),
                     ),
-                    noopBodyRenderer = BodyRendererPlainText { SpannedTextBuilderBBText() },
+                    noopBodyRenderer = BodyRendererPlainText(),
                     transactionId = "request-id",
                 )
             },

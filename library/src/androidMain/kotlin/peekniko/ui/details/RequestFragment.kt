@@ -11,7 +11,7 @@ import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import peekniko.Peekniko
-import peekniko.internal.bodyrenderer.emptySpannedText
+import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.bodyrenderer.platformText
 import peekniko.internal.support.FlowCollectionFragment
 import peekniko.internal.support.viewById
@@ -86,7 +86,7 @@ internal class RequestFragment : FlowCollectionFragment(
             menuPrettyPrintState = state.prettyPrintState
             menuHost.invalidateMenu()
         }
-        val platformText = (state.body ?: emptySpannedText()).platformText
+        val platformText = (state.body ?: spannedText()).platformText
         body.text = platformText
         when {
             state.isLoading -> {

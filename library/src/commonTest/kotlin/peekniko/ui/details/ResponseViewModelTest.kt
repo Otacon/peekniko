@@ -12,6 +12,7 @@ import peekniko.*
 import peekniko.internal.bodyrenderer.*
 
 internal class ResponseViewModelTest : FunSpec({
+    useBBTextSpannedText()
 
     suspend fun withFixture(block: suspend ResponseViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
@@ -25,10 +26,10 @@ internal class ResponseViewModelTest : FunSpec({
                     repository = repository,
                     themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
                     bodyRenderer = BodyRendererComposite(
-                        renderers = listOf(BodyRendererJson { SpannedTextBuilderBBText() }),
-                        fallback = BodyRendererPlainText { SpannedTextBuilderBBText() },
+                        renderers = listOf(BodyRendererJson()),
+                        fallback = BodyRendererPlainText(),
                     ),
-                    noopBodyRenderer = BodyRendererPlainText { SpannedTextBuilderBBText() },
+                    noopBodyRenderer = BodyRendererPlainText(),
                     transactionId = "response-id",
                 )
             },

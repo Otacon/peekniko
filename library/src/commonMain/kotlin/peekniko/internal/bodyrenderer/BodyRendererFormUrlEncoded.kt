@@ -6,9 +6,7 @@ import peekniko.ui.details.BodyContentType
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.Token
 
-internal class BodyRendererFormUrlEncoded(
-    private val spannedTextFactory: SpannedTextBuilderFactory,
-) : BodyRenderer {
+internal class BodyRendererFormUrlEncoded : BodyRenderer {
     override val contentType: BodyContentType = BodyContentType.FORM_URL_ENCODED
 
     override fun supports(contentType: String?): Boolean =
@@ -30,8 +28,7 @@ internal class BodyRendererFormUrlEncoded(
         }
     }
 
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedTextBuilder {
-        val spanned = spannedTextFactory.create()
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?) = spannedText {
         var isValue = false
         for (token in tokenize(payload)) {
             val color = when (token.type) {
@@ -47,9 +44,8 @@ internal class BodyRendererFormUrlEncoded(
 
                 else -> if (isValue) theme.attributeValue else theme.key
             }
-            spanned.append(token.text.orEmpty(), color)
+            append(token.text.orEmpty(), color)
         }
-        return spanned
     }
 
     private fun tokenize(payload: String): Sequence<Token> {
