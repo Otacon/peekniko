@@ -23,8 +23,6 @@ dependencies {
 }
 ```
 
-The inspector needs the Swing coroutine dispatcher. Use the same version as your other coroutine dependencies.
-
 ## Configure Peekniko and storage
 
 Add storage to your startup configuration before creating your HTTP client:

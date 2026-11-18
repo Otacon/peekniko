@@ -15,10 +15,10 @@ kotlin {
     sourceSets.jvmMain.dependencies {
         implementation(project(":app"))
         implementation(project(":library"))
+        implementation(project(":library-client-ktor"))
+        implementation(project(":library-client-okhttp"))
         implementation(project(":library-storage-sqldelight"))
         implementation(compose.desktop.currentOs)
-        implementation(libs.flatlaf)
-        implementation(libs.kotlinx.coroutines.swing)
     }
 }
 

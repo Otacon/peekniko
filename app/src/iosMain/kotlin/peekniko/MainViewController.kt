@@ -3,16 +3,17 @@ package peekniko
 import androidx.compose.ui.window.ComposeUIViewController
 import platform.UIKit.UIViewController
 
-private var isAppModuleInitialized = false
+// Lives as long as the app, so requests keep running while Peekniko is presented.
+private val sampleViewModel: SampleViewModel by lazy {
+    AppModule.initialize()
+    SampleViewModel()
+}
 
 /** Entry point of the shared sample UI, hosted by the Xcode project in `appiOS`. */
 @Suppress("FunctionName", "unused")
 fun MainViewController(): UIViewController {
-    if (!isAppModuleInitialized) {
-        AppModule.initialize()
-        isAppModuleInitialized = true
-    }
+    val viewModel = sampleViewModel
     return ComposeUIViewController {
-        SampleApp(onOpenPeekniko = { Peekniko.present() })
+        SampleApp(viewModel = viewModel, onOpenPeekniko = { Peekniko.open() })
     }
 }

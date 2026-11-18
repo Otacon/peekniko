@@ -24,6 +24,6 @@ internal object LibraryDependencyParity {
         OkHttpClient.Builder()
             .addInterceptor(Peekniko.interceptor)
 
-        Peekniko.startPeeknikoActivity(context)
+        Peekniko.open(context)
     }
 }

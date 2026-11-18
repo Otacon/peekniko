@@ -5,16 +5,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 
 @Composable
-fun SampleApp(onOpenPeekniko: (() -> Unit)? = null) {
-    val viewModel = remember { SampleViewModel() }
-    DisposableEffect(viewModel) {
-        onDispose { viewModel.clear() }
-    }
-
+fun SampleApp(
+    viewModel: SampleViewModel,
+    onOpenPeekniko: (() -> Unit)? = null,
+) {
     SampleAppTheme {
         SampleScreen(
             viewModel = viewModel,

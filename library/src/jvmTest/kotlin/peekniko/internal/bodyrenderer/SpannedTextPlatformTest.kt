@@ -1,29 +1,36 @@
 package peekniko.internal.bodyrenderer
 
+import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.text.font.FontWeight
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import javax.swing.JTextPane
-import javax.swing.text.StyleConstants
 
 internal class SpannedTextPlatformTest : FunSpec({
-    test("builds styled Swing text") {
+    test("builds styled Compose text") {
         val builder = defaultSpannedTextBuilderFactory().create()
         builder.append("plain ")
         builder.append("bold", Color(255, 0, 0), isBold = true)
 
-        val document = (builder.build() as NativeSpannedText).platformText
+        val text = builder.build().toAnnotatedString()
 
-        document.getText(0, document.length) shouldBe "plain bold"
-        val attributes = document.getCharacterElement(6).attributes
-        StyleConstants.getForeground(attributes) shouldBe java.awt.Color(255, 0, 0)
-        StyleConstants.isBold(attributes) shouldBe true
+        text.text shouldBe "plain bold"
+        val style = text.spanStyles.single()
+        style.start shouldBe 6
+        style.end shouldBe 10
+        style.item.color shouldBe ComposeColor.Red
+        style.item.fontWeight shouldBe FontWeight.Bold
     }
 
-    test("uses an empty document when setting null text") {
-        val textPane = JTextPane()
+    test("copies styles when appending another builder") {
+        val inner = defaultSpannedTextBuilderFactory().create()
+        inner.append("red", Color(255, 0, 0))
+        val outer = defaultSpannedTextBuilderFactory().create()
+        outer.append("> ")
+        outer.append(inner)
 
-        textPane.setSpannedText(null)
+        val text = outer.build().toAnnotatedString()
 
-        textPane.document.length shouldBe 0
+        text.text shouldBe "> red"
+        text.spanStyles.single().start shouldBe 2
     }
 })

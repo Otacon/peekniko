@@ -1,5 +1,6 @@
 package peekniko
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -23,7 +24,9 @@ public class PeeknikoInitializer : Initializer<Unit> {
     override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()
 }
 
-public fun Peekniko.startPeeknikoActivity(context: Context) {
+/** Opens the Peekniko inspector in its own activity. */
+public fun Peekniko.open(context: Context) {
     val intent = Intent(context, PeeknikoActivity::class.java)
+    if (context !is Activity) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
 }

@@ -1,17 +1,5 @@
 package peekniko.internal.support
 
-import java.awt.Color
-import javax.swing.UIDefaults
-
-internal val UIDefaults.separatorForeground: Color?
-    get() = getColor("Separator.foreground")
-
-internal val UIDefaults.disabledForeground: Color?
-    get() = getColor("Label.disabledForeground")
-
-internal val UIDefaults.componentErrorFocusedBorderColor: Color?
-    get() = getColor("Component.error.focusedBorderColor")
-
 internal actual fun isSystemDarkMode(): Boolean = when {
     System.getProperty("os.name").startsWith("Mac", ignoreCase = true) ->
         runCatching {
