@@ -8,22 +8,26 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
 import peekniko.internal.bodyrenderer.emptySpannedText
 import peekniko.internal.bodyrenderer.toAnnotatedString
+import peekniko.ui.details.ResponseViewModel
 
 @Composable
 internal fun ResponseTab(callId: String, modifier: Modifier = Modifier) {
-    val viewModel = remember(callId) { Peekniko.createResponseViewModel(callId) }
-    DisposableEffect(viewModel) { onDispose { viewModel.clear() } }
+    val viewModel = retainedViewModel(ResponseViewModel::class) { Peekniko.createResponseViewModel(callId) }
     val state by viewModel.state.collectAsState()
+    TopBarActionsEffect {
+        PrettyPrintAction(
+            isPrettyPrintEnabled = state.isPrettyPrintEnabled,
+            onClick = { viewModel.onPrettyPrintClick(!state.isPrettyPrintEnabled) },
+        )
+    }
     val body = (state.body ?: emptySpannedText()).toAnnotatedString()
     SelectionContainer {
         if (body.isEmpty()) {
