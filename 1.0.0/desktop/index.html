@@ -1367,9 +1367,24 @@
 <li><a href="ktor/">Ktor</a></li>
 </ul>
 <h2 id="open-peekniko">Open Peekniko</h2>
-<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-1-1"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.ui.openPeeknikoWindow</span>
-</span><span id="__span-1-2">
-</span><span id="__span-1-3"><span class="n">openPeeknikoWindow</span><span class="p">()</span>
+<p>Peekniko's inspector is built with Compose Multiplatform, so your app needs the Compose Desktop runtime for its OS on the classpath. Compose Desktop apps already have it; other JVM apps can add it with the Compose Gradle plugin:</p>
+<div class="language-kotlin highlight"><span class="filename">build.gradle.kts</span><pre><span></span><code><span id="__span-1-1"><span class="n">dependencies</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><span class="w">    </span><span class="n">implementation</span><span class="p">(</span><span class="n">compose</span><span class="p">.</span><span class="na">desktop</span><span class="p">.</span><span class="na">currentOs</span><span class="p">)</span>
+</span><span id="__span-1-3"><span class="p">}</span>
+</span></code></pre></div>
+<p>Open the inspector in its own window:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.Peekniko</span>
+</span><span id="__span-2-2"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.open</span>
+</span><span id="__span-2-3">
+</span><span id="__span-2-4"><span class="n">Peekniko</span><span class="p">.</span><span class="na">open</span><span class="p">()</span>
+</span></code></pre></div>
+<p>Or embed it in a Compose window you manage yourself:</p>
+<div class="language-kotlin highlight"><pre><span></span><code><span id="__span-3-1"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.Peekniko</span>
+</span><span id="__span-3-2"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.ui.Screen</span>
+</span><span id="__span-3-3">
+</span><span id="__span-3-4"><span class="n">Window</span><span class="p">(</span><span class="n">onCloseRequest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">showPeekniko</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Peekniko"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-5"><span class="w">    </span><span class="n">Peekniko</span><span class="p">.</span><span class="na">Screen</span><span class="p">(</span><span class="n">onClose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">showPeekniko</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="p">})</span>
+</span><span id="__span-3-6"><span class="p">}</span>
 </span></code></pre></div>
 <p>Peekniko also adds a system tray icon that shows new calls and opens the inspector.</p>
 

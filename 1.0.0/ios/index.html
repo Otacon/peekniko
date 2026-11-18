@@ -1396,14 +1396,14 @@
 <h2 id="open-peekniko">Open Peekniko</h2>
 <p>The inspector is a Compose Multiplatform screen. Present it from the main thread:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-2-1"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.Peekniko</span>
-</span><span id="__span-2-2"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.present</span>
+</span><span id="__span-2-2"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.open</span>
 </span><span id="__span-2-3">
-</span><span id="__span-2-4"><span class="n">Peekniko</span><span class="p">.</span><span class="na">present</span><span class="p">()</span>
+</span><span id="__span-2-4"><span class="n">Peekniko</span><span class="p">.</span><span class="na">open</span><span class="p">()</span>
 </span></code></pre></div>
 <p>From Swift, with the framework exporting Peekniko:</p>
-<div class="language-swift highlight"><pre><span></span><code><span id="__span-3-1"><span class="n">Peekniko</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">present</span><span class="p">(</span><span class="n">from</span><span class="p">:</span><span class="w"> </span><span class="kc">nil</span><span class="p">)</span>
+<div class="language-swift highlight"><pre><span></span><code><span id="__span-3-1"><span class="n">Peekniko</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">from</span><span class="p">:</span><span class="w"> </span><span class="kc">nil</span><span class="p">)</span>
 </span></code></pre></div>
-<p>To embed it yourself, use <code>Peekniko.viewController(onClose)</code> or, inside Compose, <code>Peekniko.Screen()</code>.</p>
+<p>To embed it in your own Compose UI, use <code>Peekniko.Screen()</code>.</p>
 <h2 id="notifications">Notifications</h2>
 <p>Peekniko posts a quiet notification listing the latest calls once notifications are authorized. It asks for permission
 the first time its screen opens, unless your app has already asked.</p>
