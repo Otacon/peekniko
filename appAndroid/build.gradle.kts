@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeCompiler)
 }
 
 dependencies {
@@ -15,8 +14,10 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.okhttp)
     implementation(libs.ktor.client.okhttp)
-    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.kotlinx.coroutines.android)
 }
 
