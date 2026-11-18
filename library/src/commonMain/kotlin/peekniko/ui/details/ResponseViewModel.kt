@@ -1,68 +1,83 @@
 package peekniko.ui.details
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import peekniko.NetworkRepository
 import peekniko.NetworkResponse
-import peekniko.internal.bodyrenderer.BodyRendererComposite
-import peekniko.internal.bodyrenderer.BodyRendererTheme
-import peekniko.internal.bodyrenderer.BodyRendererThemeProvider
-import peekniko.internal.bodyrenderer.SpannedText
-import peekniko.internal.bodyrenderer.spannedText
+import peekniko.internal.bodyrenderer.*
 import peekniko.internal.support.ViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class ResponseViewModel(
     repository: NetworkRepository,
     private val themeProvider: BodyRendererThemeProvider,
     private val bodyRenderer: BodyRendererComposite,
+    private val noopBodyRenderer: BodyRenderer,
     transactionId: String,
 ) : ViewModel() {
 
     private val theme = MutableStateFlow(themeProvider.theme)
+    private val isPrettyPrintEnabled = MutableStateFlow(true)
     private val transaction = repository.observeById(transactionId)
 
-    val state: StateFlow<State> = combine(transaction, theme) { call, theme -> call?.response to theme }
-        .mapLatest { (response, theme) -> response.toState(theme) }
-        .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
+    val state: StateFlow<State> = combine(
+        transaction,
+        theme,
+        isPrettyPrintEnabled
+    ) { call, theme, prettyPrint ->
+        call?.response.toState(theme, prettyPrint)
+    }.stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
     fun onViewCreated() {
         theme.value = themeProvider.theme
     }
 
-    private suspend fun NetworkResponse?.toState(theme: BodyRendererTheme) = withContext(Dispatchers.Default) {
+    fun onPrettyPrintClick(enabled: Boolean) {
+        isPrettyPrintEnabled.value = enabled
+    }
+
+    private suspend fun NetworkResponse?.toState(
+        theme: BodyRendererTheme,
+        prettyPrint: Boolean,
+    ) = withContext(Dispatchers.Default) {
         when (this@toState) {
             is NetworkResponse.Error -> {
-                val errorText = spannedText { append("${exceptionMessage}\n$stackTrace") }.build()
+                val payload = "${exceptionMessage}\n$stackTrace"
+                val errorText = noopBodyRenderer.syntaxHighlight(
+                    theme = theme,
+                    payload = payload,
+                    contentType = null,
+                ).build()
                 State(
                     isLoading = false,
                     body = errorText,
                     contentType = BodyContentType.PLAIN_TEXT,
+                    isPrettyPrintEnabled = prettyPrint,
                 )
             }
 
             is NetworkResponse.Response -> {
                 val body = body?.decodeToString().orEmpty()
-                val rawContentType =
-                    headers.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value
-                val formatted = bodyRenderer.format(body, rawContentType)
-                val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, rawContentType)
+                val rawContentType = headers
+                    .firstOrNull { it.name.equals("content-type", ignoreCase = true) }
+                    ?.value
+
+                val renderedBody = if (prettyPrint) {
+                    val formatted = bodyRenderer.format(body, rawContentType)
+                    bodyRenderer.syntaxHighlight(theme, formatted, rawContentType)
+                } else {
+                    noopBodyRenderer.syntaxHighlight(theme = theme, payload = body, contentType = null).build()
+                }
                 val contentType = bodyRenderer.contentType(rawContentType)
                 State(
                     isLoading = false,
-                    body = highlighted,
-                    contentType = contentType
+                    body = renderedBody,
+                    contentType = contentType,
+                    isPrettyPrintEnabled = prettyPrint,
                 )
             }
 
-            null -> State(isLoading = false)
+            null -> State(isLoading = false, isPrettyPrintEnabled = prettyPrint)
         }
     }
 
@@ -70,5 +85,6 @@ internal class ResponseViewModel(
         val isLoading: Boolean = true,
         val body: SpannedText? = null,
         val contentType: BodyContentType = BodyContentType.PLAIN_TEXT,
+        val isPrettyPrintEnabled: Boolean = true,
     )
 }

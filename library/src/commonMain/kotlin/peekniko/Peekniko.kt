@@ -1,13 +1,8 @@
 package peekniko
 
-import peekniko.internal.bodyrenderer.BodyRendererComposite
-import peekniko.internal.bodyrenderer.BodyRendererFormUrlEncoded
-import peekniko.internal.bodyrenderer.BodyRendererHtml
-import peekniko.internal.bodyrenderer.BodyRendererJson
-import peekniko.internal.bodyrenderer.BodyRendererPlainText
-import peekniko.internal.bodyrenderer.BodyRendererThemeProvider
-import peekniko.internal.bodyrenderer.BodyRendererXml
-import peekniko.internal.bodyrenderer.defaultSpannedTextBuilderFactory
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import peekniko.internal.bodyrenderer.*
 import peekniko.internal.notifications.Notifications
 import peekniko.internal.notifications.RepositoryNotificationObserver
 import peekniko.internal.notifications.createNotifications
@@ -20,8 +15,6 @@ import peekniko.ui.details.RequestViewModel
 import peekniko.ui.details.ResponseViewModel
 import peekniko.ui.details.SummaryViewModel
 import peekniko.ui.networkcalls.PeeknikoViewModel
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 
 public object Peekniko {
     private val initializationLock = SynchronizedObject()
@@ -82,19 +75,25 @@ public object Peekniko {
     internal fun createSummaryViewModel(transactionId: String): SummaryViewModel =
         SummaryViewModel(networkRepository, transactionId)
 
-    internal fun createRequestViewModel(transactionId: String): RequestViewModel =
-        RequestViewModel(
+    internal fun createRequestViewModel(transactionId: String): RequestViewModel {
+        val spannedTextFactory = defaultSpannedTextBuilderFactory()
+        return RequestViewModel(
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
+            noopBodyRenderer = BodyRendererPlainText(spannedTextFactory),
             transactionId = transactionId
         )
+    }
 
-    internal fun createResponseViewModel(transactionId: String): ResponseViewModel =
-        ResponseViewModel(
+    internal fun createResponseViewModel(transactionId: String): ResponseViewModel {
+        val spannedTextFactory = defaultSpannedTextBuilderFactory()
+        return ResponseViewModel(
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
+            noopBodyRenderer = BodyRendererPlainText(spannedTextFactory),
             transactionId = transactionId,
         )
+    }
 }

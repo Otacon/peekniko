@@ -25,9 +25,10 @@ internal class ResponseViewModelTest : FunSpec({
                     repository = repository,
                     themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
                     bodyRenderer = BodyRendererComposite(
-                        renderers = emptyList(),
-                        fallback = BodyRendererPlainText(defaultSpannedTextBuilderFactory()),
+                        renderers = listOf(BodyRendererJson { SpannedTextBuilderBBText() }),
+                        fallback = BodyRendererPlainText { SpannedTextBuilderBBText() },
                     ),
+                    noopBodyRenderer = BodyRendererPlainText { SpannedTextBuilderBBText() },
                     transactionId = "response-id",
                 )
             },
@@ -125,6 +126,92 @@ internal class ResponseViewModelTest : FunSpec({
                         ),
                     )
                     awaitItem().contentType shouldBe BodyContentType.PLAIN_TEXT
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
+        test("shows the exception message and stack trace as plain text") {
+            withFixture { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(
+                        sampleCall(
+                            id = "response-id",
+                            request = sampleRequest(),
+                            response = sampleError(),
+                        ),
+                    )
+                    awaitItem().body.bbText shouldBe "connection failed\ntrace line 1\ntrace line 2"
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
+        test("shows the exception message and stack trace as plain text when pretty print is disabled") {
+            withFixture { transaction ->
+                state.test {
+                    awaitItem()
+                    onPrettyPrintClick(false)
+                    transaction.emit(
+                        sampleCall(
+                            id = "response-id",
+                            request = sampleRequest(),
+                            response = sampleError(),
+                        ),
+                    )
+                    val error = awaitItem()
+                    error.isPrettyPrintEnabled shouldBe false
+                    error.body.bbText shouldBe "connection failed\ntrace line 1\ntrace line 2"
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+    }
+
+    context("pretty print") {
+        val rawJson = """{"name":"Ada"}"""
+        val prettyJson =
+            "[c=Light.separator]{[/c]\n" +
+                "  [c=Light.key]\"name\"[/c][c=Light.separator]:[/c] [c=Light.string]\"Ada\"[/c]\n" +
+                "[c=Light.separator]}[/c]"
+        val jsonCall = sampleCall(
+            id = "response-id",
+            request = sampleRequest(),
+            response = sampleResponse(
+                body = rawJson.encodeToByteArray(),
+                headers = listOf(NetworkHeader("Content-Type", "application/json")),
+            ),
+        )
+
+        test("is enabled by default") {
+            withFixture { state.value.isPrettyPrintEnabled shouldBe true }
+        }
+
+        test("formats and highlights the body when enabled") {
+            withFixture { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(jsonCall)
+                    val loaded = awaitItem()
+                    loaded.isPrettyPrintEnabled shouldBe true
+                    loaded.body.bbText shouldBe prettyJson
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
+        test("shows the raw body when disabled") {
+            withFixture { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(jsonCall)
+                    awaitItem()
+                    onPrettyPrintClick(false)
+                    val raw = awaitItem()
+                    raw.isPrettyPrintEnabled shouldBe false
+                    raw.body.bbText shouldBe rawJson
+                    raw.contentType shouldBe BodyContentType.JSON
                     cancelAndIgnoreRemainingEvents()
                 }
             }

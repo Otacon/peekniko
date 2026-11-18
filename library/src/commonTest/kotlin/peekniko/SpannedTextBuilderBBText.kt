@@ -20,8 +20,7 @@ internal class SpannedTextBuilderBBText : SpannedTextBuilder {
         content.append(other as SpannedTextBuilderBBText)
     }
 
-    @Deprecated("Does not work on tests", replaceWith = ReplaceWith("buildText"))
-    override fun build(): SpannedText = throw IllegalStateException("Use buildText() instead")
+    override fun build(): SpannedText = SpannedTextBBText(buildText())
 
     fun buildText(): String = content.toString()
 
@@ -64,3 +63,8 @@ internal class SpannedTextBuilderBBText : SpannedTextBuilder {
             .replace("[", "\\[")
             .replace("]", "\\]")
 }
+
+internal data class SpannedTextBBText(val text: String) : SpannedText
+
+internal val SpannedText?.bbText: String
+    get() = (this as SpannedTextBBText).text
