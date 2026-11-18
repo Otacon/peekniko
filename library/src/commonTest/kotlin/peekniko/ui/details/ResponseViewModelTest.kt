@@ -12,8 +12,6 @@ import peekniko.*
 import peekniko.internal.bodyrenderer.*
 
 internal class ResponseViewModelTest : FunSpec({
-    useBBTextSpannedText()
-
     suspend fun withFixture(block: suspend ResponseViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
         val transaction = MutableSharedFlow<NetworkCall?>(replay = 1)

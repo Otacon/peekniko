@@ -5,8 +5,6 @@ import peekniko.internal.bodyrenderer.Color
 import peekniko.internal.bodyrenderer.SpannedText
 import peekniko.internal.bodyrenderer.SpannedTextBuilder
 import peekniko.internal.bodyrenderer.SpannedTextBuilderFactory
-import peekniko.internal.bodyrenderer.SpannedTextDefaults
-import io.kotest.core.spec.Spec
 
 internal class SpannedTextBuilderBBText : SpannedTextBuilder {
     private val content = StringBuilder()
@@ -73,14 +71,3 @@ internal val SpannedText?.bbText: String
     get() = (this as SpannedTextBBText).text
 
 internal val SpannedTextBuilderFactoryBBText = SpannedTextBuilderFactory { SpannedTextBuilderBBText() }
-
-internal fun Spec.useBBTextSpannedText() {
-    var previous: SpannedTextBuilderFactory? = null
-    beforeSpec {
-        previous = SpannedTextDefaults.factory
-        SpannedTextDefaults.factory = SpannedTextBuilderFactoryBBText
-    }
-    afterSpec {
-        previous?.let { SpannedTextDefaults.factory = it }
-    }
-}

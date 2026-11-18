@@ -8,7 +8,6 @@ import dev.mokkery.mock
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.MutableSharedFlow
-import peekniko.useBBTextSpannedText
 import peekniko.NetworkCall
 import peekniko.NetworkHeader
 import peekniko.NetworkRepository
@@ -19,8 +18,6 @@ import peekniko.sampleRequest
 import peekniko.withViewModel
 
 internal class RequestViewModelTest : FunSpec({
-    useBBTextSpannedText()
-
     suspend fun withFixture(block: suspend RequestViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
         val transaction = MutableSharedFlow<NetworkCall?>(replay = 1)

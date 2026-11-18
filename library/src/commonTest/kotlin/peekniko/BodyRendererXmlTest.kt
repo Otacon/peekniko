@@ -8,8 +8,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 internal class BodyRendererXmlTest : FunSpec({
-    useBBTextSpannedText()
-
     lateinit var renderer: BodyRendererXml
 
     beforeTest {

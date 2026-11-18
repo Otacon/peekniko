@@ -8,8 +8,6 @@ import peekniko.internal.bodyrenderer.BodyRendererTheme
 import peekniko.internal.bodyrenderer.BodyRendererXml
 
 internal class BodyRendererCompositeTest : FunSpec({
-    useBBTextSpannedText()
-
     val renderer = BodyRendererComposite(renderers = listOf(BodyRendererJson(), BodyRendererXml()))
 
     context("content type support") {

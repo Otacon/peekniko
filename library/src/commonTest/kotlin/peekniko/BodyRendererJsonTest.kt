@@ -6,8 +6,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 internal class BodyRendererJsonTest : FunSpec({
-    useBBTextSpannedText()
-
     lateinit var renderer: BodyRendererJson
 
     beforeTest {

@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import peekniko.*
 
 internal class SummaryViewModelTest : FunSpec({
-    useBBTextSpannedText()
-
     suspend fun withFixture(block: suspend SummaryViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
         val transaction = MutableSharedFlow<NetworkCall?>(replay = 1)
