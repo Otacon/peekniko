@@ -1,6 +1,7 @@
 package peekniko.ui.details
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import peekniko.NetworkRepository
@@ -8,6 +9,7 @@ import peekniko.NetworkResponse
 import peekniko.internal.bodyrenderer.*
 import peekniko.internal.support.ViewModel
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class ResponseViewModel(
     repository: NetworkRepository,
     private val themeProvider: BodyRendererThemeProvider,
@@ -24,7 +26,9 @@ internal class ResponseViewModel(
         theme,
         isPrettyPrintEnabled
     ) { call, theme, prettyPrintEnabled ->
-        call?.response.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled)
+        Triple(call?.response, theme, prettyPrintEnabled)
+    }.mapLatest { (response, theme, prettyPrintEnabled) ->
+        response.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled)
     }.stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
     fun onViewCreated() {
