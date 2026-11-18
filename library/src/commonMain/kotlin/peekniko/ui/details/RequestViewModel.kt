@@ -11,8 +11,7 @@ import peekniko.internal.support.ViewModel
 internal class RequestViewModel(
     repository: NetworkRepository,
     private val themeProvider: BodyRendererThemeProvider,
-    private val bodyRenderer: BodyRendererComposite,
-    private val noopBodyRenderer: BodyRenderer,
+    private val bodyRenderer: BodyRenderer,
     transactionId: String,
 ) : ViewModel() {
 
@@ -43,43 +42,28 @@ internal class RequestViewModel(
         if (this@toState == null) {
             return@withContext State(
                 isLoading = false,
-                body = spannedText(),
+                body = null,
                 prettyPrintState = PrettyPrintState.Unavailable,
             )
         }
         val bodyText = body?.decodeToString().orEmpty()
         val rawContentType = headers.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value
-        val isContentTypeSupported = bodyRenderer.supports(rawContentType)
+        val supportedContentType = rawContentType?.takeIf { bodyText.isNotBlank() && bodyRenderer.supports(it) }
         val (renderedBody, prettyPrintState) = when {
-            !isContentTypeSupported || bodyText.isBlank() -> {
-                val text = noopBodyRenderer.syntaxHighlight(
-                    theme = theme,
-                    payload = bodyText,
-                    contentType = null
-                )
-                text to PrettyPrintState.Unavailable
-            }
+            supportedContentType == null -> spannedText { append(bodyText) } to PrettyPrintState.Unavailable
 
             prettyPrintEnabled -> {
-                val formatted = bodyRenderer.format(bodyText, rawContentType)
-                val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, rawContentType)
-                highlighted to PrettyPrintState.Enabled
+                val formatted = bodyRenderer.format(bodyText, supportedContentType) ?: bodyText
+                val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, supportedContentType)
+                val highlightedOrPlain = highlighted ?: spannedText { append(formatted) }
+                highlightedOrPlain to PrettyPrintState.Enabled
             }
 
-            else -> {
-                val text = noopBodyRenderer.syntaxHighlight(
-                    theme = theme,
-                    payload = bodyText,
-                    contentType = null
-                )
-                text to PrettyPrintState.Disabled
-            }
+            else -> spannedText { append(bodyText) } to PrettyPrintState.Disabled
         }
-        val contentType = bodyRenderer.contentType(rawContentType)
         State(
             isLoading = false,
             body = renderedBody,
-            contentType = contentType,
             prettyPrintState = prettyPrintState,
         )
     }
@@ -87,7 +71,6 @@ internal class RequestViewModel(
     internal data class State(
         val isLoading: Boolean = true,
         val body: SpannedText? = null,
-        val contentType: BodyContentType = BodyContentType.PLAIN_TEXT,
         val prettyPrintState: PrettyPrintState = PrettyPrintState.Unavailable,
     )
 }

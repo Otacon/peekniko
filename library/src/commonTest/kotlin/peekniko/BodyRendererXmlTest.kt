@@ -33,10 +33,6 @@ internal class BodyRendererXmlTest : FunSpec({
             renderer.supports("application/xml; charset=utf-8") shouldBe true
         }
 
-        test("does not support a missing media type") {
-            renderer.supports(null) shouldBe false
-        }
-
         test("does not support an unrelated media type") {
             renderer.supports("text/plain") shouldBe false
         }

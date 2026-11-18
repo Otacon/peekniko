@@ -2,7 +2,6 @@ package peekniko
 
 import peekniko.internal.bodyrenderer.BodyRendererFormUrlEncoded
 import peekniko.internal.bodyrenderer.BodyRendererTheme
-import peekniko.ui.details.BodyContentType
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -26,10 +25,6 @@ internal class BodyRendererFormUrlEncodedTest : FunSpec({
 
         test("matches the content type case-insensitively") {
             renderer.supports("APPLICATION/X-WWW-FORM-URLENCODED") shouldBe true
-        }
-
-        test("does not support a missing content type") {
-            renderer.supports(null) shouldBe false
         }
 
         test("does not support other content types") {
@@ -62,10 +57,6 @@ internal class BodyRendererFormUrlEncodedTest : FunSpec({
         test("formats equals, ampersands, and plus signs") {
             renderer.format("name=Ada&city=New+York", "application/x-www-form-urlencoded") shouldBe
                     "name = Ada\ncity = New York"
-        }
-
-        test("exposes the form-urlencoded content type") {
-            renderer.contentType shouldBe BodyContentType.FORM_URL_ENCODED
         }
     }
 })

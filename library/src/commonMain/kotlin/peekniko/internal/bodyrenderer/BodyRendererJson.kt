@@ -4,31 +4,25 @@ import peekniko.internal.json.generated.JSONBaseVisitor
 import peekniko.internal.json.generated.JSONLexer
 import peekniko.internal.json.generated.JSONLexer.Tokens
 import peekniko.internal.json.generated.JSONParser
-import peekniko.ui.details.BodyContentType
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.Token
 
 internal class BodyRendererJson : BodyRenderer {
-    override val contentType: BodyContentType = BodyContentType.JSON
-
-    override fun supports(contentType: String?): Boolean {
-        val mediaType = contentType?.substringBefore(';')?.trim()?.lowercase()
-        return mediaType == "application/json" || mediaType == "text/json" || mediaType?.endsWith("+json") == true
+    override fun supports(contentType: String): Boolean {
+        val mediaType = contentType.substringBefore(';').trim().lowercase()
+        return mediaType == "application/json" || mediaType == "text/json" || mediaType.endsWith("+json")
     }
 
-    override fun format(payload: String, contentType: String?): String =
-        runCatching {
-            with(FormatVisitor()) {
-                visit(parse(payload))
-                formattedText()
-            }
+    override fun format(payload: String, contentType: String): String? = runCatching {
+        with(FormatVisitor()) {
+            visit(parse(payload))
+            formattedText()
+        }
+    }.getOrNull()
 
-        }.getOrElse { payload }
-
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String?): SpannedText =
-        runCatching { highlight(payload, theme) }
-            .getOrElse { spannedText { append(payload) } }
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String): SpannedText? =
+        runCatching { highlight(payload, theme) }.getOrNull()
 
     private fun parse(payload: String): JSONParser.JsonContext {
         val lexer = JSONLexer(CharStreams.fromString(payload))
@@ -52,6 +46,7 @@ internal class BodyRendererJson : BodyRenderer {
                     val text = token.text.orEmpty()
                     if (text.contains('.') || text.contains('e', ignoreCase = true)) theme.number else theme.integer
                 }
+
                 Tokens.BOOLEAN -> theme.boolean
                 Tokens.NULL -> theme.nullValue
                 else -> theme.separator

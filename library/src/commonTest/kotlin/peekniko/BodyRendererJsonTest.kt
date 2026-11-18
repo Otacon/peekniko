@@ -2,7 +2,6 @@ package peekniko
 
 import peekniko.internal.bodyrenderer.BodyRendererJson
 import peekniko.internal.bodyrenderer.BodyRendererTheme
-import peekniko.ui.details.BodyContentType
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -38,10 +37,6 @@ internal class BodyRendererJsonTest : FunSpec({
 
         test("matches media types case-insensitively") {
             renderer.supports("APPLICATION/JSON") shouldBe true
-        }
-
-        test("does not support a missing media type") {
-            renderer.supports(null) shouldBe false
         }
 
         test("does not support an unrelated media type") {
@@ -119,7 +114,7 @@ internal class BodyRendererJsonTest : FunSpec({
     }
 
     context("formatting") {
-        test("formats valid JSON without affecting renderer content type") {
+        test("formats valid JSON") {
             val input = """{"name":"Ada"}"""
             val expected = """
                 {
@@ -127,7 +122,6 @@ internal class BodyRendererJsonTest : FunSpec({
                 }
             """.trimIndent()
 
-            renderer.contentType shouldBe BodyContentType.JSON
             renderer.format(input, "application/json") shouldBe expected
         }
 
@@ -145,6 +139,10 @@ internal class BodyRendererJsonTest : FunSpec({
             """.trimIndent()
 
             renderer.format(input, "application/json") shouldBe expected
+        }
+
+        test("returns null when the payload is not valid JSON") {
+            renderer.format("{not valid JSON]", "application/json") shouldBe null
         }
     }
 })

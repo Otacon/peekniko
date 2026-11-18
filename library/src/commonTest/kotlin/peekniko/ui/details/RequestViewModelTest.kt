@@ -21,7 +21,6 @@ import peekniko.withViewModel
 internal class RequestViewModelTest : FunSpec({
     useBBTextSpannedText()
 
-
     suspend fun withFixture(block: suspend RequestViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
         val transaction = MutableSharedFlow<NetworkCall?>(replay = 1)
@@ -35,9 +34,7 @@ internal class RequestViewModelTest : FunSpec({
                     themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
                     bodyRenderer = BodyRendererComposite(
                         renderers = listOf(BodyRendererJson()),
-                        fallback = BodyRendererPlainText(),
                     ),
-                    noopBodyRenderer = BodyRendererPlainText(),
                     transactionId = "request-id",
                 )
             },
@@ -47,9 +44,6 @@ internal class RequestViewModelTest : FunSpec({
     context("initial state") {
         test("starts loading") {
             withFixture { state.value.isLoading shouldBe true }
-        }
-        test("has content type PLAIN_TEXT") {
-            withFixture { state.value.contentType shouldBe BodyContentType.PLAIN_TEXT }
         }
     }
 
@@ -73,17 +67,6 @@ internal class RequestViewModelTest : FunSpec({
                     awaitItem()
                     transaction.emit(sampleCall())
                     awaitItem().isLoading shouldBe false
-                    cancelAndIgnoreRemainingEvents()
-                }
-            }
-        }
-
-        test("uses plain-text content type for the request body") {
-            withFixture { transaction ->
-                state.test {
-                    awaitItem()
-                    transaction.emit(sampleCall())
-                    awaitItem().contentType shouldBe BodyContentType.PLAIN_TEXT
                     cancelAndIgnoreRemainingEvents()
                 }
             }
@@ -146,7 +129,6 @@ internal class RequestViewModelTest : FunSpec({
                         val raw = awaitItem()
                         raw.prettyPrintState shouldBe PrettyPrintState.Disabled
                         raw.body.bbText shouldBe rawJson
-                        raw.contentType shouldBe BodyContentType.JSON
                         cancelAndIgnoreRemainingEvents()
                     }
                 }

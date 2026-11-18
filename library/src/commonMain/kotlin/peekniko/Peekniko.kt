@@ -47,7 +47,7 @@ public object Peekniko {
         }
     }
 
-    internal val bodyRenderer: BodyRendererComposite by lazy {
+    internal val bodyRenderer: BodyRenderer by lazy {
         BodyRendererComposite(
             renderers = listOf(
                 BodyRendererJson(),
@@ -55,7 +55,6 @@ public object Peekniko {
                 BodyRendererHtml(),
                 BodyRendererFormUrlEncoded(),
             ),
-            fallback = BodyRendererPlainText(),
         )
     }
 
@@ -69,7 +68,7 @@ public object Peekniko {
         store.getOrCreate(PeeknikoViewModel::class, peeknikoViewModel)
 
     internal fun createNetworkCallDetailViewModel(transactionId: String?): NetworkCallDetailViewModel =
-        NetworkCallDetailViewModel(networkRepository, bodyRenderer, transactionId)
+        NetworkCallDetailViewModel(networkRepository, transactionId)
 
     internal fun createSummaryViewModel(transactionId: String): SummaryViewModel =
         SummaryViewModel(networkRepository, transactionId)
@@ -79,7 +78,6 @@ public object Peekniko {
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
-            noopBodyRenderer = BodyRendererPlainText(),
             transactionId = transactionId
         )
     }
@@ -89,7 +87,6 @@ public object Peekniko {
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
-            noopBodyRenderer = BodyRendererPlainText(),
             transactionId = transactionId,
         )
     }

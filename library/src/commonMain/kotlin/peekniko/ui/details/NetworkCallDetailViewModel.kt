@@ -6,7 +6,6 @@ import peekniko.NetworkRepository
 import peekniko.NetworkResponse
 import peekniko.fullUrl
 import peekniko.pathAndQueryParams
-import peekniko.internal.bodyrenderer.BodyRendererComposite
 import peekniko.internal.formatting.formatPayloadSize
 import peekniko.internal.formatting.toReadableTime
 import peekniko.internal.http.httpMessage
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.SharingStarted
 
 internal class NetworkCallDetailViewModel(
     networkRepository: NetworkRepository,
-    private val bodyRenderer: BodyRendererComposite,
     transactionId: String?,
 ) : ViewModel() {
 
@@ -131,12 +129,6 @@ internal class NetworkCallDetailViewModel(
             ?: "Pending"
         val requestTime = request.timestamp.toReadableTime()
         val responseTime = responseTimestamp?.toReadableTime() ?: "Pending"
-        val requestContentType = bodyRenderer.contentType(
-            request.headers.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value,
-        )
-        val responseContentType = bodyRenderer.contentType(
-            responseHeaders.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value,
-        )
         val overview = buildList {
             add(NetworkHeader("Full URL", request.fullUrl))
             add(NetworkHeader("Method", request.method.name))
@@ -172,8 +164,6 @@ internal class NetworkCallDetailViewModel(
             requestHeaders = request.headers,
             responseHeaders = responseHeaders,
             overviewHeaders = overview,
-            requestContentType = requestContentType,
-            responseContentType = responseContentType,
             rawRequestBody = request.body?.decodeToString(),
             rawResponseBody = responseBody?.decodeToString(),
             curl = buildCurl(),

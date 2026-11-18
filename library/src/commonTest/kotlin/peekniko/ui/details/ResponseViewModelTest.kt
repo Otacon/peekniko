@@ -27,9 +27,7 @@ internal class ResponseViewModelTest : FunSpec({
                     themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
                     bodyRenderer = BodyRendererComposite(
                         renderers = listOf(BodyRendererJson()),
-                        fallback = BodyRendererPlainText(),
                     ),
-                    noopBodyRenderer = BodyRendererPlainText(),
                     transactionId = "response-id",
                 )
             },
@@ -39,9 +37,6 @@ internal class ResponseViewModelTest : FunSpec({
     context("initial state") {
         test("starts loading") {
             withFixture { state.value.isLoading shouldBe true }
-        }
-        test("has content type PLAIN_TEXT") {
-            withFixture { state.value.contentType shouldBe BodyContentType.PLAIN_TEXT }
         }
     }
 
@@ -75,26 +70,6 @@ internal class ResponseViewModelTest : FunSpec({
                 }
             }
         }
-
-        test("uses the response body content type") {
-            withFixture { transaction ->
-                state.test {
-                    awaitItem()
-                    transaction.emit(
-                        sampleCall(
-                            id = "response-id",
-                            request = sampleRequest(),
-                            response = sampleResponse(
-                                body = "response body".encodeToByteArray(),
-                                headers = listOf(NetworkHeader("Content-Type", "text/plain")),
-                            ),
-                        ),
-                    )
-                    awaitItem().contentType shouldBe BodyContentType.PLAIN_TEXT
-                    cancelAndIgnoreRemainingEvents()
-                }
-            }
-        }
     }
 
     context("error response") {
@@ -110,23 +85,6 @@ internal class ResponseViewModelTest : FunSpec({
                         ),
                     )
                     awaitItem().isLoading shouldBe false
-                    cancelAndIgnoreRemainingEvents()
-                }
-            }
-        }
-
-        test("uses plain-text content type") {
-            withFixture { transaction ->
-                state.test {
-                    awaitItem()
-                    transaction.emit(
-                        sampleCall(
-                            id = "response-id",
-                            request = sampleRequest(),
-                            response = sampleError(),
-                        ),
-                    )
-                    awaitItem().contentType shouldBe BodyContentType.PLAIN_TEXT
                     cancelAndIgnoreRemainingEvents()
                 }
             }
@@ -244,7 +202,6 @@ internal class ResponseViewModelTest : FunSpec({
                         val raw = awaitItem()
                         raw.prettyPrintState shouldBe PrettyPrintState.Disabled
                         raw.body.bbText shouldBe rawJson
-                        raw.contentType shouldBe BodyContentType.JSON
                         cancelAndIgnoreRemainingEvents()
                     }
                 }

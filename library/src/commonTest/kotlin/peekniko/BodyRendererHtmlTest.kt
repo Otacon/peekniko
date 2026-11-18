@@ -2,7 +2,6 @@ package peekniko
 
 import peekniko.internal.bodyrenderer.BodyRendererHtml
 import peekniko.internal.bodyrenderer.BodyRendererTheme
-import peekniko.ui.details.BodyContentType
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -34,10 +33,6 @@ internal class BodyRendererHtmlTest : FunSpec({
 
         test("trims and normalizes the media type") {
             renderer.supports("  TEXT/HTML  ") shouldBe true
-        }
-
-        test("does not support a missing media type") {
-            renderer.supports(null) shouldBe false
         }
 
         test("does not support unrelated media types") {
@@ -90,7 +85,6 @@ internal class BodyRendererHtmlTest : FunSpec({
                 </div>
             """.trimIndent()
 
-            renderer.contentType shouldBe BodyContentType.HTML
             renderer.format(payload, "text/html") shouldBe expected
         }
 
