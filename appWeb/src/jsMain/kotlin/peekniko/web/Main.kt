@@ -13,12 +13,14 @@ import peekniko.AppModule
 import peekniko.Peekniko
 import peekniko.SampleApp
 import peekniko.SampleAppTheme
+import peekniko.SampleViewModel
 import peekniko.initialize
 import peekniko.ui.Screen
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     AppModule.initialize()
+    val sampleViewModel = SampleViewModel()
     ComposeViewport {
         SampleAppTheme {
             val navController = rememberNavController()
@@ -39,7 +41,10 @@ fun main() {
                 },
             ) {
                 composable("sample") {
-                    SampleApp(onOpenPeekniko = { navController.navigate("calls") })
+                    SampleApp(
+                        viewModel = sampleViewModel,
+                        onOpenPeekniko = { navController.navigate("calls") },
+                    )
                 }
                 composable("calls") {
                     Peekniko.Screen(

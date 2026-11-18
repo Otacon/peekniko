@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
                 launch {
                     viewModel.events.collect { event ->
                         when (event) {
-                            SampleEvent.OpenPeekniko -> Peekniko.startPeeknikoActivity(this@MainActivity)
+                            SampleEvent.OpenPeekniko -> Peekniko.open(this@MainActivity)
                         }
                     }
                 }

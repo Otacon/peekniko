@@ -12,14 +12,18 @@ fun main() {
         sqlDelightStorage()
     }
     AppModule.initialize()
+    val sampleViewModel = SampleViewModel()
     setMacTaskbarIcon()
     application {
         Window(
-            onCloseRequest = ::exitApplication,
+            onCloseRequest = {
+                sampleViewModel.clear()
+                exitApplication()
+            },
             title = "Sample Peekniko app",
             icon = painterResource("icon.png"),
         ) {
-            SampleApp(onOpenPeekniko = { Peekniko.open() })
+            SampleApp(viewModel = sampleViewModel, onOpenPeekniko = { Peekniko.open() })
         }
     }
 }
