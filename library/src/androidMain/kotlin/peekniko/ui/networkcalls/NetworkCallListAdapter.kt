@@ -61,10 +61,10 @@ internal class NetworkCallItemViewHolder(val root: View) : RecyclerView.ViewHold
         val exception = call.exceptionMessage
         when {
             exception != null -> {
-                status.setText(R.string.peekniko_status_error)
+                status.text = call.statusBadge
                 status.setChipColors(
-                    ContextCompat.getColor(root.context, R.color.peekniko_error),
-                    ContextCompat.getColor(root.context, R.color.peekniko_onError),
+                    backgroundColor = ContextCompat.getColor(root.context, R.color.peekniko_statusError),
+                    foregroundColor = ContextCompat.getColor(root.context, R.color.peekniko_onStatus),
                 )
                 status.visibility = View.VISIBLE
                 progress.visibility = View.GONE
@@ -73,10 +73,15 @@ internal class NetworkCallItemViewHolder(val root: View) : RecyclerView.ViewHold
             }
 
             call.responseCode != null -> {
-                status.text = call.responseCode.toString()
+                status.text = call.statusBadge
+                val statusColor = if (call.responseCode in 200..299) {
+                    R.color.peekniko_statusSuccess
+                } else {
+                    R.color.peekniko_statusNonSuccess
+                }
                 status.setChipColors(
-                    ContextCompat.getColor(root.context, R.color.peekniko_colorControlPrimary),
-                    ContextCompat.getColor(root.context, R.color.peekniko_surface),
+                    backgroundColor = ContextCompat.getColor(root.context, statusColor),
+                    foregroundColor = ContextCompat.getColor(root.context, R.color.peekniko_onStatus),
                 )
                 status.visibility = View.VISIBLE
                 progress.visibility = View.GONE

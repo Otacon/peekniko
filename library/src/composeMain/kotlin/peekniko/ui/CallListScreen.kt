@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -228,10 +229,12 @@ private fun CallListFilterMenu(viewModel: PeeknikoViewModel, state: State) {
                         })
                     }
                 }
+
                 FilterMenuPage.METHOD, FilterMenuPage.STATUS -> {
                     val isMethod = page == FilterMenuPage.METHOD
                     if (isMethod) {
-                        FilterOptions(NetworkMethod.entries.filter { it != NetworkMethod.UNKNOWN }.map { it to it.name }) {
+                        FilterOptions(NetworkMethod.entries.filter { it != NetworkMethod.UNKNOWN }
+                            .map { it to it.name }) {
                             viewModel.onMethodFilterSelected(it)
                             page = null
                         }
@@ -242,6 +245,7 @@ private fun CallListFilterMenu(viewModel: PeeknikoViewModel, state: State) {
                         }
                     }
                 }
+
                 null -> Unit
             }
         }
@@ -287,7 +291,13 @@ private fun CallListItem(
 
         },
         supportingContent = { Text(item.subtitle) },
-        trailingContent = { CallBadge(item.statusBadge) },
+        trailingContent = {
+            CallBadge(
+                text = item.statusBadge,
+                containerColor = item.statusChipColors(),
+                contentColor = item.statusChipContentColor(),
+            )
+        },
     )
 }
 
@@ -295,12 +305,14 @@ private fun CallListItem(
 private fun CallBadge(
     text: String,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.onSurface,
+    contentColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     Surface(
         modifier = modifier,
         shape = AssistChipDefaults.shape,
-        color = MaterialTheme.colorScheme.onSurface,
-        contentColor = MaterialTheme.colorScheme.surface,
+        color = containerColor,
+        contentColor = contentColor,
     ) {
         Box(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
@@ -309,4 +321,18 @@ private fun CallBadge(
             Text(text, maxLines = 1, softWrap = false)
         }
     }
+}
+
+@Composable
+private fun PeeknikoCallRowItem.statusChipColors(): Color = when {
+    exceptionMessage != null -> StatusError
+    responseCode == null -> MaterialTheme.colorScheme.onSurface
+    responseCode in 200..299 -> StatusSuccess
+    else -> StatusNonSuccess
+}
+
+@Composable
+private fun PeeknikoCallRowItem.statusChipContentColor(): Color = when {
+    exceptionMessage == null && responseCode == null -> MaterialTheme.colorScheme.surface
+    else -> OnStatus
 }

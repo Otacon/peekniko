@@ -11,4 +11,8 @@
     <color name="peekniko_textSelection">#33FFFFFF</color>
     <color name="peekniko_toolbarTitle">#FFFFFFFF</color>
     <color name="peekniko_toolbarUnselectedTitle">#B0B0B0</color>
+    <color name="peekniko_statusSuccess">#43A047</color>
+    <color name="peekniko_statusNonSuccess">#F57C00</color>
+    <color name="peekniko_statusError">#E53935</color>
+    <color name="peekniko_onStatus">#F8FAFC</color>
 </resources>
