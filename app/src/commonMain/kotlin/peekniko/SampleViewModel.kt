@@ -99,7 +99,7 @@ class SampleViewModel internal constructor(
         val result = runCatching {
             withContext(Dispatchers.Default) {
                 val baseUrl = if (useMock) mockBaseUrl else "https://httpbin.org"
-                playgroundRequests.forEach { client.execute(baseUrl, it) }
+                playgroundRequests.forEach { runCatching { client.execute(baseUrl, it) } }
                 if (useMock) {
                     val failure = runCatching { client.execute(baseUrl, connectionFailureRequest) }.exceptionOrNull()
                     if (failure is CancellationException) throw failure
