@@ -1,9 +1,9 @@
 package peekniko.ui.details
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.withContext
 import peekniko.NetworkRepository
 import peekniko.NetworkRequest
 import peekniko.internal.bodyrenderer.*
@@ -15,7 +15,8 @@ internal class RequestViewModel(
     private val themeProvider: BodyRendererThemeProvider,
     private val bodyRenderer: BodyRenderer,
     transactionId: String,
-) : ViewModel() {
+    backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : ViewModel(backgroundDispatcher) {
 
     private val theme = MutableStateFlow(themeProvider.theme)
     private val isPrettyPrintEnabled = MutableStateFlow(true)
@@ -27,9 +28,11 @@ internal class RequestViewModel(
         isPrettyPrintEnabled
     ) { call, theme, prettyPrintEnabled ->
         Triple(call?.request, theme, prettyPrintEnabled)
-    }.mapLatest { (request, theme, prettyPrintEnabled) ->
-        request.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled)
-    }.stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
+    }.transformLatest { (request, theme, prettyPrintEnabled) ->
+        emit(State(isLoading = true))
+        emit(request.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled))
+    }.flowOn(backgroundDispatcher)
+        .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
     fun onViewCreated() {
         theme.value = themeProvider.theme
@@ -39,12 +42,9 @@ internal class RequestViewModel(
         isPrettyPrintEnabled.value = enabled
     }
 
-    private suspend fun NetworkRequest?.toState(
-        theme: BodyRendererTheme,
-        prettyPrintEnabled: Boolean,
-    ) = withContext(Dispatchers.Default) {
+    private fun NetworkRequest?.toState(theme: BodyRendererTheme, prettyPrintEnabled: Boolean): State {
         if (this@toState == null) {
-            return@withContext State(
+            return State(
                 isLoading = false,
                 body = null,
                 prettyPrintState = PrettyPrintState.Unavailable,
@@ -65,7 +65,7 @@ internal class RequestViewModel(
 
             else -> spannedText { append(bodyText) } to PrettyPrintState.Disabled
         }
-        State(
+        return State(
             isLoading = false,
             body = renderedBody,
             prettyPrintState = prettyPrintState,

@@ -14,13 +14,17 @@ import peekniko.ui.PeeknikoCallDetailItem
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
 
 internal class NetworkCallDetailViewModel(
     networkRepository: NetworkRepository,
     transactionId: String?,
-) : ViewModel() {
+    backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : ViewModel(backgroundDispatcher) {
 
     private val _state = when (transactionId) {
         null -> flowOf(
@@ -56,7 +60,7 @@ internal class NetworkCallDetailViewModel(
         }
     }
 
-    internal val state: StateFlow<State> = _state.stateIn(
+    internal val state: StateFlow<State> = _state.flowOn(backgroundDispatcher).stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = State(isLoading = transactionId != null),

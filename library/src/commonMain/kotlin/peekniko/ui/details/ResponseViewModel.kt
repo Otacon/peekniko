@@ -1,9 +1,9 @@
 package peekniko.ui.details
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.withContext
 import peekniko.NetworkRepository
 import peekniko.NetworkResponse
 import peekniko.internal.bodyrenderer.*
@@ -15,7 +15,8 @@ internal class ResponseViewModel(
     private val themeProvider: BodyRendererThemeProvider,
     private val bodyRenderer: BodyRenderer,
     transactionId: String,
-) : ViewModel() {
+    backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : ViewModel(backgroundDispatcher) {
 
     private val theme = MutableStateFlow(themeProvider.theme)
     private val isPrettyPrintEnabled = MutableStateFlow(true)
@@ -27,9 +28,11 @@ internal class ResponseViewModel(
         isPrettyPrintEnabled
     ) { call, theme, prettyPrintEnabled ->
         Triple(call?.response, theme, prettyPrintEnabled)
-    }.mapLatest { (response, theme, prettyPrintEnabled) ->
-        response.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled)
-    }.stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
+    }.transformLatest { (response, theme, prettyPrintEnabled) ->
+        emit(State(isLoading = true))
+        emit(response.toState(theme = theme, prettyPrintEnabled = prettyPrintEnabled))
+    }.flowOn(backgroundDispatcher)
+        .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
     fun onViewCreated() {
         theme.value = themeProvider.theme
@@ -39,11 +42,8 @@ internal class ResponseViewModel(
         isPrettyPrintEnabled.value = enabled
     }
 
-    private suspend fun NetworkResponse?.toState(
-        theme: BodyRendererTheme,
-        prettyPrintEnabled: Boolean,
-    ) = withContext(Dispatchers.Default) {
-        when (this@toState) {
+    private fun NetworkResponse?.toState(theme: BodyRendererTheme, prettyPrintEnabled: Boolean, ): State {
+        return when (this@toState) {
             is NetworkResponse.Error -> {
                 val payload = "${exceptionMessage}\n$stackTrace"
                 State(

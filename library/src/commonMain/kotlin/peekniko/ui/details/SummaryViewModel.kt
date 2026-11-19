@@ -1,11 +1,12 @@
 package peekniko.ui.details
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.withContext
 import peekniko.NetworkCall
 import peekniko.NetworkHeader
 import peekniko.NetworkRepository
@@ -20,16 +21,18 @@ import peekniko.internal.support.ViewModel
 internal class SummaryViewModel(
     repository: NetworkRepository,
     transactionId: String,
-) : ViewModel() {
+    backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : ViewModel(backgroundDispatcher) {
     private val transaction = repository.observeById(transactionId)
 
     val state: StateFlow<State> = transaction
         .map { it.toHeadersUiState() }
+        .flowOn(backgroundDispatcher)
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
-    private suspend fun NetworkCall?.toHeadersUiState(): State = withContext(Dispatchers.Default) {
-        val call = this@toHeadersUiState ?: return@withContext State(isLoading = false)
-        when (val result = call.response) {
+    private fun NetworkCall?.toHeadersUiState(): State {
+        val call = this ?: return State(isLoading = false)
+        return when (val result = call.response) {
             is NetworkResponse.Error -> call.toErrorHeadersUiState(result)
             is NetworkResponse.Response -> call.toResponseHeadersUiState(result)
             null -> call.toPendingHeadersUiState()

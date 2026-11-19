@@ -13,15 +13,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 public typealias NetworkCallListItem = PeeknikoCallRowItem
 
 internal class PeeknikoViewModel(
     private val networkRepository: NetworkRepository,
-) : ViewModel() {
+    backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : ViewModel(backgroundDispatcher) {
 
     private val methodFilter = MutableStateFlow<NetworkMethod?>(null)
     private val statusFilter = MutableStateFlow<CallStatusFilter?>(null)
@@ -54,7 +58,8 @@ internal class PeeknikoViewModel(
             showResetFilters = hasActiveFilters,
             showClearCalls = calls.isNotEmpty(),
         )
-    }.stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
+    }.flowOn(backgroundDispatcher)
+        .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
     fun onSearchQueryChanged(query: String) = urlFilter.update { query }
 

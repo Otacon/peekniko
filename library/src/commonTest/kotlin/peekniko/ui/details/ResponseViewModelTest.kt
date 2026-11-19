@@ -19,7 +19,7 @@ internal class ResponseViewModelTest : FunSpec({
             every { observeById(any()) } returns transaction
         }
         withViewModel(
-            createViewModel = {
+            createViewModel = { backgroundDispatcher ->
                 ResponseViewModel(
                     repository = repository,
                     themeProvider = BodyRendererThemeProvider { BodyRendererTheme.Light },
@@ -27,6 +27,7 @@ internal class ResponseViewModelTest : FunSpec({
                         renderers = listOf(BodyRendererJson()),
                     ),
                     transactionId = "response-id",
+                    backgroundDispatcher = backgroundDispatcher,
                 )
             },
         ) { viewModel -> viewModel.block(transaction) }
@@ -197,6 +198,7 @@ internal class ResponseViewModelTest : FunSpec({
                         transaction.emit(jsonCall)
                         awaitItem()
                         onPrettyPrintClick(false)
+                        awaitItem() shouldBe ResponseViewModel.State(isLoading = true)
                         val raw = awaitItem()
                         raw.prettyPrintState shouldBe PrettyPrintState.Disabled
                         raw.body.bbText shouldBe rawJson
@@ -212,8 +214,10 @@ internal class ResponseViewModelTest : FunSpec({
                         transaction.emit(jsonCall)
                         awaitItem()
                         onPrettyPrintClick(false)
+                        awaitItem() shouldBe ResponseViewModel.State(isLoading = true)
                         awaitItem().prettyPrintState shouldBe PrettyPrintState.Disabled
                         onPrettyPrintClick(true)
+                        awaitItem() shouldBe ResponseViewModel.State(isLoading = true)
                         val pretty = awaitItem()
                         pretty.prettyPrintState shouldBe PrettyPrintState.Enabled
                         pretty.body.bbText shouldBe prettyJson
