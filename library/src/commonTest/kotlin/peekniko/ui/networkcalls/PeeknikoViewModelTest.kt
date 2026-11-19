@@ -8,6 +8,7 @@ import dev.mokkery.everySuspend
 import dev.mokkery.mock
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import peekniko.internal.formatting.toReadableTime
 import peekniko.*
@@ -91,7 +92,9 @@ internal class PeeknikoViewModelTest : FunSpec({
     suspend fun withFixture(block: suspend PeeknikoViewModelFixture.() -> Unit) {
         lateinit var fixture: PeeknikoViewModelFixture
         withViewModel(
-            createViewModel = { PeeknikoViewModelFixture().also { fixture = it }.viewModel },
+            createViewModel = { backgroundDispatcher ->
+                PeeknikoViewModelFixture(backgroundDispatcher).also { fixture = it }.viewModel
+            },
         ) { fixture.block() }
     }
 
@@ -351,11 +354,11 @@ internal class PeeknikoViewModelTest : FunSpec({
     }
 })
 
-private class PeeknikoViewModelFixture {
+private class PeeknikoViewModelFixture(backgroundDispatcher: CoroutineDispatcher) {
     // Retain the emission if the eagerly started collector hasn't subscribed yet.
     val callsFlow = MutableSharedFlow<List<NetworkCall>>(replay = 1)
     val repository = mock<NetworkRepository> {
         every { networkCalls } returns callsFlow
     }
-    val viewModel = PeeknikoViewModel(repository)
+    val viewModel = PeeknikoViewModel(repository, backgroundDispatcher)
 }

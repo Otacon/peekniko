@@ -30,7 +30,7 @@ private object PlaygroundDispatcher : Dispatcher() {
             "/get",
             200,
             "get",
-            """{"args":{"scenario":"list-items"},"url":"http://localhost/get"}"""
+            largeListItemsJson,
         ),
         MockRoute(
             "POST",
@@ -122,6 +122,36 @@ private object PlaygroundDispatcher : Dispatcher() {
             .body(route.body)
             .apply { if (route.delaySeconds > 0) bodyDelay(route.delaySeconds, TimeUnit.SECONDS) }
             .build()
+    }
+}
+
+private val largeListItemsJson: String by lazy {
+    val itemCount = 100
+    val statuses = listOf("active", "pending", "archived", "suspended")
+    val tags = listOf("alpha", "beta", "gamma", "delta", "epsilon", "zeta")
+    buildString {
+        append("{\"args\":{\"scenario\":\"list-items\"},\"url\":\"http://localhost/get\",")
+        append("\"total\":$itemCount,\"items\":[")
+        for (i in 0 until itemCount) {
+            if (i > 0) append(',')
+            val uuidSuffix = i.toString().padStart(12, '0')
+            val price = "${i * 7 % 1000}.${(i * 13 % 100).toString().padStart(2, '0')}"
+            val rating = if (i % 10 == 0) "null" else (i % 5 + 1).toString()
+            append('{')
+            append("\"id\":$i,")
+            append("\"uuid\":\"00000000-0000-4000-8000-$uuidSuffix\",")
+            append("\"name\":\"Item #$i\",")
+            append("\"status\":\"${statuses[i % statuses.size]}\",")
+            append("\"active\":${i % 3 != 0},")
+            append("\"price\":$price,")
+            append("\"rating\":$rating,")
+            append("\"tags\":[\"${tags[i % tags.size]}\",\"${tags[(i + 2) % tags.size]}\"],")
+            append("\"owner\":{\"id\":${i % 97},\"email\":\"user${i % 97}@example.com\",\"verified\":${i % 2 == 0}},")
+            append("\"dimensions\":{\"width\":${i % 50 + 10},\"height\":${i % 30 + 5},\"unit\":\"cm\"},")
+            append("\"description\":\"Generated playground item number $i with escaped \\\"quotes\\\" and unicode \\u00e9 to stress the JSON renderer.\"")
+            append('}')
+        }
+        append("]}")
     }
 }
 

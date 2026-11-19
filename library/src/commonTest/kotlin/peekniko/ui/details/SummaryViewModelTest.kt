@@ -18,7 +18,13 @@ internal class SummaryViewModelTest : FunSpec({
             every { observeById(any()) } returns transaction
         }
         withViewModel(
-            createViewModel = { SummaryViewModel(repository = repository, transactionId = "summary-id") },
+            createViewModel = { backgroundDispatcher ->
+                SummaryViewModel(
+                    repository = repository,
+                    transactionId = "summary-id",
+                    backgroundDispatcher = backgroundDispatcher,
+                )
+            },
         ) { viewModel -> viewModel.block(transaction) }
     }
 
