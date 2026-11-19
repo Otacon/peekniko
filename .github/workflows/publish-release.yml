@@ -42,7 +42,12 @@ jobs:
           cache-disabled: true
 
       - name: Build
-        run: ./gradlew assemble --no-build-cache
+        run: |
+          ./gradlew \
+            :library-client-noop:assemble \
+            :library-client-ktor:assemble \
+            :library-client-okhttp:assemble \
+            :library-storage-sqldelight:assemble
 
       - name: Publish libraries
         run: ./gradlew publishToMavenCentral --no-parallel
