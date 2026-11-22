@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+-*"
 
 permissions:
   contents: write
@@ -46,5 +49,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          mike deploy --push 1.0.0
-          mike set-default --push 1.0.0
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            mike deploy --push "${GITHUB_REF_NAME%.*}"
+            mike set-default --push "${GITHUB_REF_NAME%.*}"
+          else
+            version=$(sed -n 's/^peekniko = "\(.*\)"/\1/p' gradle/libs.versions.toml)
+            if [ -z "$version" ]; then
+              echo "::error::Could not read the peekniko version from gradle/libs.versions.toml"
+              exit 1
+            fi
+            mike deploy --push "$version-SNAPSHOT"
+          fi
