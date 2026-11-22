@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +70,6 @@ internal fun CallListScreen(
     CallListContent(state, viewModel, selectedCallId, onClose, onCallSelected)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CallListContent(
     state: State,
@@ -89,6 +89,16 @@ private fun CallListContent(
     }
     LaunchedEffect(searchExpanded) {
         if (searchExpanded) searchFocus.requestFocus()
+    }
+    val listState = rememberLazyListState()
+    val firstCallId = state.calls.firstOrNull()?.id
+    val lastFirstCallId = remember { object { var value: String? = null } }
+    SideEffect {
+        val previous = lastFirstCallId.value
+        lastFirstCallId.value = firstCallId
+        if (firstCallId != previous && listState.firstVisibleItemIndex == 0) {
+            listState.requestScrollToItem(0)
+        }
     }
     Scaffold(
         topBar = {
@@ -165,7 +175,7 @@ private fun CallListContent(
                         textAlign = TextAlign.Center,
                     )
                 } else {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.fillMaxSize(), state = listState) {
                         itemsIndexed(state.calls, key = { _, item -> item.id }) { index, item ->
                             CallListItem(
                                 item = item,
