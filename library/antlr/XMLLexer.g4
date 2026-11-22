@@ -28,8 +28,9 @@
 
 lexer grammar XMLLexer;
 
-COMMENT: '<!--' .*? '-->';
-CDATA: '<![CDATA[' .*? ']]>';
+// Truncated bodies: an unterminated comment or CDATA section runs to the end of the input.
+COMMENT: '<!--' .*? ('-->' | EOF);
+CDATA: '<![CDATA[' .*? (']]>' | EOF);
 DTD: '<!' .*? '>';
 EntityRef: '&' Name ';';
 CharRef: '&#' DIGIT+ ';' | '&#x' HEXDIGIT+ ';';

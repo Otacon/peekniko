@@ -89,6 +89,22 @@ internal class BodyRendererXmlTest : FunSpec({
 
             output.bbText shouldBe "[c=Light.text]not XML [/c][c=Light.separator]<[/c]"
         }
+
+        test("highlights an unterminated comment up to the end") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<root><!-- truncated <a>", "application/xml")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]" +
+                    "[c=Light.comment]<!-- truncated <a>[/c]"
+        }
+
+        test("highlights an unterminated CDATA section up to the end") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<root><![CDATA[raw <a>", "application/xml")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]" +
+                    "[c=Light.text]<!\\[CDATA\\[raw <a>[/c]"
+        }
     }
 
     context("formatting") {
