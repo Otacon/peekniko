@@ -58,5 +58,7 @@ jobs:
               echo "::error::Could not read the peekniko version from gradle/libs.versions.toml"
               exit 1
             fi
-            mike deploy --push "$version-SNAPSHOT"
+            # Remove all snapshot versions; pushed together with the deploy below
+            mike list | grep -- '-SNAPSHOT$' | xargs -r mike delete
+            mike deploy --push "${version%.*}-SNAPSHOT"
           fi

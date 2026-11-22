@@ -34,7 +34,7 @@ mokkery = "3.6.0"
 okhttp = "5.5.1"
 turbine = "1.2.1"
 
-peekniko = "1.0.0"
+peekniko = "1.1.0"
 
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "androidx-activity" }
