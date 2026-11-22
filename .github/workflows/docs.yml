@@ -60,5 +60,5 @@ jobs:
             fi
             # Remove all snapshot versions; pushed together with the deploy below
             mike list | grep -- '-SNAPSHOT$' | xargs -r mike delete
-            mike deploy --push "$version-SNAPSHOT"
+            mike deploy --push "${version%.*}-SNAPSHOT"
           fi
