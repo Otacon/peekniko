@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import peekniko.NetworkMethod
 import peekniko.Peekniko
@@ -70,7 +71,7 @@ internal class NetworkCallListFragment :
                         },
                     )
                 }
-                networkCallAdapter.submitList(state.calls)
+                callList.submitCalls(networkCallAdapter, state.calls)
                 clearMenuItem?.isVisible = state.showClearCalls
                 filtersMenuItem.setIcon(
                     if (state.hasActiveFilters) R.drawable.ic_filter_applied else R.drawable.ic_filter,
@@ -84,6 +85,21 @@ internal class NetworkCallListFragment :
                         it.setQuery(state.query, false)
                     }
                 }
+            }
+        }
+    }
+
+    private fun RecyclerView.submitCalls(
+        adapter: NetworkCallListAdapter,
+        calls: List<NetworkCallListItem>,
+    ) {
+        val previousFirstId = adapter.currentList.firstOrNull()?.id
+        val layoutManager = layoutManager as LinearLayoutManager
+        val wasFirstItemVisible = layoutManager.findFirstVisibleItemPosition() == 0
+        adapter.submitList(calls) {
+            if (this.adapter !== adapter) return@submitList
+            if (wasFirstItemVisible && adapter.currentList.firstOrNull()?.id != previousFirstId) {
+                scrollToPosition(0)
             }
         }
     }
