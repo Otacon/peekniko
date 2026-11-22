@@ -70,6 +70,38 @@ internal class BodyRendererHtmlTest : FunSpec({
                     "[c=Light.separator]<[/c][c=Light.separator]/[/c]" +
                     "[c=Light.tag]html[/c][c=Light.separator]>[/c]"
         }
+
+        test("highlights a script up to its closing tag") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<script>a < b</script><p>x</p>", "text/html")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]script[/c][c=Light.separator]>[/c]" +
+                    "[c=Light.text]a < b</script>[/c]" +
+                    "[c=Light.separator]<[/c][c=Light.tag]p[/c][c=Light.separator]>[/c][c=Light.text]x[/c]" +
+                    "[c=Light.separator]<[/c][c=Light.separator]/[/c][c=Light.tag]p[/c][c=Light.separator]>[/c]"
+        }
+
+        test("highlights an unterminated script up to the end") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<script>a < b", "text/html")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]script[/c][c=Light.separator]>[/c][c=Light.text]a < b[/c]"
+        }
+
+        test("highlights an unterminated style up to the end") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<style>p > b { }", "text/html")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]style[/c][c=Light.separator]>[/c][c=Light.text]p > b { }[/c]"
+        }
+
+        test("highlights an unterminated comment up to the end") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<div><!-- truncated <p>", "text/html")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]div[/c][c=Light.separator]>[/c]" +
+                    "[c=Light.comment]<!-- truncated <p>[/c]"
+        }
     }
 
     context("formatting") {

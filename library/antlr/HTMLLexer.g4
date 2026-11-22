@@ -28,10 +28,12 @@
 
 lexer grammar HTMLLexer;
 
-HTML_COMMENT: '<!--' .*? '-->';
+// Truncated bodies: an unterminated comment, CDATA section, script or style runs to the end of the input, so
+// lexing stays linear (rather than retrying at every following char) and the rest keeps its colours.
+HTML_COMMENT: '<!--' .*? ('-->' | EOF);
 HTML_CONDITIONAL_COMMENT: '<![' .*? ']>';
 XML: '<?xml' .*? '>';
-CDATA: '<![CDATA[' .*? ']]>';
+CDATA: '<![CDATA[' .*? (']]>' | EOF);
 DTD: '<!' .*? '>';
 SCRIPTLET: '<?' .*? '?>' | '<%' .*? '%>';
 SEA_WS: (' ' | '\t' | '\r'? '\n')+;
@@ -53,12 +55,10 @@ fragment TAG_NameChar: TAG_NameStartChar | '-' | '_' | '.' | DIGIT | '\u00B7' | 
 fragment TAG_NameStartChar: [:a-zA-Z] | '\u2070' .. '\u218F' | '\u2C00' .. '\u2FEF' | '\u3001' .. '\uD7FF' | '\uF900' .. '\uFDCF' | '\uFDF0' .. '\uFFFD';
 
 mode SCRIPT;
-SCRIPT_BODY: .*? '</script>' -> popMode;
-SCRIPT_SHORT_BODY: .*? '</>' -> popMode;
+SCRIPT_BODY: .*? ('</script>' | EOF) -> popMode;
 
 mode STYLE;
-STYLE_BODY: .*? '</style>' -> popMode;
-STYLE_SHORT_BODY: .*? '</>' -> popMode;
+STYLE_BODY: .*? ('</style>' | EOF) -> popMode;
 
 mode ATTVALUE;
 ATTVALUE_VALUE: ' '* ATTRIBUTE -> popMode;

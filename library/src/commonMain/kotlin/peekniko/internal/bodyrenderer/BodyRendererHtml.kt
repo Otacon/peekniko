@@ -2,41 +2,36 @@ package peekniko.internal.bodyrenderer
 
 import peekniko.internal.json.generated.HTMLLexer
 import peekniko.internal.json.generated.HTMLLexer.Tokens
-import org.antlr.v4.kotlinruntime.CharStreams
+import org.antlr.v4.kotlinruntime.CharStream
+import org.antlr.v4.kotlinruntime.Lexer
 
 internal class BodyRendererHtml : BodyRenderer {
+    private val tokenizer = BodyTokenizer(HtmlGrammar)
+
     override fun supports(contentType: String): Boolean {
         val mediaType = contentType.substringBefore(';').trim().lowercase()
         return mediaType in setOf("text/html", "application/html", "application/xhtml+xml")
     }
 
     override fun format(payload: String, contentType: String): String? = runCatching {
-        MarkupRendererUtilities.format(payload, tokenize(payload))
+        MarkupRendererUtilities.format(payload, HtmlGrammar.tokenize(payload, tokenizer.tokens(payload)))
     }.getOrNull()
 
-    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String) = runCatching {
-        spannedText {
-            MarkupRendererUtilities.syntaxHighlight(
-                payload = payload,
-                tokens = tokenize(payload),
-                theme = theme,
-                output = this,
-            )
-        }
-    }.getOrNull()
+    override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String): SpannedText? =
+        runCatching { tokenizer.highlight(payload, theme) }.getOrNull()
+}
 
-    private fun tokenize(payload: String): List<MarkupToken> = MarkupRendererUtilities.tokenize(
-        payload,
-        HTMLLexer(CharStreams.fromString(payload))
-    ) { type ->
-        when (type) {
-            Tokens.TAG_OPEN -> "OPEN"
-            Tokens.TAG_CLOSE, Tokens.TAG_SLASH_CLOSE -> "CLOSE"
-            Tokens.SCRIPT_OPEN, Tokens.STYLE_OPEN, Tokens.XML, Tokens.SCRIPTLET -> "TAG"
-            Tokens.HTML_COMMENT, Tokens.HTML_CONDITIONAL_COMMENT -> "COMMENT"
-            Tokens.CDATA -> "CDATA"
-            Tokens.DTD -> "DOCTYPE"
-            else -> "TEXT"
-        }
+/** How HTML is lexed, and what its token types are. */
+private object HtmlGrammar : MarkupGrammar {
+    override fun lexer(input: CharStream): Lexer = HTMLLexer(input)
+
+    override fun kindOf(type: Int): MarkupKind = when (type) {
+        Tokens.TAG_OPEN -> MarkupKind.Open
+        Tokens.TAG_CLOSE, Tokens.TAG_SLASH_CLOSE -> MarkupKind.Close
+        Tokens.SCRIPT_OPEN, Tokens.STYLE_OPEN, Tokens.XML, Tokens.SCRIPTLET -> MarkupKind.Tag
+        Tokens.HTML_COMMENT, Tokens.HTML_CONDITIONAL_COMMENT -> MarkupKind.Comment
+        Tokens.CDATA -> MarkupKind.Cdata
+        Tokens.DTD -> MarkupKind.Doctype
+        else -> MarkupKind.Text
     }
 }

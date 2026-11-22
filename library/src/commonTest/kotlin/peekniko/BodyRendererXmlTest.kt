@@ -2,8 +2,6 @@ package peekniko
 
 import peekniko.internal.bodyrenderer.BodyRendererTheme
 import peekniko.internal.bodyrenderer.BodyRendererXml
-import peekniko.internal.bodyrenderer.MarkupRendererUtilities
-import peekniko.internal.bodyrenderer.MarkupToken
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -79,16 +77,9 @@ internal class BodyRendererXmlTest : FunSpec({
         }
 
         test("maps a DOCTYPE token to the doctype theme role") {
-            val payload = "<!DOCTYPE root>"
-            val builder = SpannedTextBuilderBBText()
-            MarkupRendererUtilities.syntaxHighlight(
-                payload = payload,
-                tokens = listOf(MarkupToken(0, payload.lastIndex, payload, "DOCTYPE")),
-                theme = BodyRendererTheme.Light,
-                output = builder,
-            )
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<!DOCTYPE root>", "application/xml")
 
-            builder.buildText() shouldBe "[c=Light.doctype]<!DOCTYPE root>[/c]"
+            output.bbText shouldBe "[c=Light.doctype]<!DOCTYPE root>[/c]"
         }
 
         test("highlights malformed xml") {
@@ -97,6 +88,22 @@ internal class BodyRendererXmlTest : FunSpec({
             val output = renderer.syntaxHighlight(BodyRendererTheme.Light, malformedXml, "application/xml")
 
             output.bbText shouldBe "[c=Light.text]not XML [/c][c=Light.separator]<[/c]"
+        }
+
+        test("highlights an unterminated comment up to the end") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<root><!-- truncated <a>", "application/xml")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]" +
+                    "[c=Light.comment]<!-- truncated <a>[/c]"
+        }
+
+        test("highlights an unterminated CDATA section up to the end") {
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<root><![CDATA[raw <a>", "application/xml")
+
+            output.bbText shouldBe
+                    "[c=Light.separator]<[/c][c=Light.tag]root[/c][c=Light.separator]>[/c]" +
+                    "[c=Light.text]<!\\[CDATA\\[raw <a>[/c]"
         }
     }
 

@@ -109,6 +109,13 @@ internal class BodyRendererJsonTest : FunSpec({
             val output = result.bbText
             output shouldBe "[c=Light.separator]{[/c]not valid JSON[c=Light.separator]\\][/c]"
         }
+
+        test("colours the right chars after a char outside the BMP") {
+            val result = renderer.syntaxHighlight(BodyRendererTheme.Light, "{\"\uD83D\uDE00\": 1}", "application/json")
+
+            result.bbText shouldBe "[c=Light.separator]{[/c][c=Light.key]\"\uD83D\uDE00\"[/c]" +
+                "[c=Light.separator]:[/c] [c=Light.integer]1[/c][c=Light.separator]}[/c]"
+        }
     }
 
     context("formatting") {
@@ -141,6 +148,21 @@ internal class BodyRendererJsonTest : FunSpec({
 
         test("returns null when the payload is not valid JSON") {
             renderer.format("{not valid JSON]", "application/json") shouldBe null
+        }
+
+        test("keeps empty objects and arrays on one line") {
+            renderer.format("""{"a":{},"b":[],"c":[{}]}""", "application/json") shouldBe
+                "{\n  \"a\": {},\n  \"b\": [],\n  \"c\": [\n    {}\n  ]\n}"
+        }
+
+        test("formats a top-level scalar") {
+            renderer.format(" 42 ", "application/json") shouldBe "42"
+        }
+
+        listOf("""{"a" 1}""", "[1,]", """{"a":1}}""", """"a" "b"""", "[", "", """{1:2}""", """[1}""").forEach { invalid ->
+            test("returns null for malformed JSON: '$invalid'") {
+                renderer.format(invalid, "application/json") shouldBe null
+            }
         }
     }
 })

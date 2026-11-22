@@ -2,13 +2,8 @@
 
 // Derived from https://json.org
 
-grammar JSON;
-
-json: value EOF;
-obj: LBRACE pair (COMMA pair)* RBRACE | LBRACE RBRACE;
-pair: STRING COLON value;
-arr: LBRACKET value (COMMA value)* RBRACKET | LBRACKET RBRACKET;
-value: STRING | NUMBER | obj | arr | BOOLEAN | NULL;
+// Only the lexer: formatting and highlighting work from the tokens alone.
+lexer grammar JSONLexer;
 
 LBRACE: '{';
 COMMA: ',';
@@ -19,7 +14,12 @@ RBRACKET: ']';
 BOOLEAN: 'true' | 'false';
 NULL: 'null';
 
-STRING: '"' (ESC | SAFECODEPOINT)* '"';
+// An object's key: a string followed by a colon. The lexer takes the longest match, so every string followed by a
+// colon lexes as a KEY, and STRING is only ever a value. The token ends with the colon: the key itself is everything
+// up to its last quote.
+KEY: STRING_LITERAL [ \t\n\r]* ':';
+STRING: STRING_LITERAL;
+fragment STRING_LITERAL: '"' (ESC | SAFECODEPOINT)* '"';
 fragment ESC: '\\' (["\\/bfnrt] | UNICODE);
 fragment UNICODE: 'u' HEX HEX HEX HEX;
 fragment HEX: [0-9a-fA-F];
