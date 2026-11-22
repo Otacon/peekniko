@@ -18,7 +18,7 @@ internal class BodyRendererXml : BodyRenderer {
         spannedText {
             MarkupRendererUtilities.syntaxHighlight(
                 payload = payload,
-                tokens = tokenize(payload).toList(),
+                tokens = tokenize(payload),
                 theme = theme,
                 output = this,
             )

@@ -52,7 +52,7 @@ internal object MarkupRendererUtilities {
 
     fun syntaxHighlight(
         payload: String,
-        tokens: List<MarkupToken>,
+        tokens: Sequence<MarkupToken>,
         theme: BodyRendererTheme,
         output: SpannedTextBuilder,
     ) = highlightTokens(payload, tokens, theme, output)
@@ -91,7 +91,7 @@ internal object MarkupRendererUtilities {
 
     private fun highlightTokens(
         payload: String,
-        tokens: List<MarkupToken>,
+        tokens: Sequence<MarkupToken>,
         theme: BodyRendererTheme,
         output: SpannedTextBuilder,
     ) {

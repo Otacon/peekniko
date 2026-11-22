@@ -83,7 +83,7 @@ internal class BodyRendererXmlTest : FunSpec({
             val builder = SpannedTextBuilderBBText()
             MarkupRendererUtilities.syntaxHighlight(
                 payload = payload,
-                tokens = listOf(MarkupToken(0, payload.lastIndex, payload, "DOCTYPE")),
+                tokens = sequenceOf(MarkupToken(0, payload.lastIndex, payload, "DOCTYPE")),
                 theme = BodyRendererTheme.Light,
                 output = builder,
             )
