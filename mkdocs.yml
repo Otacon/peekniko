@@ -4,6 +4,7 @@ extra:
   version:
     provider: mike
 nav:
+  - Web demo: demo/index.html
   - Android:
       - Getting Started: index.md
       - Client:
