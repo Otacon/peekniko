@@ -142,5 +142,20 @@ internal class BodyRendererJsonTest : FunSpec({
         test("returns null when the payload is not valid JSON") {
             renderer.format("{not valid JSON]", "application/json") shouldBe null
         }
+
+        test("keeps empty objects and arrays on one line") {
+            renderer.format("""{"a":{},"b":[],"c":[{}]}""", "application/json") shouldBe
+                "{\n  \"a\": {},\n  \"b\": [],\n  \"c\": [\n    {}\n  ]\n}"
+        }
+
+        test("formats a top-level scalar") {
+            renderer.format(" 42 ", "application/json") shouldBe "42"
+        }
+
+        listOf("""{"a" 1}""", "[1,]", """{"a":1}}""", """"a" "b"""", "[", "", """{1:2}""", """[1}""").forEach { invalid ->
+            test("returns null for malformed JSON: '$invalid'") {
+                renderer.format(invalid, "application/json") shouldBe null
+            }
+        }
     }
 })

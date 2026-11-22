@@ -18,14 +18,14 @@ internal class BodyRendererXml : BodyRenderer {
         spannedText {
             MarkupRendererUtilities.syntaxHighlight(
                 payload = payload,
-                tokens = tokenize(payload),
+                tokens = tokenize(payload).toList(),
                 theme = theme,
                 output = this,
             )
         }
     }.getOrNull()
 
-    private fun tokenize(payload: String): List<MarkupToken> = MarkupRendererUtilities.tokenize(
+    private fun tokenize(payload: String): Sequence<MarkupToken> = MarkupRendererUtilities.tokenize(
         payload,
         XMLLexer(CharStreams.fromString(payload))
     ) { type ->

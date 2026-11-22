@@ -11,7 +11,7 @@ internal data class MarkupToken(
 )
 
 internal object MarkupRendererUtilities {
-    fun tokenize(payload: String, lexer: Lexer, kindOf: (Int) -> String): List<MarkupToken> = buildList {
+    fun tokenize(payload: String, lexer: Lexer, kindOf: (Int) -> String): Sequence<MarkupToken> = sequence {
         lexer.removeErrorListeners()
         var tagStart: Int? = null
         var sourceIndex = 0
@@ -34,21 +34,21 @@ internal object MarkupRendererUtilities {
             when {
                 kind == "OPEN" -> tagStart = tokenStart
                 start != null && kind == "CLOSE" -> {
-                    add(MarkupToken(start, tokenEnd, payload.substring(start, textIndex), "TAG"))
+                    yield(MarkupToken(start, tokenEnd, payload.substring(start, textIndex), "TAG"))
                     tagStart = null
                 }
-                start == null -> add(MarkupToken(tokenStart, tokenEnd, tokenText, kind))
+                start == null -> yield(MarkupToken(tokenStart, tokenEnd, tokenText, kind))
             }
             token = lexer.nextToken()
         }
-        tagStart?.let { add(MarkupToken(it, payload.lastIndex, payload.substring(it), "TAG")) }
+        tagStart?.let { yield(MarkupToken(it, payload.lastIndex, payload.substring(it), "TAG")) }
     }
 
     private val VOID_ELEMENTS = setOf(
         "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr",
     )
 
-    fun format(payload: String, tokens: List<MarkupToken>): String = formatTokens(payload, tokens)
+    fun format(payload: String, tokens: Sequence<MarkupToken>): String = formatTokens(payload, tokens)
 
     fun syntaxHighlight(
         payload: String,
@@ -57,7 +57,7 @@ internal object MarkupRendererUtilities {
         output: SpannedTextBuilder,
     ) = highlightTokens(payload, tokens, theme, output)
 
-    private fun formatTokens(payload: String, tokens: List<MarkupToken>): String {
+    private fun formatTokens(payload: String, tokens: Sequence<MarkupToken>): String {
         val output = StringBuilder()
         var depth = 0
         var cursor = 0
