@@ -2,8 +2,6 @@ package peekniko
 
 import peekniko.internal.bodyrenderer.BodyRendererTheme
 import peekniko.internal.bodyrenderer.BodyRendererXml
-import peekniko.internal.bodyrenderer.MarkupRendererUtilities
-import peekniko.internal.bodyrenderer.MarkupToken
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -79,16 +77,9 @@ internal class BodyRendererXmlTest : FunSpec({
         }
 
         test("maps a DOCTYPE token to the doctype theme role") {
-            val payload = "<!DOCTYPE root>"
-            val builder = SpannedTextBuilderBBText()
-            MarkupRendererUtilities.syntaxHighlight(
-                payload = payload,
-                tokens = sequenceOf(MarkupToken(0, payload.lastIndex, payload, "DOCTYPE")),
-                theme = BodyRendererTheme.Light,
-                output = builder,
-            )
+            val output = renderer.syntaxHighlight(BodyRendererTheme.Light, "<!DOCTYPE root>", "application/xml")
 
-            builder.buildText() shouldBe "[c=Light.doctype]<!DOCTYPE root>[/c]"
+            output.bbText shouldBe "[c=Light.doctype]<!DOCTYPE root>[/c]"
         }
 
         test("highlights malformed xml") {

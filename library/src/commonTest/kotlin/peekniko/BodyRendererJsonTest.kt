@@ -109,6 +109,13 @@ internal class BodyRendererJsonTest : FunSpec({
             val output = result.bbText
             output shouldBe "[c=Light.separator]{[/c]not valid JSON[c=Light.separator]\\][/c]"
         }
+
+        test("colours the right chars after a char outside the BMP") {
+            val result = renderer.syntaxHighlight(BodyRendererTheme.Light, "{\"\uD83D\uDE00\": 1}", "application/json")
+
+            result.bbText shouldBe "[c=Light.separator]{[/c][c=Light.key]\"\uD83D\uDE00\"[/c]" +
+                "[c=Light.separator]:[/c] [c=Light.integer]1[/c][c=Light.separator]}[/c]"
+        }
     }
 
     context("formatting") {

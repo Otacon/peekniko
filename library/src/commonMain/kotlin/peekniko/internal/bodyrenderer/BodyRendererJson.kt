@@ -2,28 +2,25 @@ package peekniko.internal.bodyrenderer
 
 import peekniko.internal.json.generated.JSONLexer
 import peekniko.internal.json.generated.JSONLexer.Tokens
-import org.antlr.v4.kotlinruntime.CharStreams
+import org.antlr.v4.kotlinruntime.CharStream
+import org.antlr.v4.kotlinruntime.Lexer
 import org.antlr.v4.kotlinruntime.Token
 
 internal class BodyRendererJson : BodyRenderer {
+    private val tokenizer = BodyTokenizer(JsonGrammar)
+
     override fun supports(contentType: String): Boolean {
         val mediaType = contentType.substringBefore(';').trim().lowercase()
         return mediaType == "application/json" || mediaType == "text/json" || mediaType.endsWith("+json")
     }
 
     override fun format(payload: String, contentType: String): String? =
-        runCatching { formatTokens(tokenize(payload)) }.getOrNull()
+        runCatching { formatTokens(payload, tokenizer.tokens(payload)) }.getOrNull()
 
     override fun syntaxHighlight(theme: BodyRendererTheme, payload: String, contentType: String): SpannedText? =
-        runCatching { highlight(payload, theme) }.getOrNull()
+        runCatching { tokenizer.highlight(payload, theme) }.getOrNull()
 
-    private fun tokenize(payload: String): Sequence<Token> {
-        val lexer = JSONLexer(CharStreams.fromString(payload))
-        lexer.removeErrorListeners()
-        return generateSequence { lexer.nextToken().takeUnless { it.type == Token.EOF } }
-    }
-
-    private fun formatTokens(tokens: Sequence<Token>): String? {
+    private fun formatTokens(payload: String, tokens: Sequence<Token>): String? {
         val output = StringBuilder()
         // The opening brackets (Tokens.LBRACE or Tokens.LBRACKET) enclosing the current token, innermost last.
         val nesting = ArrayDeque<Int>()
@@ -34,7 +31,6 @@ internal class BodyRendererJson : BodyRenderer {
             if (type !in allowed) {
                 return null
             }
-            val text = token.text.orEmpty()
             val closes = type == Tokens.RBRACE || type == Tokens.RBRACKET
             if (closes) {
                 nesting.removeLast()
@@ -44,7 +40,7 @@ internal class BodyRendererJson : BodyRenderer {
             }
             when (type) {
                 Tokens.KEY -> {
-                    output.append(text, 0, text.lastIndexOf('"') + 1).append(": ")
+                    output.append(payload, token.startIndex, payload.lastIndexOf('"', token.endIndex - 1) + 1).append(": ")
                 }
 
                 Tokens.COMMA -> {
@@ -53,7 +49,7 @@ internal class BodyRendererJson : BodyRenderer {
                 }
 
                 else -> {
-                    output.append(text)
+                    output.append(payload, token.startIndex, token.endIndex)
                 }
             }
             justOpened = type == Tokens.LBRACE || type == Tokens.LBRACKET
@@ -85,35 +81,37 @@ internal class BodyRendererJson : BodyRenderer {
         repeat(depth * INDENT) { append(' ') }
     }
 
-    private fun highlight(payload: String, theme: BodyRendererTheme): SpannedText = spannedText {
-        var cursor = 0
-        for (token in tokenize(payload)) {
-            append(payload.substring(cursor, token.startIndex))
-            cursor = token.stopIndex + 1
-            val tokenText = payload.substring(token.startIndex, cursor)
-            if (token.type == Tokens.KEY) {
-                val keyEnd = tokenText.lastIndexOf('"') + 1
-                append(tokenText.substring(0, keyEnd), theme.key)
-                append(tokenText.substring(keyEnd, tokenText.length - 1))
-                append(":", theme.separator)
-            } else {
-                val color = when (token.type) {
-                    Tokens.STRING -> theme.string
-                    Tokens.NUMBER -> {
-                        val text = token.text.orEmpty()
-                        if (text.contains('.') || text.contains('e', ignoreCase = true)) theme.number else theme.integer
-                    }
+}
 
-                    Tokens.BOOLEAN -> theme.boolean
-                    Tokens.NULL -> theme.nullValue
-                    else -> theme.separator
-                }
-                append(tokenText, color)
+private object JsonGrammar : TokenGrammar {
+    override fun lexer(input: CharStream): Lexer = JSONLexer(input)
+
+    override fun highlight(payload: String, tokens: Sequence<Token>, theme: BodyRendererTheme, color: ColorSink) {
+        for (token in tokens) {
+            if (token.type == Tokens.KEY) {
+                color(token.startIndex, payload.lastIndexOf('"', token.endIndex - 1) + 1, theme.key)
+                color(token.endIndex - 1, token.endIndex, theme.separator)
+            } else {
+                color(token.startIndex, token.endIndex, colorOf(payload, token, theme))
             }
         }
-        append(payload.substring(cursor))
     }
 
+    private fun colorOf(payload: String, token: Token, theme: BodyRendererTheme): Color = when (token.type) {
+        Tokens.STRING -> theme.string
+        Tokens.NUMBER -> if (isInteger(payload, token)) theme.integer else theme.number
+        Tokens.BOOLEAN -> theme.boolean
+        Tokens.NULL -> theme.nullValue
+        else -> theme.separator
+    }
+
+    private fun isInteger(payload: String, token: Token): Boolean {
+        for (index in token.startIndex until token.endIndex) {
+            val char = payload[index]
+            if (char == '.' || char == 'e' || char == 'E') return false
+        }
+        return true
+    }
 }
 
 private const val INDENT = 2
