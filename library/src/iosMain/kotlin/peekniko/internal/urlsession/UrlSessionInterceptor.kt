@@ -74,6 +74,9 @@ private fun NSHTTPURLResponse.toNetworkResponse(data: NSData?): NetworkResponse.
         headers = allHeaderFields.toNetworkHeaders(),
         code = statusCode.toInt(),
         timestamp = Clock.System.now(),
+        protocol = null,
+        tlsVersion = null,
+        cipherSuite = null,
     )
 
 private fun NSError.toNetworkError(): NetworkResponse.Error =

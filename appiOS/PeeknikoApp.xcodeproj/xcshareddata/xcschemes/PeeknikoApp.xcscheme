@@ -17,7 +17,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "A1000000000000000000000B"
                BuildableName = "Peekniko.app"
-               ReferencedContainer = "container:PeeknikoApp.xcodeproj">
+               ReferencedContainer = "container:PeeknikoApp.xcodeproj"
+               BlueprintName = "Peekniko">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +47,14 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A1000000000000000000000B"
             BuildableName = "Peekniko.app"
-            ReferencedContainer = "container:PeeknikoApp.xcodeproj">
+            ReferencedContainer = "container:PeeknikoApp.xcodeproj"
+            BlueprintName = "Peekniko">
          </BuildableReference>
       </BuildableProductRunnable>
+      <LocationScenarioReference
+         identifier = "com.apple.dt.IDEFoundation.CurrentLocationScenarioIdentifier"
+         referenceType = "1">
+      </LocationScenarioReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

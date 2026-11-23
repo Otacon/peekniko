@@ -12,7 +12,10 @@ CREATE TABLE network_call (
   exception_message TEXT,
   request_timestamp INTEGER NOT NULL,
   response_timestamp INTEGER,
-  stack_trace TEXT
+  stack_trace TEXT,
+  response_protocol TEXT,
+  response_tls_version TEXT,
+  response_cipher_suite TEXT
 );
 
 CREATE INDEX network_call_timestamp ON network_call(request_timestamp DESC);
@@ -27,13 +30,14 @@ selectById:
 SELECT * FROM network_call WHERE id = ?;
 
 insertCall:
-INSERT INTO network_call VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO network_call VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateCall:
 UPDATE network_call SET scheme = ?, host = ?, port = ?, endpoint = ?, query_params = ?,
   method = ?, request_body = ?, response_body = ?,
   response_code = ?, exception_message = ?, request_timestamp = ?, response_timestamp = ?,
-  stack_trace = ? WHERE id = ?;
+  stack_trace = ?, response_protocol = ?, response_tls_version = ?, response_cipher_suite = ?
+  WHERE id = ?;
 
 deleteCall:
 DELETE FROM network_call WHERE id = ?;

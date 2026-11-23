@@ -30,6 +30,16 @@ internal class SqlDelightNetworkRepositoryTest : FunSpec({
         driver.close()
     }
 
+    context("schema upgrade") {
+        test("drops stored calls instead of migrating them") {
+            repository.insert("before-upgrade", sampleRequest()).await()
+
+            DestructiveMigrationSchema.migrate(driver, 1, DestructiveMigrationSchema.version)
+
+            SqlDelightNetworkRepository(driver).getAll() shouldBe emptyList()
+        }
+    }
+
     context("request insertion") {
         context("stored request fields") {
             beforeTest {
@@ -170,6 +180,31 @@ internal class SqlDelightNetworkRepositoryTest : FunSpec({
                 (repository.getById("response-fields")!!.response as NetworkResponse.Response).timestamp shouldBe
                         Instant.fromEpochMilliseconds(456)
             }
+
+            test("persists response protocol") {
+                (repository.getById("response-fields")!!.response as NetworkResponse.Response).protocol shouldBe "h2"
+            }
+
+            test("persists response TLS version") {
+                (repository.getById("response-fields")!!.response as NetworkResponse.Response).tlsVersion shouldBe
+                        "TLSv1.3"
+            }
+
+            test("persists response cipher suite") {
+                (repository.getById("response-fields")!!.response as NetworkResponse.Response).cipherSuite shouldBe
+                        "TLS_AES_128_GCM_SHA256"
+            }
+        }
+
+        test("persists missing connection details as null") {
+            repository.insert("plain-http", sampleRequest()).await()
+            repository.insert(
+                "plain-http",
+                sampleResponse(protocol = null, tlsVersion = null, cipherSuite = null),
+            ).await()
+
+            val response = repository.getById("plain-http")!!.response as NetworkResponse.Response
+            listOf(response.protocol, response.tlsVersion, response.cipherSuite) shouldBe listOf(null, null, null)
         }
 
         test("copies the response body on insertion and retrieval") {
@@ -463,9 +498,15 @@ private fun sampleResponse(
     headers: List<NetworkHeader> = listOf(NetworkHeader("Response", "header")),
     code: Int = 201,
     timestamp: Long = 11,
+    protocol: String? = "h2",
+    tlsVersion: String? = "TLSv1.3",
+    cipherSuite: String? = "TLS_AES_128_GCM_SHA256",
 ) = NetworkResponse.Response(
     body = body,
     headers = headers,
     code = code,
+    protocol = protocol,
+    tlsVersion = tlsVersion,
+    cipherSuite = cipherSuite,
     timestamp = Instant.fromEpochMilliseconds(timestamp),
 )
