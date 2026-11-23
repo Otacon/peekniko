@@ -3,6 +3,7 @@ package peekniko
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import peekniko.internal.bodyrenderer.*
+import peekniko.internal.formatting.ReadableTimeFormatter
 import peekniko.internal.notifications.Notifications
 import peekniko.internal.notifications.RepositoryNotificationObserver
 import peekniko.internal.notifications.createNotifications
@@ -68,10 +69,17 @@ public object Peekniko {
         store.getOrCreate(PeeknikoViewModel::class, peeknikoViewModel)
 
     internal fun createNetworkCallDetailViewModel(transactionId: String?): NetworkCallDetailViewModel =
-        NetworkCallDetailViewModel(networkRepository, transactionId)
+        NetworkCallDetailViewModel(
+            transactionId = transactionId,
+            networkRepository = networkRepository
+        )
 
     internal fun createSummaryViewModel(transactionId: String): SummaryViewModel =
-        SummaryViewModel(networkRepository, transactionId)
+        SummaryViewModel(
+            transactionId = transactionId,
+            repository = networkRepository,
+            timeFormatter = ReadableTimeFormatter(includeMillis = true)
+        )
 
     internal fun createRequestViewModel(transactionId: String): RequestViewModel {
         return RequestViewModel(

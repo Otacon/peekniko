@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
-internal class InstantFormattingPlatformTest : FunSpec({
+internal class TimeFormatterPlatformTest : FunSpec({
     val instant = Instant.parse("2024-05-05T12:34:56.789Z")
 
     test("formats a same-day time without milliseconds") {
