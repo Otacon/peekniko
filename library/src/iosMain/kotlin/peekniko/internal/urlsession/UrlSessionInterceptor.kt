@@ -45,7 +45,6 @@ internal class UrlSessionInterceptor(
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
 private fun NSURLRequest.toNetworkRequest(): NetworkRequest {
     val components = URL?.let { NSURLComponents.componentsWithURL(it, resolvingAgainstBaseURL = false) }
     val scheme = components?.scheme.orEmpty()
@@ -67,13 +66,15 @@ private fun NSURLRequest.toNetworkRequest(): NetworkRequest {
     )
 }
 
-@OptIn(ExperimentalForeignApi::class)
 private fun NSHTTPURLResponse.toNetworkResponse(data: NSData?): NetworkResponse.Response =
     NetworkResponse.Response(
         body = data?.toKotlinByteArray(),
         headers = allHeaderFields.toNetworkHeaders(),
         code = statusCode.toInt(),
         timestamp = Clock.System.now(),
+        protocol = null,
+        tlsVersion = null,
+        cipherSuite = null,
     )
 
 private fun NSError.toNetworkError(): NetworkResponse.Error =

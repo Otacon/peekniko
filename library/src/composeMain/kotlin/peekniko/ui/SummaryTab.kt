@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
+import peekniko.internal.bodyrenderer.SpannedText
+import peekniko.internal.bodyrenderer.toAnnotatedString
 
 @Composable
 internal fun SummaryTab(callId: String, modifier: Modifier = Modifier) {
@@ -26,9 +28,9 @@ internal fun SummaryTab(callId: String, modifier: Modifier = Modifier) {
     val state by viewModel.state.collectAsState()
 
     Column(modifier = modifier.verticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
-        SummarySection("General") { SelectableText(state.generalText) }
-        SummarySection("Request headers") { SelectableText(state.requestHeadersText) }
-        SummarySection("Response headers") { SelectableText(state.responseHeadersText) }
+        SummarySection("General") { SelectableText(state.general) }
+        SummarySection("Request headers") { SelectableText(state.requestHeaders) }
+        SummarySection("Response headers") { SelectableText(state.responseHeaders) }
     }
 }
 
@@ -50,10 +52,10 @@ private fun SummarySection(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun SelectableText(text: String) {
+private fun SelectableText(text: SpannedText) {
     SelectionContainer {
         Text(
-            text,
+            text.toAnnotatedString(),
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             fontFamily = FontFamily.Monospace,
             style = MaterialTheme.typography.bodyMedium,

@@ -26,6 +26,7 @@ internal class PeeknikoInterceptor(
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
+        val id = UUID.randomUUID().toString()
         val request = chain.request()
         val knownMethod = NetworkMethod.entries.firstOrNull { it.name == request.method }
         val networkRequest = NetworkRequest(
@@ -37,10 +38,9 @@ internal class PeeknikoInterceptor(
             method = knownMethod ?: NetworkMethod.UNKNOWN,
             headers = request.headers.toNetworkHeaders(),
             timestamp = Clock.System.now(),
+            body = null
         )
-        val id = UUID.randomUUID().toString()
         repository.insert(id, networkRequest)
-
         val trackedRequest = request.captureBody { bytes ->
             repository.insert(id, networkRequest.copy(body = bytes))
         }
@@ -52,13 +52,26 @@ internal class PeeknikoInterceptor(
             val responseTimestamp = Clock.System.now()
             val responseHeaders = response.headers.toNetworkHeaders()
             val responseCode = response.code
+            val tlsVersion: String?
+            val cipherSuite: String?
+            val handshake = response.handshake
+            if (handshake != null) {
+                tlsVersion = handshake.tlsVersion.javaName
+                cipherSuite = handshake.cipherSuite.javaName
+            } else {
+                tlsVersion = null
+                cipherSuite = null
+            }
             repository.insert(
-                id,
-                NetworkResponse.Response(
+                id = id,
+                response = NetworkResponse.Response(
                     body = responseBytes,
                     headers = responseHeaders,
                     code = responseCode,
                     timestamp = responseTimestamp,
+                    protocol = response.protocol.toString(),
+                    tlsVersion = tlsVersion,
+                    cipherSuite = cipherSuite,
                 ),
             )
 
@@ -67,8 +80,8 @@ internal class PeeknikoInterceptor(
             val message = exception.message ?: exception.toString()
             val stacktrace = exception.stackTraceToString()
             repository.insert(
-                id,
-                NetworkResponse.Error(
+                id = id,
+                response = NetworkResponse.Error(
                     exceptionMessage = message,
                     stackTrace = stacktrace,
                     timestamp = Clock.System.now(),

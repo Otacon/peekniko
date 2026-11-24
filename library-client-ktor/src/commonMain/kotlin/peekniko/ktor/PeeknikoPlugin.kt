@@ -26,49 +26,52 @@ public val Peekniko.plugin: ClientPlugin<*>
 
 internal fun createPeeknikoKtorPlugin(repository: NetworkRepository): ClientPlugin<*> =
     createClientPlugin("PeeknikoKtorPlugin") {
-    on(Send) { request ->
-        val id = Random.nextLong().toString()
-        request.networkCallId = id
-        repository.insert(id, request.toNetworkRequest()).await()
-        try {
-            proceed(request)
-        } catch (exception: Exception) {
-            val message = exception.message ?: exception.toString()
+        on(Send) { request ->
+            val id = Random.nextLong().toString()
+            request.networkCallId = id
+            repository.insert(id, request.toNetworkRequest()).await()
+            try {
+                proceed(request)
+            } catch (exception: Exception) {
+                val message = exception.message ?: exception.toString()
+                repository.insert(
+                    id,
+                    NetworkResponse.Error(
+                        exceptionMessage = message,
+                        stackTrace = exception.stackTraceToString(),
+                        timestamp = Clock.System.now(),
+                    ),
+                ).await()
+                throw exception
+            }
+        }
+
+        on(SendingRequest) { request, content ->
+            val id = request.networkCallId
+            if (id != null) {
+                val preparedHeaders = request.headers.build().toNetworkHeaders() + content.toNetworkHeaders()
+                val current = repository.getById(id) ?: return@on
+                val preparedBody = content.toBodyBytes() ?: current.request.body
+                repository.insert(id, current.request.copy(headers = preparedHeaders, body = preparedBody)).await()
+            }
+        }
+
+        onResponse { response ->
+            val id = response.call.networkCallId ?: return@onResponse
+            val responseBody = response.bodyAsBytes()
             repository.insert(
-                id,
-                NetworkResponse.Error(
-                    exceptionMessage = message,
-                    stackTrace = exception.stackTraceToString(),
+                id = id,
+                response = NetworkResponse.Response(
+                    body = responseBody,
+                    headers = response.headers.toNetworkHeaders(),
+                    code = response.status.value,
                     timestamp = Clock.System.now(),
+                    protocol = response.version.toString(),
+                    tlsVersion = null,
+                    cipherSuite = null,
                 ),
             ).await()
-            throw exception
         }
-    }
-
-    on(SendingRequest) { request, content ->
-        val id = request.networkCallId
-        if (id != null) {
-            val preparedHeaders = request.headers.build().toNetworkHeaders() + content.toNetworkHeaders()
-            val current = repository.getById(id) ?: return@on
-            val preparedBody = content.toBodyBytes() ?: current.request.body
-            repository.insert(id, current.request.copy(headers = preparedHeaders, body = preparedBody)).await()
-        }
-    }
-
-    onResponse { response ->
-        val id = response.call.networkCallId ?: return@onResponse
-        val responseBody = response.bodyAsBytes()
-        repository.insert(
-            id,
-            NetworkResponse.Response(
-                body = responseBody,
-                headers = response.headers.toNetworkHeaders(),
-                code = response.status.value,
-                timestamp = Clock.System.now(),
-            ),
-        ).await()
-    }
     }
 
 private var HttpRequestBuilder.networkCallId: String?

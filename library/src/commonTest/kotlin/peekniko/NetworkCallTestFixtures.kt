@@ -29,10 +29,16 @@ internal fun sampleResponse(
     headers: List<NetworkHeader> = listOf(NetworkHeader("Response", "header")),
     code: Int = 201,
     timestamp: Long = 11,
+    protocol: String? = "h2",
+    tlsVersion: String? = "TLSv1.3",
+    cipherSuite: String? = "TLS_AES_128_GCM_SHA256",
 ) = NetworkResponse.Response(
     body = body,
     headers = headers,
     code = code,
+    protocol = protocol,
+    tlsVersion = tlsVersion,
+    cipherSuite = cipherSuite,
     timestamp = Instant.fromEpochMilliseconds(timestamp),
 )
 

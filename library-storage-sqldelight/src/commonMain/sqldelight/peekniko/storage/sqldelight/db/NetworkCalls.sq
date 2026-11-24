@@ -7,11 +7,14 @@ CREATE TABLE network_call (
   query_params TEXT NOT NULL,
   method TEXT NOT NULL,
   request_body BLOB,
+  request_timestamp INTEGER NOT NULL,
   response_body BLOB,
   response_code INTEGER,
-  exception_message TEXT,
-  request_timestamp INTEGER NOT NULL,
   response_timestamp INTEGER,
+  protocol TEXT,
+  tls_version TEXT,
+  cipher_suite TEXT,
+  exception_message TEXT,
   stack_trace TEXT
 );
 
@@ -27,13 +30,14 @@ selectById:
 SELECT * FROM network_call WHERE id = ?;
 
 insertCall:
-INSERT INTO network_call VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO network_call VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateCall:
 UPDATE network_call SET scheme = ?, host = ?, port = ?, endpoint = ?, query_params = ?,
   method = ?, request_body = ?, response_body = ?,
   response_code = ?, exception_message = ?, request_timestamp = ?, response_timestamp = ?,
-  stack_trace = ? WHERE id = ?;
+  stack_trace = ?, protocol = ?, tls_version = ?, cipher_suite = ?
+  WHERE id = ?;
 
 deleteCall:
 DELETE FROM network_call WHERE id = ?;

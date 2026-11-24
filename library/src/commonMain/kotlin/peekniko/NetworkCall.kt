@@ -27,7 +27,7 @@ public data class NetworkRequest(
     public val endpoint: String,
     public val queryParams: String,
     public val method: NetworkMethod,
-    public val body: ByteArray? = null,
+    public val body: ByteArray?,
     public val headers: List<NetworkHeader> = emptyList(),
     public val timestamp: Instant,
 ) {
@@ -54,13 +54,18 @@ public val NetworkRequest.pathAndQueryParams: String
         }
     }
 
+public val NetworkRequest.isSsl: Boolean get() = scheme.equals("https", ignoreCase = true)
+
 public sealed interface NetworkResponse {
     public val timestamp: Instant
 
     public data class Response(
-        public val body: ByteArray? = null,
-        public val headers: List<NetworkHeader> = emptyList(),
+        public val body: ByteArray?,
+        public val headers: List<NetworkHeader>,
         public val code: Int,
+        public val protocol: String?,
+        public val tlsVersion: String?,
+        public val cipherSuite: String?,
         override val timestamp: Instant,
     ) : NetworkResponse {
         public companion object
