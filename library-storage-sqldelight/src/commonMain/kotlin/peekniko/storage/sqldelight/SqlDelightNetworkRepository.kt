@@ -133,9 +133,9 @@ internal class SqlDelightNetworkRepository(
                 request_timestamp = request.timestamp.toEpochMilliseconds(),
                 response_timestamp = response?.timestamp?.toEpochMilliseconds(),
                 stack_trace = errorResponse?.stackTrace,
-                response_protocol = receivedResponse?.protocol,
-                response_tls_version = receivedResponse?.tlsVersion,
-                response_cipher_suite = receivedResponse?.cipherSuite,
+                protocol = receivedResponse?.protocol,
+                tls_version = receivedResponse?.tlsVersion,
+                cipher_suite = receivedResponse?.cipherSuite,
             )
         }
         else {
@@ -153,9 +153,9 @@ internal class SqlDelightNetworkRepository(
                 request_timestamp = request.timestamp.toEpochMilliseconds(),
                 response_timestamp = response?.timestamp?.toEpochMilliseconds(),
                 stack_trace = errorResponse?.stackTrace,
-                response_protocol = receivedResponse?.protocol,
-                response_tls_version = receivedResponse?.tlsVersion,
-                response_cipher_suite = receivedResponse?.cipherSuite,
+                protocol = receivedResponse?.protocol,
+                tls_version = receivedResponse?.tlsVersion,
+                cipher_suite = receivedResponse?.cipherSuite,
                 id = call.id
             )
         }
@@ -206,9 +206,9 @@ internal class SqlDelightNetworkRepository(
                 headers = responseHeaders,
                 code = row.response_code.toInt(),
                 timestamp = responseTimestamp,
-                protocol = row.response_protocol,
-                tlsVersion = row.response_tls_version,
-                cipherSuite = row.response_cipher_suite,
+                protocol = row.protocol,
+                tlsVersion = row.tls_version,
+                cipherSuite = row.cipher_suite,
             )
             row.exception_message != null && responseTimestamp != null -> NetworkResponse.Error(
                 exceptionMessage = row.exception_message,
