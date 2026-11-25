@@ -12,9 +12,6 @@ import peekniko.internal.http.contentType
 import peekniko.internal.http.isRasterImageContentType
 import peekniko.internal.support.ViewModel
 
-/**
- * Renders the body of either the request ([isRequest] = true) or the response ([isRequest] = false) of a call.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class BodyViewModel(
     repository: NetworkRepository,
@@ -52,14 +49,19 @@ internal class BodyViewModel(
     private fun NetworkCall?.toState(theme: BodyRendererTheme, prettyPrintEnabled: Boolean): State {
         val call = this ?: return State(isLoading = false)
         return if (isRequest) {
-            renderBody(call.request.headers.contentType(), call.request.body, theme, prettyPrintEnabled)
+            renderBody(
+                contentType = call.request.headers.contentType(),
+                body = call.request.body,
+                theme = theme,
+                prettyPrintEnabled = prettyPrintEnabled
+            )
         } else {
             when (val response = call.response) {
                 is NetworkResponse.Response -> renderBody(
-                    response.headers.contentType(),
-                    response.body,
-                    theme,
-                    prettyPrintEnabled
+                    contentType = response.headers.contentType(),
+                    body = response.body,
+                    theme = theme,
+                    prettyPrintEnabled = prettyPrintEnabled
                 )
 
                 is NetworkResponse.Error -> errorState(response)
