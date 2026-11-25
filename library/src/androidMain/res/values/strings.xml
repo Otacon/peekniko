@@ -52,6 +52,8 @@
     <!-- Errors -->
     <string name="peekniko_call_not_found">Network call not found</string>
     <string name="peekniko_empty_body">Empty body</string>
+    <string name="peekniko_body_image">Body image</string>
+    <string name="peekniko_body_image_error">Unable to render image</string>
 
     <!-- Status indicators -->
     <string name="peekniko_status_error" translatable="false">!!!</string>

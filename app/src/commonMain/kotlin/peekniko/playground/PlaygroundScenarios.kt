@@ -99,6 +99,38 @@ internal val playgroundRequests: List<PlaygroundRequest> = listOf(
     ),
     PlaygroundRequest(
         method = PlaygroundMethod.GET,
+        path = "/image/png",
+        headers = listOf(
+            PlaygroundHeader("Accept", "image/png"),
+            PlaygroundHeader("X-Request-Id", "image-png"),
+        ),
+    ),
+    PlaygroundRequest(
+        method = PlaygroundMethod.GET,
+        path = "/image/jpeg",
+        headers = listOf(
+            PlaygroundHeader("Accept", "image/jpeg"),
+            PlaygroundHeader("X-Request-Id", "image-jpeg"),
+        ),
+    ),
+    PlaygroundRequest(
+        method = PlaygroundMethod.GET,
+        path = "/image/webp",
+        headers = listOf(
+            PlaygroundHeader("Accept", "image/webp"),
+            PlaygroundHeader("X-Request-Id", "image-webp"),
+        ),
+    ),
+    PlaygroundRequest(
+        method = PlaygroundMethod.GET,
+        path = "/image/svg",
+        headers = listOf(
+            PlaygroundHeader("Accept", "image/svg+xml"),
+            PlaygroundHeader("X-Request-Id", "image-svg"),
+        ),
+    ),
+    PlaygroundRequest(
+        method = PlaygroundMethod.GET,
         path = "/delay/1",
         headers = listOf(
             PlaygroundHeader("Accept", "application/json"),

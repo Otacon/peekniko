@@ -14,11 +14,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
-import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.bodyrenderer.toAnnotatedString
 import peekniko.ui.details.RequestViewModel
 
@@ -38,28 +36,33 @@ internal fun RequestTab(callId: String, modifier: Modifier = Modifier) {
         }
         return
     }
-    BodyText((state.body ?: spannedText()).toAnnotatedString(), modifier)
+    when (val body = state.body) {
+        is RequestViewModel.Body.Image -> ByteArrayImage(body.bytes, contentDescription = "Body image", modifier = modifier)
+        is RequestViewModel.Body.Text -> BodyText(body, modifier)
+        null -> BodyEmpty(modifier)
+    }
 }
 
 @Composable
-private fun BodyText(text: AnnotatedString, modifier: Modifier) {
-    SelectionContainer {
-        if (text.isEmpty()) {
-            Text(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                text = "Empty body"
-            )
-        } else {
-            Text(
-                text = text,
-                modifier = modifier.fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                fontFamily = FontFamily.Monospace,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+private fun BodyText(body: RequestViewModel.Body.Text, modifier: Modifier) {
+    val text = body.text.toAnnotatedString()
+    if (text.isEmpty()) {
+        BodyEmpty(modifier)
+        return
     }
+    SelectionContainer {
+        Text(
+            text = text,
+            modifier = modifier.fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            fontFamily = FontFamily.Monospace,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun BodyEmpty(modifier: Modifier) {
+    Text("Empty body", modifier = modifier.fillMaxSize().padding(16.dp))
 }
