@@ -53,6 +53,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import peekniko.NetworkMethod
 import peekniko.ui.networkcalls.CallStatusFilter
@@ -296,7 +297,12 @@ private fun CallListItem(
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 CallBadge(modifier = Modifier.width(72.dp), text = item.method)
                 Spacer(Modifier.width(8.dp))
-                Text(item.urlPath)
+                Text(
+                    text = item.urlPath,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.StartEllipsis,
+                )
             }
 
         },
