@@ -110,3 +110,37 @@ private fun NetworkResponse?.sameContent(other: NetworkResponse?): Boolean = whe
 
     else -> false
 }
+
+public data class NetworkCallSummary(
+    public val id: String,
+    public val method: NetworkMethod,
+    public val endpoint: String,
+    public val queryParams: String,
+    public val requestTimestamp: Instant,
+    public val requestBodySize: Long?,
+    public val responseCode: Int?,
+    public val responseBodySize: Long?,
+    public val responseTimestamp: Instant?,
+    public val exceptionMessage: String?,
+)
+
+public val NetworkCallSummary.pathAndQueryParams: String
+    get() = buildString {
+        append(endpoint)
+        if (queryParams.isNotEmpty()) {
+            append("?$queryParams")
+        }
+    }
+
+internal fun NetworkCall.toSummary(): NetworkCallSummary = NetworkCallSummary(
+    id = id,
+    method = request.method,
+    endpoint = request.endpoint,
+    queryParams = request.queryParams,
+    requestTimestamp = request.timestamp,
+    requestBodySize = request.body?.size?.toLong(),
+    responseCode = (response as? NetworkResponse.Response)?.code,
+    responseBodySize = (response as? NetworkResponse.Response)?.body?.size?.toLong(),
+    responseTimestamp = response?.timestamp,
+    exceptionMessage = (response as? NetworkResponse.Error)?.exceptionMessage,
+)

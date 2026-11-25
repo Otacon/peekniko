@@ -59,6 +59,12 @@ public class NetworkRepositoryInMemory internal constructor(
         .flowOn(dispatcher)
         .conflate()
 
+    public override fun observeCallSummaries(): Flow<List<NetworkCallSummary>> = _networkCalls
+        .map { calls -> calls.map(NetworkCall::toSummary) }
+        .distinctUntilChanged()
+        .flowOn(dispatcher)
+        .conflate()
+
     public override fun observeById(id: String): Flow<NetworkCall?> = _networkCalls
         .map { calls -> calls.firstOrNull { it.id == id } }
         .distinctUntilChanged { old, new ->
