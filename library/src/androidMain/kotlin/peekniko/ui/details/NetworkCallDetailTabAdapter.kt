@@ -10,8 +10,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import peekniko.library.R
 
-internal const val ARG_TRANSACTION_ID: String = "transaction_id"
-
 internal class NetworkCallDetailTabAdapter(
     context: Context,
     private val fragmentManager: FragmentManager,

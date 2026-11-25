@@ -139,6 +139,7 @@ internal class BodyFragment : FlowCollectionFragment(
     }
 
     companion object {
+        private const val ARG_TRANSACTION_ID = "transaction_id"
         private const val ARG_IS_REQUEST = "is_request"
 
         fun newInstance(transactionId: String, isRequest: Boolean) = BodyFragment().apply {
