@@ -1,5 +1,7 @@
 package peekniko.internal.http
 
+import peekniko.NetworkHeader
+
 private val rasterImageMediaTypes = setOf(
     "image/png",
     "image/x-png",
@@ -19,3 +21,6 @@ private val rasterImageMediaTypes = setOf(
 
 internal fun String.isRasterImageContentType(): Boolean =
     substringBefore(';').trim().lowercase() in rasterImageMediaTypes
+
+internal fun List<NetworkHeader>.contentType(): String? =
+    firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value

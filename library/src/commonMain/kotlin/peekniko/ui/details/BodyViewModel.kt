@@ -5,10 +5,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import peekniko.NetworkCall
-import peekniko.NetworkHeader
 import peekniko.NetworkRepository
 import peekniko.NetworkResponse
 import peekniko.internal.bodyrenderer.*
+import peekniko.internal.http.contentType
 import peekniko.internal.http.isRasterImageContentType
 import peekniko.internal.support.ViewModel
 
@@ -52,10 +52,16 @@ internal class BodyViewModel(
     private fun NetworkCall?.toState(theme: BodyRendererTheme, prettyPrintEnabled: Boolean): State {
         val call = this ?: return State(isLoading = false)
         return if (isRequest) {
-            renderBody(call.request.headers, call.request.body, theme, prettyPrintEnabled)
+            renderBody(call.request.headers.contentType(), call.request.body, theme, prettyPrintEnabled)
         } else {
             when (val response = call.response) {
-                is NetworkResponse.Response -> renderBody(response.headers, response.body, theme, prettyPrintEnabled)
+                is NetworkResponse.Response -> renderBody(
+                    response.headers.contentType(),
+                    response.body,
+                    theme,
+                    prettyPrintEnabled
+                )
+
                 is NetworkResponse.Error -> errorState(response)
                 null -> State(isLoading = false)
             }
@@ -63,30 +69,40 @@ internal class BodyViewModel(
     }
 
     private fun renderBody(
-        headers: List<NetworkHeader>,
+        contentType: String?,
         body: ByteArray?,
         theme: BodyRendererTheme,
         prettyPrintEnabled: Boolean,
     ): State {
-        val contentType = headers.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value
         if (body != null && body.isNotEmpty() && contentType?.isRasterImageContentType() == true) {
             return State(isLoading = false, body = Body.Image(body), prettyPrintState = PrettyPrintState.Unavailable)
         }
         val bodyText = body?.decodeToString().orEmpty()
         val supportedContentType = contentType?.takeIf { bodyText.isNotBlank() && bodyRenderer.supports(it) }
-        val (renderedBody, prettyPrintState) = when {
-            supportedContentType == null -> spannedText { append(bodyText) } to PrettyPrintState.Unavailable
+        return when {
+            supportedContentType == null -> State(
+                isLoading = false,
+                body = Body.Text(spannedText { append(bodyText) }),
+                prettyPrintState = PrettyPrintState.Unavailable,
+            )
 
             prettyPrintEnabled -> {
                 val formatted = bodyRenderer.format(bodyText, supportedContentType) ?: bodyText
                 val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, supportedContentType)
                     ?: spannedText { append(formatted) }
-                highlighted to PrettyPrintState.Enabled
+                State(
+                    isLoading = false,
+                    body = Body.Text(highlighted),
+                    prettyPrintState = PrettyPrintState.Enabled,
+                )
             }
 
-            else -> spannedText { append(bodyText) } to PrettyPrintState.Disabled
+            else -> State(
+                isLoading = false,
+                body = Body.Text(spannedText { append(bodyText) }),
+                prettyPrintState = PrettyPrintState.Disabled,
+            )
         }
-        return State(isLoading = false, body = Body.Text(renderedBody), prettyPrintState = prettyPrintState)
     }
 
     private fun errorState(error: NetworkResponse.Error): State = State(
