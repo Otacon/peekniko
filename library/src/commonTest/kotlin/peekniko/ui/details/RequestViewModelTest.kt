@@ -6,13 +6,15 @@ import dev.mokkery.every
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.coroutines.flow.MutableSharedFlow
 import peekniko.NetworkCall
 import peekniko.NetworkHeader
 import peekniko.NetworkRepository
 import peekniko.internal.bodyrenderer.*
-import peekniko.bbText
+import peekniko.SpannedTextBBText
 import peekniko.sampleCall
 import peekniko.sampleRequest
 import peekniko.withViewModel
@@ -75,8 +77,8 @@ internal class RequestViewModelTest : FunSpec({
         val rawJson = """{"name":"Ada"}"""
         val prettyJson =
             "[c=Light.separator]{[/c]\n" +
-                "  [c=Light.key]\"name\"[/c][c=Light.separator]:[/c] [c=Light.string]\"Ada\"[/c]\n" +
-                "[c=Light.separator]}[/c]"
+                    "  [c=Light.key]\"name\"[/c][c=Light.separator]:[/c] [c=Light.string]\"Ada\"[/c]\n" +
+                    "[c=Light.separator]}[/c]"
 
         fun requestCall(body: String?, contentType: String?) = sampleCall(
             id = "request-id",
@@ -220,5 +222,80 @@ internal class RequestViewModelTest : FunSpec({
                 }
             }
         }
+
+        context("image content type") {
+            val pngBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A)
+            fun imageCall(contentType: String) = requestCall(body = null, contentType = contentType).let { call ->
+                call.copy(request = call.request.copy(body = pngBytes))
+            }
+
+            test("exposes the raw bytes as an image, with pretty print unavailable") {
+                withFixture { transaction ->
+                    state.test {
+                        awaitItem()
+                        transaction.emit(imageCall("image/png"))
+                        val loaded = awaitItem()
+                        loaded.prettyPrintState shouldBe PrettyPrintState.Unavailable
+                        loaded.body.shouldBeInstanceOf<RequestViewModel.Body.Image>()
+                        cancelAndIgnoreRemainingEvents()
+                    }
+                }
+            }
+
+            context("renders supported raster formats as images") {
+                withData(
+                    "image/png",
+                    "image/x-png",
+                    "image/apng",
+                    "image/jpeg",
+                    "image/jpg",
+                    "image/pjpeg",
+                    "image/gif",
+                    "image/webp",
+                    "image/bmp",
+                    "image/x-bmp",
+                    "image/x-ms-bmp",
+                    "image/x-icon",
+                    "image/vnd.microsoft.icon",
+                    "image/vnd.wap.wbmp",
+                    "IMAGE/PNG",
+                    " image/jpeg ; charset=binary",
+                ) { contentType ->
+                    withFixture { transaction ->
+                        state.test {
+                            awaitItem()
+                            transaction.emit(imageCall(contentType))
+                            awaitItem().body.shouldBeInstanceOf<RequestViewModel.Body.Image>()
+                            cancelAndIgnoreRemainingEvents()
+                        }
+                    }
+                }
+            }
+
+            context("renders other content types as text") {
+                withData(
+                    "image/svg+xml",
+                    "image/tiff",
+                    "image/heic",
+                    "image/avif",
+                    "image/*",
+                    "image",
+                    "application/octet-stream",
+                    "text/plain",
+                ) { contentType ->
+                    withFixture { transaction ->
+                        state.test {
+                            awaitItem()
+                            transaction.emit(requestCall(body = "not an image", contentType = contentType))
+                            awaitItem().body.bbText shouldBe "not an image"
+                            cancelAndIgnoreRemainingEvents()
+                        }
+                    }
+                }
+            }
+        }
     }
 })
+
+private val RequestViewModel.Body?.bbText: String
+    get() = ((this as RequestViewModel.Body.Text).text as SpannedTextBBText).text

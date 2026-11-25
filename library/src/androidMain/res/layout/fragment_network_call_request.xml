@@ -30,12 +30,27 @@
         android:visibility="gone"
         tools:visibility="visible">
 
-        <TextView
-            android:id="@+id/requestBody"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.Peekniko.HeaderSectionContent"
-            tools:text="{ 'Key': 'value' }"/>
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/requestBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.Peekniko.HeaderSectionContent"
+                tools:text="{ 'Key': 'value' }"/>
+
+            <ImageView
+                android:id="@+id/requestImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/peekniko_body_image"
+                android:visibility="gone"/>
+        </FrameLayout>
     </ScrollView>
 
 </FrameLayout>

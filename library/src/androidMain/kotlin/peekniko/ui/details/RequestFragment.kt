@@ -5,15 +5,17 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import peekniko.Peekniko
-import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.bodyrenderer.platformText
+import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.support.FlowCollectionFragment
+import peekniko.internal.support.decodeBitmap
 import peekniko.internal.support.viewById
 import peekniko.internal.support.viewModels
 import peekniko.library.R
@@ -32,6 +34,7 @@ internal class RequestFragment : FlowCollectionFragment(
     private val content: View by viewById(R.id.requestScrollView)
     private val emptyScreen: View by viewById(R.id.requestEmptyScreen)
     private val body: TextView by viewById(R.id.requestBody)
+    private val image: ImageView by viewById(R.id.requestImage)
 
     private val menuHost: MenuHost get() = (requireParentFragment() as NetworkCallDetailFragment).menuHost
     private var menuPrettyPrintState = PrettyPrintState.Unavailable
@@ -81,13 +84,37 @@ internal class RequestFragment : FlowCollectionFragment(
         else -> false
     }
 
-    private fun bind(state: RequestViewModel.State) {
+    private suspend fun bind(state: RequestViewModel.State) {
         if (state.prettyPrintState != menuPrettyPrintState) {
             menuPrettyPrintState = state.prettyPrintState
             menuHost.invalidateMenu()
         }
-        val platformText = (state.body ?: spannedText()).platformText
-        body.text = platformText
+        val isEmpty = when (val stateBody = state.body) {
+            is RequestViewModel.Body.Image -> {
+                val bitmap = stateBody.bytes.decodeBitmap()
+                if (bitmap != null) {
+                    image.setImageBitmap(bitmap)
+                    image.isVisible = true
+                    body.isVisible = false
+                    body.text = null
+                } else {
+                    image.setImageDrawable(null)
+                    image.isVisible = false
+                    body.isVisible = true
+                    body.setText(R.string.peekniko_body_image_error)
+                }
+                false
+            }
+
+            is RequestViewModel.Body.Text, null -> {
+                val platformText = (stateBody?.text ?: spannedText()).platformText
+                image.setImageDrawable(null)
+                image.isVisible = false
+                body.isVisible = true
+                body.text = platformText
+                platformText.isBlank()
+            }
+        }
         when {
             state.isLoading -> {
                 progress.isVisible = true
@@ -95,7 +122,7 @@ internal class RequestFragment : FlowCollectionFragment(
                 emptyScreen.isVisible = false
             }
 
-            platformText.isBlank() -> {
+            isEmpty -> {
                 progress.isVisible = false
                 content.isVisible = false
                 emptyScreen.isVisible = true

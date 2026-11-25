@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.*
 import peekniko.NetworkRepository
 import peekniko.NetworkRequest
 import peekniko.internal.bodyrenderer.*
+import peekniko.internal.http.isRasterImageContentType
 import peekniko.internal.support.ViewModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -50,20 +51,24 @@ internal class RequestViewModel(
                 prettyPrintState = PrettyPrintState.Unavailable,
             )
         }
-        val bodyText = body?.decodeToString().orEmpty()
-        val rawContentType = headers.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value
-        val supportedContentType = rawContentType?.takeIf { bodyText.isNotBlank() && bodyRenderer.supports(it) }
-        val (renderedBody, prettyPrintState) = when {
-            supportedContentType == null -> spannedText { append(bodyText) } to PrettyPrintState.Unavailable
+        val contentType = headers.firstOrNull { it.name.equals("content-type", ignoreCase = true) }?.value
+        val (renderedBody, prettyPrintState) = if (body != null && body.isNotEmpty() && contentType?.isRasterImageContentType() == true) {
+            Body.Image(body) to PrettyPrintState.Unavailable
+        } else {
+            val bodyText = body?.decodeToString().orEmpty()
+            val supportedContentType = contentType?.takeIf { bodyText.isNotBlank() && bodyRenderer.supports(it) }
+            when {
+                supportedContentType == null -> Body.Text(spannedText { append(bodyText) }) to PrettyPrintState.Unavailable
 
-            prettyPrintEnabled -> {
-                val formatted = bodyRenderer.format(bodyText, supportedContentType) ?: bodyText
-                val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, supportedContentType)
-                val highlightedOrPlain = highlighted ?: spannedText { append(formatted) }
-                highlightedOrPlain to PrettyPrintState.Enabled
+                prettyPrintEnabled -> {
+                    val formatted = bodyRenderer.format(bodyText, supportedContentType) ?: bodyText
+                    val highlighted = bodyRenderer.syntaxHighlight(theme, formatted, supportedContentType)
+                        ?: spannedText { append(formatted) }
+                    Body.Text(highlighted) to PrettyPrintState.Enabled
+                }
+
+                else -> Body.Text(spannedText { append(bodyText) }) to PrettyPrintState.Disabled
             }
-
-            else -> spannedText { append(bodyText) } to PrettyPrintState.Disabled
         }
         return State(
             isLoading = false,
@@ -74,9 +79,16 @@ internal class RequestViewModel(
 
     internal data class State(
         val isLoading: Boolean = true,
-        val body: SpannedText? = null,
+        val body: Body? = null,
         val prettyPrintState: PrettyPrintState = PrettyPrintState.Unavailable,
     )
+
+    internal sealed interface Body {
+        data class Text(val text: SpannedText) : Body
+
+        // Don't make this a data class: data classes compare array properties by reference, not content.
+        class Image(val bytes: ByteArray) : Body
+    }
 }
 
 internal enum class PrettyPrintState {

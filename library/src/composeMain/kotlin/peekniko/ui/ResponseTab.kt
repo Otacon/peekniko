@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
-import peekniko.internal.bodyrenderer.spannedText
 import peekniko.internal.bodyrenderer.toAnnotatedString
 import peekniko.ui.details.ResponseViewModel
 
@@ -37,19 +36,33 @@ internal fun ResponseTab(callId: String, modifier: Modifier = Modifier) {
         }
         return
     }
-    val body = (state.body ?: spannedText()).toAnnotatedString()
-    SelectionContainer {
-        if (body.isEmpty()) {
-            Text("Empty body", modifier = modifier.fillMaxSize().padding(16.dp))
-        } else {
-            Text(
-                text = body,
-                modifier = modifier.fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                fontFamily = FontFamily.Monospace,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+    when (val body = state.body) {
+        is ResponseViewModel.Body.Image -> ByteArrayImage(body.bytes, contentDescription = "Body image", modifier = modifier)
+        is ResponseViewModel.Body.Text -> BodyText(body, modifier)
+        null -> BodyEmpty(modifier)
     }
+}
+
+@Composable
+private fun BodyText(body: ResponseViewModel.Body.Text, modifier: Modifier) {
+    val text = body.text.toAnnotatedString()
+    if (text.isEmpty()) {
+        BodyEmpty(modifier)
+        return
+    }
+    SelectionContainer {
+        Text(
+            text = text,
+            modifier = modifier.fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            fontFamily = FontFamily.Monospace,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun BodyEmpty(modifier: Modifier) {
+    Text("Empty body", modifier = modifier.fillMaxSize().padding(16.dp))
 }
