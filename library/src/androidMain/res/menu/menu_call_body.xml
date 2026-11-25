@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menuRequestPrettyPrint"
+        android:id="@+id/menuBodyPrettyPrint"
         android:icon="@drawable/ic_pretty_print"
         android:title="@string/peekniko_menu_pretty_print_enabled"
         app:showAsAction="always" />

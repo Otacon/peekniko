@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <ProgressBar
-        android:id="@+id/responseProgress"
+        android:id="@+id/bodyProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="visible"
@@ -14,7 +14,7 @@
         android:layout_gravity="center"/>
 
     <TextView
-        android:id="@+id/responseEmptyScreen"
+        android:id="@+id/bodyEmptyScreen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -24,7 +24,7 @@
         tools:visibility="visible"/>
 
     <ScrollView
-        android:id="@+id/responseScrollView"
+        android:id="@+id/bodyScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
@@ -35,14 +35,14 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/responseBody"
+                android:id="@+id/bodyText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 style="@style/Widget.Peekniko.HeaderSectionContent"
                 tools:text="{ 'Key': 'value' }"/>
 
             <ImageView
-                android:id="@+id/responseImage"
+                android:id="@+id/bodyImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"

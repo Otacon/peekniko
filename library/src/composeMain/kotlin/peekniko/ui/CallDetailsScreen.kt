@@ -122,8 +122,8 @@ private fun CallDetailsTabView(
         }
         when (selectedTab) {
             0 -> SummaryTab(callId = callId, modifier = Modifier.weight(1f))
-            1 -> RequestTab(callId = callId, modifier = Modifier.weight(1f))
-            else -> ResponseTab(callId = callId, modifier = Modifier.weight(1f))
+            1 -> BodyTab(callId = callId, isRequest = true, modifier = Modifier.weight(1f))
+            else -> BodyTab(callId = callId, isRequest = false, modifier = Modifier.weight(1f))
         }
     }
 }

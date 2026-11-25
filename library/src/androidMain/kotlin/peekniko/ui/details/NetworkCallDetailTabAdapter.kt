@@ -66,8 +66,8 @@ internal class NetworkCallDetailTabAdapter(
     private fun getFragment(index: Int): Fragment = fragments.getOrPut(index) {
         val fragmentTag = tag(index)
         fragmentManager.findFragmentByTag(fragmentTag) ?: when (index) {
-            1 -> RequestFragment.newInstance(transactionId)
-            2 -> ResponseFragment.newInstance(transactionId)
+            1 -> BodyFragment.newInstance(transactionId, isRequest = true)
+            2 -> BodyFragment.newInstance(transactionId, isRequest = false)
             else -> SummaryFragment.newInstance(transactionId)
         }
     }

@@ -18,11 +18,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import peekniko.Peekniko
 import peekniko.internal.bodyrenderer.toAnnotatedString
-import peekniko.ui.details.ResponseViewModel
+import peekniko.ui.details.BodyViewModel
 
 @Composable
-internal fun ResponseTab(callId: String, modifier: Modifier = Modifier) {
-    val viewModel = retainedViewModel(ResponseViewModel::class) { Peekniko.createResponseViewModel(callId) }
+internal fun BodyTab(callId: String, isRequest: Boolean, modifier: Modifier = Modifier) {
+    val viewModel = retainedViewModel(BodyViewModel::class, key = if (isRequest) "request" else "response") {
+        Peekniko.createBodyViewModel(callId, isRequest = isRequest)
+    }
     val state by viewModel.state.collectAsState()
     TopBarActionsEffect {
         PrettyPrintAction(
@@ -37,14 +39,14 @@ internal fun ResponseTab(callId: String, modifier: Modifier = Modifier) {
         return
     }
     when (val body = state.body) {
-        is ResponseViewModel.Body.Image -> ByteArrayImage(body.bytes, contentDescription = "Body image", modifier = modifier)
-        is ResponseViewModel.Body.Text -> BodyText(body, modifier)
+        is BodyViewModel.Body.Image -> ByteArrayImage(body.bytes, contentDescription = "Body image", modifier = modifier)
+        is BodyViewModel.Body.Text -> BodyText(body, modifier)
         null -> BodyEmpty(modifier)
     }
 }
 
 @Composable
-private fun BodyText(body: ResponseViewModel.Body.Text, modifier: Modifier) {
+private fun BodyText(body: BodyViewModel.Body.Text, modifier: Modifier) {
     val text = body.text.toAnnotatedString()
     if (text.isEmpty()) {
         BodyEmpty(modifier)

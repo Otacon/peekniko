@@ -11,9 +11,8 @@ import peekniko.internal.support.ViewModelFactory
 import peekniko.internal.support.ViewModelStore
 import peekniko.internal.support.initializer
 import peekniko.internal.support.viewModelFactory
+import peekniko.ui.details.BodyViewModel
 import peekniko.ui.details.NetworkCallDetailViewModel
-import peekniko.ui.details.RequestViewModel
-import peekniko.ui.details.ResponseViewModel
 import peekniko.ui.details.SummaryViewModel
 import peekniko.ui.networkcalls.PeeknikoViewModel
 
@@ -81,21 +80,12 @@ public object Peekniko {
             timeFormatter = ReadableTimeFormatter(includeMillis = true)
         )
 
-    internal fun createRequestViewModel(transactionId: String): RequestViewModel {
-        return RequestViewModel(
-            repository = networkRepository,
-            themeProvider = BodyRendererThemeProvider(),
-            bodyRenderer = bodyRenderer,
-            transactionId = transactionId
-        )
-    }
-
-    internal fun createResponseViewModel(transactionId: String): ResponseViewModel {
-        return ResponseViewModel(
+    internal fun createBodyViewModel(transactionId: String, isRequest: Boolean): BodyViewModel =
+        BodyViewModel(
             repository = networkRepository,
             themeProvider = BodyRendererThemeProvider(),
             bodyRenderer = bodyRenderer,
             transactionId = transactionId,
+            isRequest = isRequest,
         )
-    }
 }

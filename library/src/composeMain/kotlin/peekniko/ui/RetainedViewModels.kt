@@ -23,10 +23,10 @@ internal fun rememberViewModelStore(key: Any?): ViewModelStore {
 }
 
 @Composable
-internal fun <T : ViewModel> retainedViewModel(modelClass: KClass<T>, create: () -> T): T {
+internal fun <T : ViewModel> retainedViewModel(modelClass: KClass<T>, key: String? = null, create: () -> T): T {
     val store = LocalViewModelStore.current
-    return remember(store, modelClass) {
-        store.getOrCreate(modelClass, viewModelFactory { addInitializer(modelClass, create) })
+    return remember(store, modelClass, key) {
+        store.getOrCreate(modelClass, viewModelFactory { addInitializer(modelClass, create) }, key)
     }
 }
 
