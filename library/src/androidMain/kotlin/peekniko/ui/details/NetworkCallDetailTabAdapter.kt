@@ -10,8 +10,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import peekniko.library.R
 
-internal const val ARG_TRANSACTION_ID: String = "transaction_id"
-
 internal class NetworkCallDetailTabAdapter(
     context: Context,
     private val fragmentManager: FragmentManager,
@@ -66,8 +64,8 @@ internal class NetworkCallDetailTabAdapter(
     private fun getFragment(index: Int): Fragment = fragments.getOrPut(index) {
         val fragmentTag = tag(index)
         fragmentManager.findFragmentByTag(fragmentTag) ?: when (index) {
-            1 -> RequestFragment.newInstance(transactionId)
-            2 -> ResponseFragment.newInstance(transactionId)
+            1 -> BodyFragment.newInstance(transactionId, isRequest = true)
+            2 -> BodyFragment.newInstance(transactionId, isRequest = false)
             else -> SummaryFragment.newInstance(transactionId)
         }
     }

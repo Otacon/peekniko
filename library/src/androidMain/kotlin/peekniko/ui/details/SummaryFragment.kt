@@ -38,6 +38,8 @@ internal class SummaryFragment : FlowCollectionFragment(R.layout.fragment_networ
     }
 
     companion object {
+        private const val ARG_TRANSACTION_ID = "transaction_id"
+
         fun newInstance(transactionId: String) = SummaryFragment().apply {
             arguments = Bundle().apply { putString(ARG_TRANSACTION_ID, transactionId) }
         }
