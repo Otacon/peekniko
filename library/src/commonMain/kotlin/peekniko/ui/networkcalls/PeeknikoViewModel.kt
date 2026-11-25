@@ -1,9 +1,8 @@
 package peekniko.ui.networkcalls
 
-import peekniko.NetworkCall
+import peekniko.NetworkCallSummary
 import peekniko.NetworkMethod
 import peekniko.NetworkRepository
-import peekniko.NetworkResponse
 import peekniko.pathAndQueryParams
 import peekniko.internal.formatting.formatPayloadSize
 import peekniko.internal.formatting.toReadableTime
@@ -33,7 +32,7 @@ internal class PeeknikoViewModel(
     private val selectedCallId = MutableStateFlow<String?>(null)
 
     val state: StateFlow<State> = combine(
-        networkRepository.networkCalls,
+        networkRepository.observeCallSummaries(),
         urlFilter,
         methodFilter,
         statusFilter,
@@ -81,33 +80,27 @@ internal class PeeknikoViewModel(
         selectedCallId.value = item.id
     }
 
-    internal fun NetworkCall.toListItem(isSelected: Boolean): PeeknikoCallRowItem {
-        val responseTimestamp = response?.timestamp
-        val responseCode = (response as? NetworkResponse.Response)?.code
-        val exceptionMessage = (response as? NetworkResponse.Error)?.exceptionMessage
-        val responseBody = (response as? NetworkResponse.Response)?.body
-        val durationMillis = responseTimestamp
-            ?.let { (it - request.timestamp).inWholeMilliseconds.coerceAtLeast(0L) }
+    internal fun NetworkCallSummary.toListItem(isSelected: Boolean): PeeknikoCallRowItem {
+        val durationMillis = responseTimestamp?.let { (it - requestTimestamp).inWholeMilliseconds.coerceAtLeast(0L) }
         val details = buildList {
             durationMillis?.let { add("$it ms") }
-            val totalPayloadSize = (request.body?.size?.toLong() ?: 0L) + (responseBody?.size?.toLong() ?: 0L)
-            add(totalPayloadSize.formatPayloadSize())
+            add(((requestBodySize ?: 0L) + (responseBodySize ?: 0L)).formatPayloadSize())
         }.joinToString(" · ")
 
-        val statusBadge = when (response) {
-            is NetworkResponse.Error -> "ERR"
-            is NetworkResponse.Response -> response.code.toString()
-            null -> "..."
+        val statusBadge = when {
+            exceptionMessage != null -> "ERR"
+            responseCode != null -> responseCode.toString()
+            else -> "..."
         }
 
-        val formattedTime = request.timestamp.toReadableTime(includeMillis = true)
+        val formattedTime = requestTimestamp.toReadableTime(includeMillis = true)
         val subtitle = exceptionMessage ?: "$formattedTime · $details"
 
         return PeeknikoCallRowItem(
             id = id,
-            method = request.method.name,
-            urlPath = request.pathAndQueryParams,
-            requestTime = request.timestamp.toReadableTime(includeMillis = true),
+            method = method.name,
+            urlPath = pathAndQueryParams,
+            requestTime = formattedTime,
             details = details,
             responseCode = responseCode,
             exceptionMessage = exceptionMessage,
@@ -117,27 +110,27 @@ internal class PeeknikoViewModel(
         )
     }
 
-    private fun List<NetworkCall>.filterByUrl(url: String): List<NetworkCall> {
+    private fun List<NetworkCallSummary>.filterByUrl(url: String): List<NetworkCallSummary> {
         val trimmedUrl = url.trim()
         if (trimmedUrl.isBlank()) return this
 
-        return this.filter { it.request.pathAndQueryParams.contains(trimmedUrl, ignoreCase = true) }
+        return this.filter { it.pathAndQueryParams.contains(trimmedUrl, ignoreCase = true) }
     }
 
-    private fun List<NetworkCall>.filterByMethod(method: NetworkMethod?): List<NetworkCall> {
+    private fun List<NetworkCallSummary>.filterByMethod(method: NetworkMethod?): List<NetworkCallSummary> {
         if (method == null) return this
-        return this.filter { it.request.method == method }
+        return this.filter { it.method == method }
     }
 
-    private fun List<NetworkCall>.filterByStatus(status: CallStatusFilter?): List<NetworkCall> {
+    private fun List<NetworkCallSummary>.filterByStatus(status: CallStatusFilter?): List<NetworkCallSummary> {
         if (status == null) return this
         return this.filter { call ->
-            val responseCode = (call.response as? NetworkResponse.Response)?.code
+            val responseCode = call.responseCode
 
             when (status) {
                 CallStatusFilter.SUCCESS_2XX -> responseCode != null && responseCode in 200..299
                 CallStatusFilter.NON_SUCCESS -> responseCode != null && responseCode !in 200..299
-                CallStatusFilter.EXCEPTION -> call.response is NetworkResponse.Error
+                CallStatusFilter.EXCEPTION -> call.exceptionMessage != null
             }
         }
     }

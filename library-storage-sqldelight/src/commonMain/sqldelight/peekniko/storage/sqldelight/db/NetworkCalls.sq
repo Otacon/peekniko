@@ -23,6 +23,14 @@ CREATE INDEX network_call_timestamp ON network_call(request_timestamp DESC);
 selectAll:
 SELECT * FROM network_call ORDER BY request_timestamp DESC;
 
+selectSummaries:
+SELECT id, method, endpoint, query_params, request_timestamp,
+  length(request_body) AS request_body_size,
+  response_code, response_timestamp,
+  length(response_body) AS response_body_size,
+  exception_message
+  FROM network_call ORDER BY request_timestamp DESC;
+
 selectLatest:
 SELECT * FROM network_call ORDER BY request_timestamp DESC LIMIT ?;
 

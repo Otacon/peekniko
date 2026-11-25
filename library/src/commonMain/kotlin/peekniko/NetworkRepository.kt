@@ -1,11 +1,13 @@
 package peekniko
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.flow.Flow
 
 public interface NetworkRepository {
 
     public val networkCalls: Flow<List<NetworkCall>>
+
+    public fun observeCallSummaries(): Flow<List<NetworkCallSummary>>
 
     public fun observeCallUpdates(limit: Int): Flow<List<NetworkCall>>
 

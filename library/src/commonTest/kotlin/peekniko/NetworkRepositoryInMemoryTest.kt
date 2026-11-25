@@ -338,6 +338,104 @@ internal class NetworkRepositoryInMemoryTest : FunSpec({
             }
         }
 
+        test("observeCallSummaries emits a pending call without a response") {
+            repository.insert(
+                "pending",
+                sampleRequest(
+                    timestamp = 100,
+                    endpoint = "/items",
+                    queryParams = "page=2",
+                    method = NetworkMethod.PUT,
+                    body = byteArrayOf(1, 2, 3),
+                ),
+            ).await()
+            repository.observeCallSummaries().test {
+                awaitItem() shouldContainExactly listOf(
+                    NetworkCallSummary(
+                        id = "pending",
+                        method = NetworkMethod.PUT,
+                        endpoint = "/items",
+                        queryParams = "page=2",
+                        requestTimestamp = Instant.fromEpochMilliseconds(100),
+                        requestBodySize = 3,
+                        responseCode = null,
+                        responseBodySize = null,
+                        responseTimestamp = null,
+                        exceptionMessage = null,
+                    ),
+                )
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+        test("observeCallSummaries emits the response code, body size and timestamp") {
+            repository.insert("done", sampleRequest(timestamp = 10, endpoint = "/done", method = NetworkMethod.GET)).await()
+            repository.insert("done", sampleResponse(code = 404, body = ByteArray(5), timestamp = 50)).await()
+            repository.observeCallSummaries().first() shouldContainExactly listOf(
+                NetworkCallSummary(
+                    id = "done",
+                    method = NetworkMethod.GET,
+                    endpoint = "/done",
+                    queryParams = "",
+                    requestTimestamp = Instant.fromEpochMilliseconds(10),
+                    requestBodySize = null,
+                    responseCode = 404,
+                    responseBodySize = 5,
+                    responseTimestamp = Instant.fromEpochMilliseconds(50),
+                    exceptionMessage = null,
+                ),
+            )
+        }
+
+        test("observeCallSummaries emits the error message") {
+            repository.insert("failed", sampleRequest(timestamp = 3, endpoint = "/failed", method = NetworkMethod.GET)).await()
+            repository.insert(
+                "failed",
+                NetworkResponse.Error(
+                    exceptionMessage = "connection failed",
+                    stackTrace = "trace",
+                    timestamp = Instant.fromEpochMilliseconds(7),
+                ),
+            ).await()
+            repository.observeCallSummaries().first() shouldContainExactly listOf(
+                NetworkCallSummary(
+                    id = "failed",
+                    method = NetworkMethod.GET,
+                    endpoint = "/failed",
+                    queryParams = "",
+                    requestTimestamp = Instant.fromEpochMilliseconds(3),
+                    requestBodySize = null,
+                    responseCode = null,
+                    responseBodySize = null,
+                    responseTimestamp = Instant.fromEpochMilliseconds(7),
+                    exceptionMessage = "connection failed",
+                ),
+            )
+        }
+
+        test("observeCallSummaries orders calls newest first") {
+            fun pendingSummary(id: String, timestamp: Long) = NetworkCallSummary(
+                id = id,
+                method = NetworkMethod.GET,
+                endpoint = "/$timestamp",
+                queryParams = "",
+                requestTimestamp = Instant.fromEpochMilliseconds(timestamp),
+                requestBodySize = null,
+                responseCode = null,
+                responseBodySize = null,
+                responseTimestamp = null,
+                exceptionMessage = null,
+            )
+            repository.insert("10", sampleRequest(timestamp = 10, method = NetworkMethod.GET)).await()
+            repository.insert("30", sampleRequest(timestamp = 30, method = NetworkMethod.GET)).await()
+            repository.insert("20", sampleRequest(timestamp = 20, method = NetworkMethod.GET)).await()
+            repository.observeCallSummaries().first() shouldContainExactly listOf(
+                pendingSummary(id = "30", timestamp = 30),
+                pendingSummary(id = "20", timestamp = 20),
+                pendingSummary(id = "10", timestamp = 10),
+            )
+        }
+
         test("observed request bodies are isolated from repository contents") {
             val body = byteArrayOf(1, 2)
             repository.networkCalls.test {

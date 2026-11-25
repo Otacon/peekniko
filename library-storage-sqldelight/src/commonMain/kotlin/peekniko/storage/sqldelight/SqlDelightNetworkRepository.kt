@@ -4,6 +4,7 @@ import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.db.SqlDriver
 import peekniko.NetworkCall
+import peekniko.NetworkCallSummary
 import peekniko.NetworkHeader
 import peekniko.NetworkMethod
 import peekniko.NetworkRepository
@@ -12,6 +13,7 @@ import peekniko.NetworkResponse
 import peekniko.Peekniko
 import peekniko.storage.sqldelight.db.Network_call
 import peekniko.storage.sqldelight.db.PeeknikoDatabase
+import peekniko.storage.sqldelight.db.SelectSummaries
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -42,6 +44,12 @@ internal class SqlDelightNetworkRepository(
     }
 
     override val networkCalls: Flow<List<NetworkCall>> = callsQueries.selectAll().observeCalls()
+
+    override fun observeCallSummaries(): Flow<List<NetworkCallSummary>> = callsQueries.selectSummaries()
+        .asFlow()
+        .map { query -> query.executeAsList().map(::toSummary) }
+        .distinctUntilChanged()
+        .flowOn(databaseDispatcher)
 
     override fun observeCallUpdates(limit: Int): Flow<List<NetworkCall>> {
         require(limit > 0) { "Limit must be positive" }
@@ -179,6 +187,19 @@ internal class SqlDelightNetworkRepository(
             )
         }
     }
+
+    private fun toSummary(row: SelectSummaries): NetworkCallSummary = NetworkCallSummary(
+        id = row.id,
+        method = row.method.toNetworkMethod(),
+        endpoint = row.endpoint,
+        queryParams = row.query_params,
+        requestTimestamp = Instant.fromEpochMilliseconds(row.request_timestamp),
+        requestBodySize = row.request_body_size,
+        responseCode = row.response_code?.toInt(),
+        responseBodySize = row.response_body_size,
+        responseTimestamp = row.response_timestamp?.let(Instant::fromEpochMilliseconds),
+        exceptionMessage = row.exception_message,
+    )
 
     private fun toCall(row: Network_call): NetworkCall {
         val headers = headersQueries.selectHeaders(row.id).executeAsList()

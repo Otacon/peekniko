@@ -10,6 +10,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.map
 import peekniko.internal.formatting.toReadableTime
 import peekniko.*
 import peekniko.ui.PeeknikoCallRowItem
@@ -358,7 +359,7 @@ private class PeeknikoViewModelFixture(backgroundDispatcher: CoroutineDispatcher
     // Retain the emission if the eagerly started collector hasn't subscribed yet.
     val callsFlow = MutableSharedFlow<List<NetworkCall>>(replay = 1)
     val repository = mock<NetworkRepository> {
-        every { networkCalls } returns callsFlow
+        every { observeCallSummaries() } returns callsFlow.map { calls -> calls.map(NetworkCall::toSummary) }
     }
     val viewModel = PeeknikoViewModel(repository, backgroundDispatcher)
 }
