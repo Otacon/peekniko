@@ -10,7 +10,7 @@ The package has two products with the same API:
 | Product           | Import             | Contents                                                    | Link it into                  |
 |-------------------|--------------------|-------------------------------------------------------------|-------------------------------|
 | `PeeknikoKit`     | `PeeknikoCore`     | The inspector, `URLSession` capture, and SQLDelight storage | Debug or internal app targets |
-| `PeeknikoKitNoop` | `PeeknikoCoreNoop` | The same API, doing nothing                                 | Production app targets        |
+| `PeeknikoKitNoop` | `PeeknikoCoreNoop` | The same API, doing nothing, in a few KB of plain Swift     | Production app targets        |
 
 Link one of the two into each app target. Swift Package Manager can't switch products by build configuration, so use a
 separate app target for debug builds. `PeeknikoKit` links SQLite for you.

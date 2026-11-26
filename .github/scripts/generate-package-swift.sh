@@ -1,33 +1,20 @@
 #!/usr/bin/env bash
-# Writes the root Package.swift that exposes the released XCFrameworks to Swift
-# Package Manager as remote binary targets:
-#   - PeeknikoKit:     the real inspector with SQLDelight storage (PeeknikoCore.xcframework),
-#                      wrapped in library-ios/swift so SQLite is linked automatically
-#   - PeeknikoKitNoop: the no-op stand-in for production builds (PeeknikoCoreNoop.xcframework)
-# Apps import PeeknikoCore with the real product and PeeknikoCoreNoop with the no-op one;
-# both modules expose the same Peekniko API. Link one of the two into each app target.
-#
-# Usage: generate-package-swift.sh <version> <core-url> <core-checksum> <noop-url> <noop-checksum> [output]
 set -euo pipefail
 
-if [[ $# -lt 5 || $# -gt 6 ]]; then
-  echo "Usage: $0 <version> <core-url> <core-checksum> <noop-url> <noop-checksum> [output]" >&2
+if [[ $# -lt 3 || $# -gt 4 ]]; then
+  echo "Usage: $0 <version> <core-url> <core-checksum> [output]" >&2
   exit 1
 fi
 
 version="$1"
 core_url="$2"
 core_checksum="$3"
-noop_url="$4"
-noop_checksum="$5"
-output="${6:-Package.swift}"
+output="${4:-Package.swift}"
 
-for checksum in "$core_checksum" "$noop_checksum"; do
-  if [[ ! "$checksum" =~ ^[0-9a-f]{64}$ ]]; then
-    echo "Invalid checksum '$checksum': expected 64 lowercase hex characters" >&2
-    exit 1
-  fi
-done
+if [[ ! "$core_checksum" =~ ^[0-9a-f]{64}$ ]]; then
+  echo "Invalid checksum '$core_checksum': expected 64 lowercase hex characters" >&2
+  exit 1
+fi
 
 cat > "$output" <<EOF
 // swift-tools-version: 5.9
@@ -57,10 +44,9 @@ let package = Package(
             url: "${core_url}",
             checksum: "${core_checksum}"
         ),
-        .binaryTarget(
+        .target(
             name: "PeeknikoCoreNoop",
-            url: "${noop_url}",
-            checksum: "${noop_checksum}"
+            path: "library-ios/noop"
         ),
     ]
 )

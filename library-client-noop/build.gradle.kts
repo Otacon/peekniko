@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -27,21 +26,8 @@ kotlin {
 
     jvm()
 
-    // Swift module PeeknikoCoreNoop, the production stand-in for PeeknikoCore. It needs
-    // its own name: two frameworks both called PeeknikoCore.framework collide in Xcode's
-    // shared build folder when one app has a target for each.
-    val xcf = XCFramework("PeeknikoCoreNoop")
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { target ->
-        target.binaries.framework {
-            baseName = "PeeknikoCoreNoop"
-            isStatic = true
-            binaryOption("smallBinary", "true")
-            xcf.add(this)
-        }
-    }
+    iosArm64()
+    iosSimulatorArm64()
 
     sourceSets {
         commonMain.dependencies {

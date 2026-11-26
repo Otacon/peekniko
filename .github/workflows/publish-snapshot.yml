@@ -41,11 +41,7 @@ jobs:
             :library-client-noop:assemble \
             :library-client-ktor:assemble \
             :library-client-okhttp:assemble \
-            :library-storage-sqldelight:assemble \
-            -x :library-client-noop:linkDebugFrameworkIosArm64 \
-            -x :library-client-noop:linkDebugFrameworkIosSimulatorArm64 \
-            -x :library-client-noop:linkReleaseFrameworkIosArm64 \
-            -x :library-client-noop:linkReleaseFrameworkIosSimulatorArm64
+            :library-storage-sqldelight:assemble
 
       - name: Publish libraries
         run: ./gradlew publishToMavenCentral --no-parallel

@@ -8,6 +8,7 @@ let package = Package(
     platforms: [.iOS(.v17)],
     products: [
         .library(name: "PeeknikoKit", targets: ["PeeknikoKit"]),
+        .library(name: "PeeknikoKitNoop", targets: ["PeeknikoCoreNoop"]),
     ],
     targets: [
         // Binary targets can't declare linker settings, so this wrapper links SQLite
@@ -21,6 +22,10 @@ let package = Package(
         .binaryTarget(
             name: "PeeknikoCore",
             path: "build/XCFrameworks/debug/PeeknikoCore.xcframework"
+        ),
+        .target(
+            name: "PeeknikoCoreNoop",
+            path: "noop"
         ),
     ]
 )
