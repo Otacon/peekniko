@@ -1,31 +1,57 @@
 name: Publish release
 
 on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-*'
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (e.g. 1.0.0-alpha01)
+        description: Release version (x.y.z, or x.y.z-suffix for a pre-release)
         type: string
         required: true
 
 permissions:
   contents: read
 
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
 env:
-  ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-  ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-  ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
-  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+  VERSION: ${{ inputs.version }}
+  CORE_ZIP: PeeknikoCore.xcframework.zip
+  NOOP_ZIP: PeeknikoCoreNoop.xcframework.zip
 
 jobs:
-  publish:
+  validate:
+    name: Validate version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check version format and that it is not released yet
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Version '$VERSION' must be x.y.z or x.y.z-suffix"
+            exit 1
+          fi
+          if gh api "repos/$GH_REPO/git/ref/tags/$VERSION" --silent 2>/dev/null; then
+            echo "::error::Tag '$VERSION' already exists"
+            exit 1
+          fi
+
+  build:
+    name: Build and publish
+    needs: validate
     runs-on: macos-latest
+    outputs:
+      core-checksum: ${{ steps.checksum.outputs.core }}
+      noop-checksum: ${{ steps.checksum.outputs.noop }}
     env:
-      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version || github.ref_name }}
+      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version }}
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,43 +67,115 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Build
+      - name: Build libraries and XCFrameworks
         run: |
           ./gradlew \
+            :library:assemble \
             :library-client-noop:assemble \
             :library-client-ktor:assemble \
             :library-client-okhttp:assemble \
-            :library-storage-sqldelight:assemble
+            :library-storage-sqldelight:assemble \
+            :library-ios:assemblePeeknikoCoreReleaseXCFramework \
+            :library-client-noop:assemblePeeknikoCoreNoopReleaseXCFramework
+
+      - name: Zip XCFrameworks
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            library-ios/build/XCFrameworks/release/PeeknikoCore.xcframework \
+            "$CORE_ZIP"
+          ditto -c -k --sequesterRsrc --keepParent \
+            library-client-noop/build/XCFrameworks/release/PeeknikoCoreNoop.xcframework \
+            "$NOOP_ZIP"
+
+      - name: Compute checksums
+        id: checksum
+        run: |
+          core=$(swift package compute-checksum "$CORE_ZIP")
+          noop=$(swift package compute-checksum "$NOOP_ZIP")
+          echo "core=$core" >> "$GITHUB_OUTPUT"
+          echo "noop=$noop" >> "$GITHUB_OUTPUT"
+          echo "SwiftPM checksums: $CORE_ZIP $core, $NOOP_ZIP $noop"
+
+      - name: Upload XCFrameworks
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcframeworks
+          path: |
+            ${{ env.CORE_ZIP }}
+            ${{ env.NOOP_ZIP }}
+          if-no-files-found: error
 
       - name: Publish libraries
+        if: false
         run: ./gradlew publishToMavenCentral --no-parallel
 
   github-release:
-    name: Create GitHub release
-    needs: publish
+    name: Tag and create GitHub release
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      CORE_CHECKSUM: ${{ needs.build.outputs.core-checksum }}
+      NOOP_CHECKSUM: ${{ needs.build.outputs.noop-checksum }}
     steps:
-      - name: Create release with generated release notes
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
-          COMMIT_SHA: ${{ github.sha }}
-          VERSION: ${{ inputs.version || github.ref_name }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download XCFrameworks
+        uses: actions/download-artifact@v4
+        with:
+          name: xcframeworks
+
+      - name: Generate Package.swift, commit and tag
         run: |
-          tag="$VERSION"
-          args=(--target "$COMMIT_SHA")
-          if [[ "$EVENT_NAME" == "push" ]]; then
-            tag="$REF_NAME"
-            args=(--verify-tag)
-          fi
+          base="https://github.com/$GH_REPO/releases/download/$VERSION"
+          echo "CORE_URL=$base/$CORE_ZIP" >> "$GITHUB_ENV"
+          echo "NOOP_URL=$base/$NOOP_ZIP" >> "$GITHUB_ENV"
+          .github/scripts/generate-package-swift.sh "$VERSION" \
+            "$base/$CORE_ZIP" "$CORE_CHECKSUM" \
+            "$base/$NOOP_ZIP" "$NOOP_CHECKSUM" \
+            Package.swift
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # The release commit only lives on the tag, so the branch never carries a
+          # Package.swift pointing at a checksum of a different build.
+          git add Package.swift
+          git commit -m "Release $VERSION"
+          git tag -a "$VERSION" -m "Peekniko $VERSION"
+          git push origin "refs/tags/$VERSION"
+
+      - name: Create release
+        run: |
+          args=()
           if [[ "$VERSION" == *-* ]]; then
             args+=(--prerelease)
           fi
-          gh release create "$tag" \
-            --title "Peekniko ${VERSION}" \
+          notes=$(cat <<EOF
+          ## Swift Package Manager
+
+          Add \`https://github.com/$GH_REPO\` as a package dependency at version \`$VERSION\`, then link
+          \`PeeknikoKit\` into debug/internal app targets and \`PeeknikoKitNoop\` into production ones.
+          Both use \`import PeeknikoCore\`.
+
+          | Product | XCFramework | Checksum |
+          |---|---|---|
+          | \`PeeknikoKit\` | $CORE_URL | \`$CORE_CHECKSUM\` |
+          | \`PeeknikoKitNoop\` | $NOOP_URL | \`$NOOP_CHECKSUM\` |
+          EOF
+          )
+          gh release create "$VERSION" "$CORE_ZIP" "$NOOP_ZIP" \
+            --verify-tag \
+            --title "Peekniko $VERSION" \
+            --notes "$notes" \
             --generate-notes \
             "${args[@]}"
+
+      # Tags pushed with GITHUB_TOKEN don't trigger other workflows, so start the
+      # versioned docs deploy explicitly.
+      - name: Publish versioned docs
+        run: gh workflow run docs.yml --ref "$VERSION"

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -25,8 +26,20 @@ kotlin {
     }
 
     jvm()
-    iosArm64()
-    iosSimulatorArm64()
+
+    // Same module name as the real :library framework, so Swift code keeps
+    // `import PeeknikoCore` whichever of the two the app links.
+    val xcf = XCFramework("PeeknikoCoreNoop")
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { target ->
+        target.binaries.framework {
+            baseName = "PeeknikoCore"
+            isStatic = true
+            xcf.add(this)
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {

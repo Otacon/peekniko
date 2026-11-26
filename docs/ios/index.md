@@ -2,6 +2,21 @@
 
 Peekniko helps you inspect network requests and responses in your app.
 
+## Swift Package Manager
+
+In a Swift-only app, add `https://github.com/Otacon/peekniko` as a package dependency and pick a release version.
+The package has two products, both used with `import PeeknikoCore`:
+
+| Product           | Contents                                                     | Link it into                 |
+|-------------------|--------------------------------------------------------------|------------------------------|
+| `PeeknikoKit`     | The inspector, `URLSession` capture, and SQLDelight storage  | Debug or internal app targets |
+| `PeeknikoKitNoop` | The same API, doing nothing                                  | Production app targets       |
+
+Link only one of the two into an app target. Swift Package Manager can't switch products by build configuration, so use
+a separate app target (or scheme) for debug builds. `PeeknikoKit` links SQLite for you.
+
+In a Kotlin Multiplatform app, add the Gradle dependencies from each page instead.
+
 ## Configure Peekniko
 
 Configure Peekniko once when your app starts, before creating your HTTP client:
