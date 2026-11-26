@@ -203,6 +203,10 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Peekniko No-op";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios.noop;
 				PRODUCT_MODULE_NAME = PeeknikoApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -225,6 +229,10 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Peekniko No-op";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios.noop;
 				PRODUCT_MODULE_NAME = PeeknikoApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -267,6 +275,10 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Peekniko;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios;
 				PRODUCT_MODULE_NAME = PeeknikoApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -289,6 +301,10 @@
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Peekniko;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios;
 				PRODUCT_MODULE_NAME = PeeknikoApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -336,7 +352,7 @@
 			repositoryURL = "https://github.com/Otacon/peekniko";
 			requirement = {
 				kind = exactVersion;
-				version = "1.1.0-alpha02";
+				version = "1.1.0-alpha01";
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

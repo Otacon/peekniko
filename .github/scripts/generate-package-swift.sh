@@ -25,20 +25,10 @@ let package = Package(
     name: "PeeknikoKit",
     platforms: [.iOS(.v17)],
     products: [
-        // The inspector. Link it into debug/internal app targets.
-        .library(name: "PeeknikoKit", targets: ["PeeknikoKit"]),
-        // Same API that does nothing. Link it into production app targets instead.
+        .library(name: "PeeknikoKit", targets: ["PeeknikoCore"]),
         .library(name: "PeeknikoKitNoop", targets: ["PeeknikoCoreNoop"]),
     ],
     targets: [
-        // Binary targets can't declare linker settings, so this wrapper links SQLite
-        // for the SQLDelight storage bundled in PeeknikoCore.
-        .target(
-            name: "PeeknikoKit",
-            dependencies: ["PeeknikoCore"],
-            path: "library-ios/swift",
-            linkerSettings: [.linkedLibrary("sqlite3")]
-        ),
         .binaryTarget(
             name: "PeeknikoCore",
             url: "${core_url}",
