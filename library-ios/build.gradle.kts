@@ -17,6 +17,7 @@ kotlin {
             isStatic = true
             export(project(":library"))
             export(project(":library-storage-sqldelight"))
+            binaryOption("smallBinary", "true")
             xcf.add(this)
         }
     }

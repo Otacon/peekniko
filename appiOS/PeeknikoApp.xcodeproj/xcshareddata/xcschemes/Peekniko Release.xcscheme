@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2720"
+   LastUpgradeVersion = "2710"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,8 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A1000000000000000000000B"
-               BuildableName = "Peekniko.app"
+               BlueprintIdentifier = "53AB5EC830B8C34F003AD679"
+               BuildableName = "Peekniko Release.app"
+               BlueprintName = "Peekniko Release"
                ReferencedContainer = "container:PeeknikoApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,8 +45,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A1000000000000000000000B"
-            BuildableName = "Peekniko.app"
+            BlueprintIdentifier = "53AB5EC830B8C34F003AD679"
+            BuildableName = "Peekniko Release.app"
+            BlueprintName = "Peekniko Release"
             ReferencedContainer = "container:PeeknikoApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -60,8 +62,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "A1000000000000000000000B"
-            BuildableName = "Peekniko.app"
+            BlueprintIdentifier = "53AB5EC830B8C34F003AD679"
+            BuildableName = "Peekniko Release.app"
+            BlueprintName = "Peekniko Release"
             ReferencedContainer = "container:PeeknikoApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

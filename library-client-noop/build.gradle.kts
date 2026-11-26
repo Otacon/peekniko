@@ -27,16 +27,18 @@ kotlin {
 
     jvm()
 
-    // Same module name as the real :library framework, so Swift code keeps
-    // `import PeeknikoCore` whichever of the two the app links.
+    // Swift module PeeknikoCoreNoop, the production stand-in for PeeknikoCore. It needs
+    // its own name: two frameworks both called PeeknikoCore.framework collide in Xcode's
+    // shared build folder when one app has a target for each.
     val xcf = XCFramework("PeeknikoCoreNoop")
     listOf(
         iosArm64(),
         iosSimulatorArm64(),
     ).forEach { target ->
         target.binaries.framework {
-            baseName = "PeeknikoCore"
+            baseName = "PeeknikoCoreNoop"
             isStatic = true
+            binaryOption("smallBinary", "true")
             xcf.add(this)
         }
     }

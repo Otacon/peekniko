@@ -66,6 +66,9 @@ jobs:
       - name: Build XCFrameworks
         run: |
           ./gradlew \
+            --max-workers=1 \
+            -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" \
+            -Pkotlin.compiler.execution.strategy=in-process \
             :library-ios:assemblePeeknikoCoreReleaseXCFramework \
             :library-client-noop:assemblePeeknikoCoreNoopReleaseXCFramework
 
@@ -176,7 +179,7 @@ jobs:
 
           Add \`https://github.com/$GH_REPO\` as a package dependency at version \`$VERSION\`, then link
           \`PeeknikoKit\` into debug/internal app targets and \`PeeknikoKitNoop\` into production ones.
-          Both use \`import PeeknikoCore\`.
+          They have the same API: import \`PeeknikoCore\` with \`PeeknikoKit\` and \`PeeknikoCoreNoop\` with \`PeeknikoKitNoop\`.
 
           | Product | XCFramework | Checksum |
           |---|---|---|

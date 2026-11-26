@@ -9,7 +9,7 @@ private val sampleViewModel: SampleViewModel by lazy {
     SampleViewModel()
 }
 
-/** Entry point of the shared sample UI, hosted by the Xcode project in `appiOS`. */
+/** Entry point of the shared Compose sample UI on iOS. The `appiOS` project uses the Swift package instead. */
 @Suppress("FunctionName", "unused")
 fun MainViewController(): UIViewController {
     val viewModel = sampleViewModel

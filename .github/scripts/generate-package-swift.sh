@@ -4,8 +4,8 @@
 #   - PeeknikoKit:     the real inspector with SQLDelight storage (PeeknikoCore.xcframework),
 #                      wrapped in library-ios/swift so SQLite is linked automatically
 #   - PeeknikoKitNoop: the no-op stand-in for production builds (PeeknikoCoreNoop.xcframework)
-# Both frameworks have the Swift module name PeeknikoCore, so app code always uses
-# `import PeeknikoCore`. Link only one of the two products into a given app target.
+# Apps import PeeknikoCore with the real product and PeeknikoCoreNoop with the no-op one;
+# both modules expose the same Peekniko API. Link one of the two into each app target.
 #
 # Usage: generate-package-swift.sh <version> <core-url> <core-checksum> <noop-url> <noop-checksum> [output]
 set -euo pipefail
