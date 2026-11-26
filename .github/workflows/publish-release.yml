@@ -39,8 +39,8 @@ jobs:
             exit 1
           fi
 
-  build:
-    name: Build and publish
+  xcframeworks:
+    name: Build XCFrameworks
     needs: validate
     runs-on: macos-latest
     outputs:
@@ -48,10 +48,6 @@ jobs:
       noop-checksum: ${{ steps.checksum.outputs.noop }}
     env:
       ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version }}
-      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
-      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,14 +63,9 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Build libraries and XCFrameworks
+      - name: Build XCFrameworks
         run: |
           ./gradlew \
-            :library:assemble \
-            :library-client-noop:assemble \
-            :library-client-ktor:assemble \
-            :library-client-okhttp:assemble \
-            :library-storage-sqldelight:assemble \
             :library-ios:assemblePeeknikoCoreReleaseXCFramework \
             :library-client-noop:assemblePeeknikoCoreNoopReleaseXCFramework
 
@@ -105,13 +96,38 @@ jobs:
             ${{ env.NOOP_ZIP }}
           if-no-files-found: error
 
+  maven:
+    name: Publish to Maven Central
+    needs: validate
+    runs-on: macos-latest
+    env:
+      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version }}
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK Temurin 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
+
       - name: Publish libraries
         if: false
         run: ./gradlew publishToMavenCentral --no-parallel
 
   github-release:
     name: Tag and create GitHub release
-    needs: build
+    needs: [xcframeworks, maven]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -119,8 +135,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
-      CORE_CHECKSUM: ${{ needs.build.outputs.core-checksum }}
-      NOOP_CHECKSUM: ${{ needs.build.outputs.noop-checksum }}
+      CORE_CHECKSUM: ${{ needs.xcframeworks.outputs.core-checksum }}
+      NOOP_CHECKSUM: ${{ needs.xcframeworks.outputs.noop-checksum }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -175,7 +191,5 @@ jobs:
             --generate-notes \
             "${args[@]}"
 
-      # Tags pushed with GITHUB_TOKEN don't trigger other workflows, so start the
-      # versioned docs deploy explicitly.
       - name: Publish versioned docs
         run: gh workflow run docs.yml --ref "$VERSION"
