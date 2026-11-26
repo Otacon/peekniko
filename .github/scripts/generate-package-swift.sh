@@ -22,13 +22,18 @@ cat > "$output" <<EOF
 import PackageDescription
 
 let package = Package(
-    name: "PeeknikoKit",
+    name: "Peekniko",
     platforms: [.iOS(.v17)],
     products: [
-        .library(name: "PeeknikoKit", targets: ["PeeknikoCore"]),
-        .library(name: "PeeknikoKitNoop", targets: ["PeeknikoCoreNoop"]),
+        .library(name: "Peekniko", targets: ["Peekniko"]),
     ],
     targets: [
+        .target(
+            name: "Peekniko",
+            dependencies: ["PeeknikoCore", "PeeknikoCoreNoop"],
+            path: "library-ios/peekniko",
+            swiftSettings: [.define("DEBUG", .when(configuration: .debug))]
+        ),
         .binaryTarget(
             name: "PeeknikoCore",
             url: "${core_url}",

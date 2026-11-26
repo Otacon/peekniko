@@ -1,11 +1,5 @@
 import SwiftUI
-// The "Peekniko Debug" target links PeeknikoKit and sets the PEEKNIKO compilation
-// condition; "Peekniko Release" links PeeknikoKitNoop. Both modules have the same API.
-#if PEEKNIKO
-import PeeknikoCore
-#else
-import PeeknikoCoreNoop
-#endif
+import Peekniko
 
 @main
 struct PeeknikoApp: App {

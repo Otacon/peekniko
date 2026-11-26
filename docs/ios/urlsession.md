@@ -16,8 +16,8 @@ kotlin {
 }
 ```
 
-In a Swift-only app, add the `PeeknikoKit` product with [Swift Package Manager](index.md#swift-package-manager), then
-`import PeeknikoCore`.
+In a Swift-only app, add the `Peekniko` product with [Swift Package Manager](index.md#swift-package-manager), then
+`import Peekniko`.
 
 To try local changes, build the framework and add the `library-ios` folder to Xcode as a local package:
 

@@ -141,7 +141,6 @@ jobs:
       - name: Generate Package.swift, commit and tag
         run: |
           base="https://github.com/$GH_REPO/releases/download/$VERSION"
-          echo "CORE_URL=$base/$CORE_ZIP" >> "$GITHUB_ENV"
           .github/scripts/generate-package-swift.sh "$VERSION" \
             "$base/$CORE_ZIP" "$CORE_CHECKSUM" \
             Package.swift
@@ -161,22 +160,9 @@ jobs:
           if [[ "$VERSION" == *-* ]]; then
             args+=(--prerelease)
           fi
-          notes=$(cat <<EOF
-          ## Swift Package Manager
-
-          Add \`https://github.com/$GH_REPO\` as a package dependency at version \`$VERSION\`, then link
-          \`PeeknikoKit\` into debug/internal app targets and \`PeeknikoKitNoop\` into production ones.
-          They have the same API: import \`PeeknikoCore\` with \`PeeknikoKit\` and \`PeeknikoCoreNoop\` with \`PeeknikoKitNoop\`.
-          \`PeeknikoKitNoop\` is plain Swift source, so it has no download.
-
-          - \`PeeknikoKit\` XCFramework: $CORE_URL
-          - Checksum: \`$CORE_CHECKSUM\`
-          EOF
-          )
           gh release create "$VERSION" "$CORE_ZIP" \
             --verify-tag \
             --title "Peekniko $VERSION" \
-            --notes "$notes" \
             --generate-notes \
             "${args[@]}"
 

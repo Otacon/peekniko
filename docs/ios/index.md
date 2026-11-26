@@ -4,27 +4,22 @@ Peekniko helps you inspect network requests and responses in your app.
 
 ## Swift Package Manager
 
-In a Swift-only app, add `https://github.com/Otacon/peekniko` as a package dependency and pick a release version.
-The package has two products with the same API:
+In a Swift-only app, add `https://github.com/Otacon/peekniko` as a package dependency, pick a release version, and add
+the `Peekniko` product to your app target. Then `import Peekniko`.
 
-| Product           | Import             | Contents                                                    | Link it into                  |
-|-------------------|--------------------|-------------------------------------------------------------|-------------------------------|
-| `PeeknikoKit`     | `PeeknikoCore`     | The inspector, `URLSession` capture, and SQLDelight storage | Debug or internal app targets |
-| `PeeknikoKitNoop` | `PeeknikoCoreNoop` | The same API, doing nothing, in a few KB of plain Swift     | Production app targets        |
+Debug builds get the inspector, with `URLSession` capture and SQLDelight storage. Every other build configuration gets a
+no-op with the same API, so the same code compiles everywhere and needs no `#if` around Peekniko calls.
 
-Link one of the two into each app target. Swift Package Manager can't switch products by build configuration, so use a
-separate app target for debug builds. `PeeknikoKit` links SQLite for you.
+To keep the inspector out of release builds entirely, add two build settings to the app target's **Release**
+configuration. Without them a release build still behaves as a no-op, but it carries the unused framework:
 
-To share code between the targets, add a compilation condition such as `PEEKNIKO` to the debug target's
-**Active Compilation Conditions** and import whichever module is linked:
+| Build setting                               | Value                    |
+|---------------------------------------------|--------------------------|
+| Excluded Source File Names (`EXCLUDED_SOURCE_FILE_NAMES`) | `PeeknikoCore.framework` |
+| Other Linker Flags (`OTHER_LDFLAGS`)        | `$(inherited) -Wl,-dead_strip_dylibs` |
 
-```swift
-#if PEEKNIKO
-import PeeknikoCore
-#else
-import PeeknikoCoreNoop
-#endif
-```
+Both are needed: the first stops Xcode embedding the framework, the second removes the app's reference to it, without
+which the app fails to launch.
 
 In a Kotlin Multiplatform app, add the Gradle dependencies from each page instead.
 
