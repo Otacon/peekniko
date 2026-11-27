@@ -771,17 +771,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swift-package-manager" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Swift Package Manager
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#configure-peekniko" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1369,17 +1358,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swift-package-manager" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Swift Package Manager
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#configure-peekniko" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1442,34 +1420,6 @@
 
 <h1 id="getting-started">Getting Started</h1>
 <p>Peekniko helps you inspect network requests and responses in your app.</p>
-<h2 id="swift-package-manager">Swift Package Manager</h2>
-<p>In a Swift-only app, add <code>https://github.com/Otacon/peekniko</code> as a package dependency, pick a release version, and add
-the <code>Peekniko</code> product to your app target. Then <code>import Peekniko</code>.</p>
-<p>Debug builds get the inspector, with <code>URLSession</code> capture and SQLDelight storage. Every other build configuration gets a
-no-op with the same API, so the same code compiles everywhere and needs no <code>#if</code> around Peekniko calls.</p>
-<p>To keep the inspector out of release builds entirely, add two build settings to the app target's <strong>Release</strong>
-configuration. Without them a release build still behaves as a no-op, but it carries the unused framework:</p>
-<table>
-<thead>
-<tr>
-<th>Build setting</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Excluded Source File Names (<code>EXCLUDED_SOURCE_FILE_NAMES</code>)</td>
-<td><code>PeeknikoCore.framework</code></td>
-</tr>
-<tr>
-<td>Other Linker Flags (<code>OTHER_LDFLAGS</code>)</td>
-<td><code>$(inherited) -Wl,-dead_strip_dylibs</code></td>
-</tr>
-</tbody>
-</table>
-<p>Both are needed: the first stops Xcode embedding the framework, the second removes the app's reference to it, without
-which the app fails to launch.</p>
-<p>In a Kotlin Multiplatform app, add the Gradle dependencies from each page instead.</p>
 <h2 id="configure-peekniko">Configure Peekniko</h2>
 <p>Configure Peekniko once when your app starts, before creating your HTTP client:</p>
 <div class="language-kotlin highlight"><pre><span></span><code><span id="__span-0-1"><span class="k">import</span><span class="w"> </span><span class="nn">peekniko.Peekniko</span>

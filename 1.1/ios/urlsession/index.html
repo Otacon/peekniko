@@ -1388,10 +1388,8 @@
 </span><span id="__span-0-6"><span class="w">    </span><span class="p">}</span>
 </span><span id="__span-0-7"><span class="p">}</span>
 </span></code></pre></div>
-<p>In a Swift-only app, add the <code>Peekniko</code> product with <a href="../#swift-package-manager">Swift Package Manager</a>, then
-<code>import Peekniko</code>.</p>
-<p>To try local changes, build the framework and add the <code>library-ios</code> folder to Xcode as a local package:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1">./gradlew<span class="w"> </span>:library-ios:assemblePeeknikoCoreDebugXCFramework
+<p>In a Swift-only app, build the framework and add the <code>library</code> folder to Xcode as a local package, then <code>import PeeknikoCore</code>:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1">./gradlew<span class="w"> </span>:library:assemblePeeknikoCoreDebugXCFramework
 </span></code></pre></div>
 <h2 id="register-the-protocol">Register the protocol</h2>
 <p>Register the protocol once at startup, after configuring Peekniko and before creating requests:</p>
