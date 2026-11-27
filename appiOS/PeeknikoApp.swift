@@ -77,13 +77,7 @@ private final class SampleViewModel {
 
     private(set) var status = "Choose a client to run the scenarios."
     private(set) var isLoading = false
-
-    /// Requests through `URLSession.shared`, captured via `registerUrlProtocol()`.
     private let sharedClient = PlaygroundClient(session: .shared)
-
-    /// Requests through a session with its own configuration, which needs
-    /// `addUrlProtocol(configuration:)`. Stands in for the Ktor client of the Kotlin sample,
-    /// which a Swift-only app can't use.
     private let customClient: PlaygroundClient = {
         let configuration = URLSessionConfiguration.default
         Peekniko.shared.addUrlProtocol(configuration: configuration)
@@ -100,7 +94,6 @@ private final class SampleViewModel {
         status = "Running \(clientName) requests..."
         Task {
             for request in playgroundRequests {
-                // As in the Kotlin sample, one failing scenario doesn't stop the others.
                 _ = try? await client.execute(baseUrl: Self.baseUrl, request: request)
             }
             status = "Requests completed"

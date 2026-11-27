@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (x.y.z, or x.y.z-suffix for a pre-release)
+        description: Release version (x.y.z, or x.y.z-suffix)
         type: string
         required: true
 
@@ -147,8 +147,6 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # The release commit only lives on the tag, so the branch never carries a
-          # Package.swift pointing at a checksum of a different build.
           git add Package.swift
           git commit -m "Release $VERSION"
           git tag -a "$VERSION" -m "Peekniko $VERSION"

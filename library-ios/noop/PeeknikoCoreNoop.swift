@@ -7,7 +7,6 @@ public final class Peekniko {
 
     private init() {}
 
-    /// Does nothing: `configure` is never called.
     public func configure(configure: @escaping (Configuration) -> Void) {}
 
     public final class Configuration {

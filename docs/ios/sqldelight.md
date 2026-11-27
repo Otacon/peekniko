@@ -2,10 +2,6 @@
 
 Keep your captured requests and responses between app launches with SQLDelight storage.
 
-In a Swift-only app, SQLDelight storage is already part of the `Peekniko` product from
-[Swift Package Manager](index.md#swift-package-manager), which also links SQLite. Skip to
-[Configure Peekniko and storage](#configure-peekniko-and-storage).
-
 ## Gradle dependencies
 
 ```kotlin title="build.gradle.kts"
