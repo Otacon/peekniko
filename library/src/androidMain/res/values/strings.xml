@@ -39,6 +39,8 @@
     <string name="peekniko_summary_general">General</string>
     <string name="peekniko_summary_request_headers">Request headers</string>
     <string name="peekniko_summary_response_headers">Response headers</string>
+    <string name="peekniko_menu_share">Share</string>
+    <string name="peekniko_menu_copy_as_curl">Copy as cURL</string>
 
     <!-- Tabs -->
     <string name="peekniko_tab_headers">Headers</string>

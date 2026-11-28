@@ -6,13 +6,16 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import peekniko.NetworkCall
 import peekniko.NetworkRepository
+import peekniko.NetworkRequest
 import peekniko.NetworkResponse
 import peekniko.fullUrl
 import peekniko.internal.bodyrenderer.SpannedText
 import peekniko.internal.bodyrenderer.spannedText
+import peekniko.internal.curl.CurlCommandCopier
 import peekniko.internal.formatting.TimeFormatter
 import peekniko.internal.http.httpMessage
 import peekniko.internal.support.ViewModel
@@ -23,13 +26,20 @@ internal class SummaryViewModel(
     transactionId: String,
     backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val timeFormatter: TimeFormatter,
+    private val curlCommandCopier: CurlCommandCopier,
 ) : ViewModel(backgroundDispatcher) {
     private val transaction = repository.observeById(transactionId)
+    private var latestRequest: NetworkRequest? = null
 
     val state: StateFlow<State> = transaction
+        .onEach { latestRequest = it?.request }
         .map { it.toHeadersUiState() }
         .flowOn(backgroundDispatcher)
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
+
+    fun onCopyAsCurlClick() {
+        latestRequest?.let(curlCommandCopier::copy)
+    }
 
     private fun NetworkCall?.toHeadersUiState(): State {
         val call = this ?: return State(isLoading = false)
@@ -68,6 +78,7 @@ internal class SummaryViewModel(
         ).mapNotNull { (name, value) -> value?.takeIf { it.isNotBlank() }?.let { name to it } }
         return State(
             isLoading = false,
+            showCopyAsCurl = true,
             general = general.toSpannedText(),
             requestHeaders = request.headers.map { it.name to it.value }.toSpannedText(),
             responseHeaders = response?.headers.orEmpty().map { it.name to it.value }.toSpannedText(),
@@ -83,6 +94,7 @@ internal class SummaryViewModel(
 
     internal data class State(
         val isLoading: Boolean = true,
+        val showCopyAsCurl: Boolean = false,
         val general: SpannedText = spannedText(),
         val responseHeaders: SpannedText = spannedText(),
         val requestHeaders: SpannedText = spannedText(),

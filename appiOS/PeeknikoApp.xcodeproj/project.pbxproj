@@ -7,17 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1000000000000000000001A /* PeeknikoCoreNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* PeeknikoCoreNoop.swift */; };
 		A10000000000000000000001 /* PeeknikoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* PeeknikoApp.swift */; };
 		A10000000000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* Assets.xcassets */; };
+		A1000000000000000000001A /* PeeknikoCoreNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* PeeknikoCoreNoop.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A10000000000000000000019 /* PeeknikoCoreNoop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeeknikoCoreNoop.swift; path = "../library-ios/noop/PeeknikoCoreNoop.swift"; sourceTree = SOURCE_ROOT; };
 		A10000000000000000000002 /* PeeknikoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeeknikoApp.swift; sourceTree = "<group>"; };
 		A10000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10000000000000000000005 /* Peekniko.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peekniko.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000016 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000019 /* PeeknikoCoreNoop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeeknikoCoreNoop.swift; path = "../library-ios/noop/PeeknikoCoreNoop.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,7 +136,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -eu\nif [ \"$CONFIGURATION\" != \"Debug\" ]; then\n  echo \"$CONFIGURATION uses the Peekniko no-op: skipping the Kotlin framework.\"\n  exit 0\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  JAVA_HOME=\"$(/usr/libexec/java_home -v 21 2>/dev/null || true)\"\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  for candidate in \"$HOME\"/.gradle/jdks/*/Contents/Home \"$HOME\"/.gradle/jdks/*/*/Contents/Home; do\n    if [ -x \"$candidate/bin/java\" ]; then\n      JAVA_HOME=\"$candidate\"\n      break\n    fi\n  done\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  echo \"error: No Java runtime found. Install JDK 21 or set JAVA_HOME.\"\n  exit 1\nfi\nexport JAVA_HOME\ncd \"$SRCROOT/..\"\n./gradlew :library-ios:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\nset -eu\nif [ \"$CONFIGURATION\" != \"Debug\" ]; then\n  echo \"$CONFIGURATION uses the Peekniko no-op: skipping the Kotlin framework.\"\n  exit 0\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  JAVA_HOME=\"$(/usr/libexec/java_home -v 21 2>/dev/null || true)\"\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  for candidate in \"$HOME\"/.gradle/jdks/*/Contents/Home \"$HOME\"/.gradle/jdks/*/*/Contents/Home; do\n    if [ -x \"$candidate/bin/java\" ]; then\n      JAVA_HOME=\"$candidate\"\n      break\n    fi\n  done\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  echo \"error: No Java runtime found. Install JDK 21 or set JAVA_HOME.\"\n  exit 1\nfi\nexport JAVA_HOME\ncd \"$SRCROOT/..\"\n./gradlew :library-ios:embedAndSignAppleFrameworkForXcode";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -197,14 +197,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios;
-				PRODUCT_MODULE_NAME = PeeknikoApp;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
 					PeeknikoCore,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios;
+				PRODUCT_MODULE_NAME = PeeknikoApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;

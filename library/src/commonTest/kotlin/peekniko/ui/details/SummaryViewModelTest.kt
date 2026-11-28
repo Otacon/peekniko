@@ -6,15 +6,21 @@ import dev.mokkery.answering.returns
 import dev.mokkery.every
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
+import dev.mokkery.verify
+import dev.mokkery.verify.VerifyMode.Companion.not
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import peekniko.*
+import peekniko.internal.curl.CurlCommandCopier
 import peekniko.internal.formatting.TimeFormatter
 import kotlin.time.Instant
 
 internal class SummaryViewModelTest : FunSpec({
-    suspend fun withFixture(block: suspend SummaryViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit) {
+    suspend fun withFixture(
+        curlCommandCopier: CurlCommandCopier = mock(),
+        block: suspend SummaryViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit,
+    ) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
         val transaction = MutableSharedFlow<NetworkCall?>(replay = 1)
         val repository = mock<NetworkRepository> {
@@ -30,6 +36,7 @@ internal class SummaryViewModelTest : FunSpec({
                     transactionId = "summary-id",
                     backgroundDispatcher = backgroundDispatcher,
                     timeFormatter = timeFormatter,
+                    curlCommandCopier = curlCommandCopier,
                 )
             },
         ) { viewModel -> viewModel.block(transaction) }
@@ -277,6 +284,57 @@ internal class SummaryViewModelTest : FunSpec({
                     awaitItem().responseHeaders.bbText shouldBe ""
                     cancelAndIgnoreRemainingEvents()
                 }
+            }
+        }
+    }
+
+    context("copy as cURL") {
+        test("is unavailable while loading") {
+            withFixture { state.value.showCopyAsCurl shouldBe false }
+        }
+
+        test("is unavailable when the transaction is absent") {
+            withFixture { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(null)
+                    awaitItem().showCopyAsCurl shouldBe false
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
+        test("is available once the transaction is loaded") {
+            withFixture { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(sampleCall())
+                    awaitItem().showCopyAsCurl shouldBe true
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
+        test("copies the loaded request") {
+            val copier = mock<CurlCommandCopier> { every { copy(any()) } returns Unit }
+            val request = sampleRequest(endpoint = "/copied")
+            withFixture(curlCommandCopier = copier) { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(sampleCall(request = request))
+                    awaitItem()
+                    onCopyAsCurlClick()
+                    verify { copier.copy(request) }
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
+        test("copies nothing before the transaction is loaded") {
+            val copier = mock<CurlCommandCopier> { every { copy(any()) } returns Unit }
+            withFixture(curlCommandCopier = copier) {
+                onCopyAsCurlClick()
+                verify(not) { copier.copy(any()) }
             }
         }
     }

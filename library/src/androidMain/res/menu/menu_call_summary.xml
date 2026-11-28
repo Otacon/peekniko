@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menuSummaryShare"
+        android:icon="@drawable/ic_share"
+        android:title="@string/peekniko_menu_share"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/menuSummaryCopyAsCurl"
+                android:title="@string/peekniko_menu_copy_as_curl" />
+        </menu>
+    </item>
+</menu>
