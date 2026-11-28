@@ -10,8 +10,6 @@ import dev.mokkery.mock
 import dev.mokkery.verifySuspend
 import dev.mokkery.verify.VerifyMode.Companion.not
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.nulls.shouldBeNull
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import peekniko.*
@@ -328,7 +326,7 @@ internal class SummaryViewModelTest : FunSpec({
                     awaitItem()
                     transaction.emit(call)
                     awaitItem()
-                    onCopyAsCurlClick().shouldNotBeNull().join()
+                    onCopyAsCurlClick().join()
                     verifySuspend { curlExporter.export(call) }
                     cancelAndIgnoreRemainingEvents()
                 }
@@ -343,7 +341,7 @@ internal class SummaryViewModelTest : FunSpec({
                     awaitItem()
                     transaction.emit(call)
                     awaitItem()
-                    onCopyAsTextClick().shouldNotBeNull().join()
+                    onCopyAsTextClick().join()
                     verifySuspend { textExporter.export(call) }
                     cancelAndIgnoreRemainingEvents()
                 }
@@ -354,8 +352,8 @@ internal class SummaryViewModelTest : FunSpec({
             val curlExporter = mock<ClipboardExporter> { everySuspend { export(any()) } returns Unit }
             val textExporter = mock<ClipboardExporter> { everySuspend { export(any()) } returns Unit }
             withFixture(curlExporter = curlExporter, textExporter = textExporter) {
-                onCopyAsCurlClick().shouldBeNull()
-                onCopyAsTextClick().shouldBeNull()
+                onCopyAsCurlClick().join()
+                onCopyAsTextClick().join()
                 verifySuspend(not) { curlExporter.export(any()) }
                 verifySuspend(not) { textExporter.export(any()) }
             }

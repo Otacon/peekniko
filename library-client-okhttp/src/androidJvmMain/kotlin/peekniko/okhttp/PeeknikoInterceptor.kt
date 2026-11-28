@@ -96,8 +96,8 @@ internal class PeeknikoInterceptor(
     private fun Request.requestHeaders(): List<NetworkHeader> {
         val headers = headers.toNetworkHeaders()
         val contentType = body?.contentType() ?: return headers
-        if (headers.any { it.name.equals("Content-Type", ignoreCase = true) }) return headers
-        return headers + NetworkHeader("Content-Type", contentType.toString())
+        return headers.filterNot { it.name.equals("Content-Type", ignoreCase = true) } +
+            NetworkHeader("Content-Type", contentType.toString())
     }
 
     private fun Request.captureBody(onBodyCaptured: (ByteArray) -> Unit): Request {

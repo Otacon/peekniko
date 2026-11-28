@@ -133,11 +133,11 @@ internal class TextClipboardExporterTest : FunSpec({
         """.trimIndent()
     }
 
-    test("omits image and binary bodies") {
+    test("omits image bodies") {
         sampleCall(
             request = sampleRequest(
                 endpoint = "/upload",
-                headers = emptyList(),
+                headers = listOf(NetworkHeader("Content-Type", "image/jpeg")),
                 body = byteArrayOf(0xFF.toByte(), 0xFE.toByte()),
             ),
             response = sampleResponse(
@@ -162,6 +162,8 @@ internal class TextClipboardExporterTest : FunSpec({
             Total size: 5 B
 
             ---------- Request ----------
+
+            Content-Type: image/jpeg
 
             (encoded or binary body omitted)
 

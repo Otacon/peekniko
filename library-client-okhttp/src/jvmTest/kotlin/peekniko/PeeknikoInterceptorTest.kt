@@ -100,7 +100,7 @@ internal class PeeknikoInterceptorTest : FunSpec({
             recordedRequest.headers shouldBe listOf(NetworkHeader("Content-Type", "application/json; charset=utf-8"))
         }
 
-        test("keeps an explicit Content-Type header without duplicating it") {
+        test("records the body's media type over a conflicting Content-Type header") {
             server.enqueue(MockResponse.Builder().code(200).build())
             client.newCall(
                 Request.Builder()
@@ -109,7 +109,7 @@ internal class PeeknikoInterceptorTest : FunSpec({
                     .post("body".toRequestBody("application/json".toMediaType()))
                     .build(),
             ).execute().close()
-            recordedRequest.headers shouldBe listOf(NetworkHeader("content-type", "text/plain"))
+            recordedRequest.headers shouldBe listOf(NetworkHeader("Content-Type", "application/json; charset=utf-8"))
         }
 
         test("adds no Content-Type to a request without a body") {

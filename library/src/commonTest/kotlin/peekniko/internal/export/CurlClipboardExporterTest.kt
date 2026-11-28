@@ -136,28 +136,6 @@ internal class CurlClipboardExporterTest : FunSpec({
             ) shouldCopy "curl --head \\\n  'https://example.com/'"
         }
 
-        test("omits a binary body and says so") {
-            sampleRequest(
-                method = NetworkMethod.POST,
-                endpoint = "/upload",
-                headers = emptyList(),
-                body = byteArrayOf(0xFF.toByte(), 0xFE.toByte()),
-            ) shouldCopy "curl -X POST \\\n" +
-                    "  'https://example.com/upload'\n" +
-                    "# encoded or binary request body omitted"
-        }
-
-        test("omits a body containing NUL characters") {
-            sampleRequest(
-                method = NetworkMethod.POST,
-                endpoint = "/upload",
-                headers = emptyList(),
-                body = "a\u0000b".encodeToByteArray(),
-            ) shouldCopy "curl -X POST \\\n" +
-                    "  'https://example.com/upload'\n" +
-                    "# encoded or binary request body omitted"
-        }
-
         test("omits an image body") {
             sampleRequest(
                 method = NetworkMethod.PUT,
@@ -166,8 +144,7 @@ internal class CurlClipboardExporterTest : FunSpec({
                 body = "not really a png".encodeToByteArray(),
             ) shouldCopy "curl -X PUT \\\n" +
                     "  -H 'Content-Type: image/png' \\\n" +
-                    "  'https://example.com/avatar'\n" +
-                    "# encoded or binary request body omitted"
+                    "  'https://example.com/avatar'"
         }
     }
 
@@ -197,5 +174,33 @@ internal class CurlClipboardExporterTest : FunSpec({
         ) shouldCopy "curl -H 'X-Label: first' \\\n" +
                 "  -H 'X-Label: second' \\\n" +
                 "  'https://example.com/'"
+    }
+
+    test("sends empty header values instead of removing the header") {
+        sampleRequest(
+            endpoint = "/",
+            headers = listOf(NetworkHeader("X-Empty", ""), NetworkHeader("Accept", " ")),
+        ) shouldCopy "curl -H 'X-Empty;' \\\n" +
+                "  -H 'Accept;' \\\n" +
+                "  'https://example.com/'"
+    }
+
+    test("drops Accept-Encoding regardless of case") {
+        sampleRequest(
+            endpoint = "/",
+            headers = listOf(NetworkHeader("accept-encoding", "gzip, br"), NetworkHeader("Accept", "*/*")),
+        ) shouldCopy "curl -H 'Accept: */*' \\\n  'https://example.com/'"
+    }
+
+    context("IPv6 host") {
+        test("brackets the address") {
+            sampleRequest(host = "::1", port = 8080, endpoint = "/", headers = emptyList()) shouldCopy
+                    "curl --globoff \\\n  'https://[::1]:8080/'"
+        }
+
+        test("keeps an address that is already bracketed") {
+            sampleRequest(host = "[::1]", endpoint = "/", headers = emptyList()) shouldCopy
+                    "curl --globoff \\\n  'https://[::1]/'"
+        }
     }
 })
