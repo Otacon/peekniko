@@ -3,6 +3,10 @@ package peekniko
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import peekniko.internal.bodyrenderer.*
+import peekniko.internal.clipboard.createClipboard
+import peekniko.internal.export.ClipboardExporter
+import peekniko.internal.export.CurlClipboardExporter
+import peekniko.internal.export.TextClipboardExporter
 import peekniko.internal.formatting.ReadableTimeFormatter
 import peekniko.internal.notifications.Notifications
 import peekniko.internal.notifications.RepositoryNotificationObserver
@@ -58,6 +62,22 @@ public object Peekniko {
         )
     }
 
+    private val clipboard by lazy {
+        createClipboard()
+    }
+
+    private val curlExporter: ClipboardExporter by lazy {
+        CurlClipboardExporter(clipboard)
+    }
+
+    private val textExporter: ClipboardExporter by lazy {
+        TextClipboardExporter(
+            clipboard = clipboard,
+            bodyRenderer = bodyRenderer,
+            timeFormatter = ReadableTimeFormatter(includeMillis = true),
+        )
+    }
+
     internal val peeknikoViewModel: ViewModelFactory by lazy {
         viewModelFactory {
             initializer { PeeknikoViewModel(networkRepository) }
@@ -77,7 +97,9 @@ public object Peekniko {
         SummaryViewModel(
             transactionId = transactionId,
             repository = networkRepository,
-            timeFormatter = ReadableTimeFormatter(includeMillis = true)
+            timeFormatter = ReadableTimeFormatter(includeMillis = true),
+            curlExporter = curlExporter,
+            textExporter = textExporter,
         )
 
     internal fun createBodyViewModel(transactionId: String, isRequest: Boolean): BodyViewModel =

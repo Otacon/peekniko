@@ -38,7 +38,7 @@ public val NetworkRequest.fullUrl: String
     get() = buildString {
         append(scheme)
         append("://")
-        append(host)
+        if (':' in host && !host.startsWith('[')) append("[$host]") else append(host)
         port?.let { append(":$it") }
         append(endpoint)
         if (queryParams.isNotEmpty()) {

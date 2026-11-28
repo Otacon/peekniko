@@ -88,6 +88,37 @@ internal class PeeknikoInterceptorTest : FunSpec({
         }
     }
 
+    context("request Content-Type") {
+        test("records the body's media type as a Content-Type header") {
+            server.enqueue(MockResponse.Builder().code(200).build())
+            client.newCall(
+                Request.Builder()
+                    .url(server.url("/items"))
+                    .post("""{"a":1}""".toRequestBody("application/json".toMediaType()))
+                    .build(),
+            ).execute().close()
+            recordedRequest.headers shouldBe listOf(NetworkHeader("Content-Type", "application/json; charset=utf-8"))
+        }
+
+        test("records the body's media type over a conflicting Content-Type header") {
+            server.enqueue(MockResponse.Builder().code(200).build())
+            client.newCall(
+                Request.Builder()
+                    .url(server.url("/items"))
+                    .header("content-type", "text/plain")
+                    .post("body".toRequestBody("application/json".toMediaType()))
+                    .build(),
+            ).execute().close()
+            recordedRequest.headers shouldBe listOf(NetworkHeader("Content-Type", "application/json; charset=utf-8"))
+        }
+
+        test("adds no Content-Type to a request without a body") {
+            server.enqueue(MockResponse.Builder().code(200).build())
+            client.newCall(Request.Builder().url(server.url("/items")).build()).execute().close()
+            recordedRequest.headers shouldBe emptyList()
+        }
+    }
+
     context("shared client request contract") {
         val recorder = RequestRecorder { case ->
             val requestBuilder = Request.Builder().url(case.url)

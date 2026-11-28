@@ -39,6 +39,5 @@ public data class PeeknikoCallDetailItem(
     public val overviewHeaders: List<NetworkHeader>,
     public val rawRequestBody: String?,
     public val rawResponseBody: String?,
-    public val curl: String,
 )
 
