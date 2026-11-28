@@ -115,7 +115,6 @@ jobs:
           cache-disabled: true
 
       - name: Publish libraries
-        if: false
         run: ./gradlew publishToMavenCentral --no-parallel
 
   github-release:
