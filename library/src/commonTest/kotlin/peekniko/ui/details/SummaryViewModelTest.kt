@@ -12,13 +12,14 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import peekniko.*
-import peekniko.internal.curl.CurlCommandCopier
+import peekniko.internal.export.ClipboardExporter
 import peekniko.internal.formatting.TimeFormatter
 import kotlin.time.Instant
 
 internal class SummaryViewModelTest : FunSpec({
     suspend fun withFixture(
-        curlCommandCopier: CurlCommandCopier = mock(),
+        curlExporter: ClipboardExporter = mock(),
+        textExporter: ClipboardExporter = mock(),
         block: suspend SummaryViewModel.(MutableSharedFlow<NetworkCall?>) -> Unit,
     ) {
         // Retain the emission if the eagerly started collector hasn't subscribed yet.
@@ -36,7 +37,8 @@ internal class SummaryViewModelTest : FunSpec({
                     transactionId = "summary-id",
                     backgroundDispatcher = backgroundDispatcher,
                     timeFormatter = timeFormatter,
-                    curlCommandCopier = curlCommandCopier,
+                    curlExporter = curlExporter,
+                    textExporter = textExporter,
                 )
             },
         ) { viewModel -> viewModel.block(transaction) }
@@ -288,9 +290,9 @@ internal class SummaryViewModelTest : FunSpec({
         }
     }
 
-    context("copy as cURL") {
+    context("share menu") {
         test("is unavailable while loading") {
-            withFixture { state.value.showCopyAsCurl shouldBe false }
+            withFixture { state.value.showShareMenu shouldBe false }
         }
 
         test("is unavailable when the transaction is absent") {
@@ -298,7 +300,7 @@ internal class SummaryViewModelTest : FunSpec({
                 state.test {
                     awaitItem()
                     transaction.emit(null)
-                    awaitItem().showCopyAsCurl shouldBe false
+                    awaitItem().showShareMenu shouldBe false
                     cancelAndIgnoreRemainingEvents()
                 }
             }
@@ -309,32 +311,50 @@ internal class SummaryViewModelTest : FunSpec({
                 state.test {
                     awaitItem()
                     transaction.emit(sampleCall())
-                    awaitItem().showCopyAsCurl shouldBe true
+                    awaitItem().showShareMenu shouldBe true
                     cancelAndIgnoreRemainingEvents()
                 }
             }
         }
 
-        test("copies the loaded request") {
-            val copier = mock<CurlCommandCopier> { every { copy(any()) } returns Unit }
-            val request = sampleRequest(endpoint = "/copied")
-            withFixture(curlCommandCopier = copier) { transaction ->
+        test("copies the loaded call as cURL") {
+            val curlExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
+            val call = sampleCall(request = sampleRequest(endpoint = "/copied"))
+            withFixture(curlExporter = curlExporter) { transaction ->
                 state.test {
                     awaitItem()
-                    transaction.emit(sampleCall(request = request))
+                    transaction.emit(call)
                     awaitItem()
                     onCopyAsCurlClick()
-                    verify { copier.copy(request) }
+                    verify { curlExporter.export(call) }
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+        }
+
+        test("copies the loaded call as text") {
+            val textExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
+            val call = sampleCall(request = sampleRequest(endpoint = "/copied"))
+            withFixture(textExporter = textExporter) { transaction ->
+                state.test {
+                    awaitItem()
+                    transaction.emit(call)
+                    awaitItem()
+                    onCopyAsTextClick()
+                    verify { textExporter.export(call) }
                     cancelAndIgnoreRemainingEvents()
                 }
             }
         }
 
         test("copies nothing before the transaction is loaded") {
-            val copier = mock<CurlCommandCopier> { every { copy(any()) } returns Unit }
-            withFixture(curlCommandCopier = copier) {
+            val curlExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
+            val textExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
+            withFixture(curlExporter = curlExporter, textExporter = textExporter) {
                 onCopyAsCurlClick()
-                verify(not) { copier.copy(any()) }
+                onCopyAsTextClick()
+                verify(not) { curlExporter.export(any()) }
+                verify(not) { textExporter.export(any()) }
             }
         }
     }

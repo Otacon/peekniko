@@ -1,21 +1,16 @@
-package peekniko.internal.curl
+package peekniko.internal.export
 
+import peekniko.NetworkCall
 import peekniko.NetworkMethod
-import peekniko.NetworkRequest
 import peekniko.fullUrl
 import peekniko.internal.clipboard.Clipboard
 
-internal interface CurlCommandCopier {
-
-    fun copy(request: NetworkRequest)
-
-}
-
-internal class ClipboardCurlCommandCopier(
+internal class CurlClipboardExporter(
     private val clipboard: Clipboard
-) : CurlCommandCopier {
+) : ClipboardExporter {
 
-    override fun copy(request: NetworkRequest) {
+    override fun export(call: NetworkCall) {
+        val request = call.request
         val text = buildList {
             when (request.method) {
                 NetworkMethod.GET,

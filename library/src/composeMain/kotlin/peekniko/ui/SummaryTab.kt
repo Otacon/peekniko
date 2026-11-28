@@ -34,8 +34,11 @@ internal fun SummaryTab(callId: String, modifier: Modifier = Modifier) {
     DisposableEffect(viewModel) { onDispose { viewModel.clear() } }
     val state by viewModel.state.collectAsState()
     TopBarActionsEffect {
-        if (state.showCopyAsCurl) {
-            ShareMenu(onCopyAsCurlClick = viewModel::onCopyAsCurlClick)
+        if (state.showShareMenu) {
+            ShareMenu(
+                onCopyAsCurlClick = viewModel::onCopyAsCurlClick,
+                onCopyAsTextClick = viewModel::onCopyAsTextClick,
+            )
         }
     }
 
@@ -47,13 +50,20 @@ internal fun SummaryTab(callId: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ShareMenu(onCopyAsCurlClick: () -> Unit) {
+private fun ShareMenu(onCopyAsCurlClick: () -> Unit, onCopyAsTextClick: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }) {
             Icon(imageVector = Icons.Share, contentDescription = "Share")
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("Copy as text") },
+                onClick = {
+                    onCopyAsTextClick()
+                    expanded = false
+                },
+            )
             DropdownMenuItem(
                 text = { Text("Copy as cURL") },
                 onClick = {

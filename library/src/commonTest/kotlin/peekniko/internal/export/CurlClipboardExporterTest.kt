@@ -1,4 +1,4 @@
-package peekniko.internal.curl
+package peekniko.internal.export
 
 import io.kotest.core.spec.style.FunSpec
 import dev.mokkery.answering.returns
@@ -11,18 +11,47 @@ import peekniko.NetworkHeader
 import peekniko.NetworkMethod
 import peekniko.NetworkRequest
 import peekniko.internal.clipboard.Clipboard
+import peekniko.sampleCall
 import peekniko.sampleRequest
 
-internal class CurlCommandCopierTest : FunSpec({
+internal class CurlClipboardExporterTest : FunSpec({
 
     infix fun NetworkRequest.shouldCopy(expected: String) {
         val clipboard = mock<Clipboard> { every { copy(any()) } returns true }
-        ClipboardCurlCommandCopier(clipboard).copy(this)
+        CurlClipboardExporter(clipboard).export(sampleCall(request = this))
         verify(exactly(1)) { clipboard.copy(expected) }
     }
 
-    test("formats a GET request without an explicit method") {
-        sampleRequest(endpoint = "/items", queryParams = "page=2", headers = emptyList()) shouldCopy "curl 'https://example.com/items?page=2'"
+    context("method") {
+        NetworkMethod.entries.forEach { method ->
+            val expected = when (method) {
+                NetworkMethod.GET -> "curl 'https://example.com/'"
+                NetworkMethod.HEAD -> "curl --head \\\n  'https://example.com/'"
+                NetworkMethod.POST -> "curl -X POST \\\n  'https://example.com/'"
+                NetworkMethod.PUT -> "curl -X PUT \\\n  'https://example.com/'"
+                NetworkMethod.PATCH -> "curl -X PATCH \\\n  'https://example.com/'"
+                NetworkMethod.DELETE -> "curl -X DELETE \\\n  'https://example.com/'"
+                NetworkMethod.OPTIONS -> "curl -X OPTIONS \\\n  'https://example.com/'"
+                NetworkMethod.TRACE -> "curl -X TRACE \\\n  'https://example.com/'"
+                NetworkMethod.CONNECT -> "curl -X CONNECT \\\n  'https://example.com/'"
+                NetworkMethod.UNKNOWN -> "curl 'https://example.com/'"
+            }
+            test("$method") {
+                sampleRequest(
+                    method = method,
+                    endpoint = "/",
+                    headers = emptyList()
+                ) shouldCopy expected
+            }
+        }
+    }
+
+    test("includes query parameters") {
+        sampleRequest(
+            endpoint = "/items",
+            queryParams = "page=2&sort=name&filter=a",
+            headers = emptyList(),
+        ) shouldCopy "curl 'https://example.com/items?page=2&sort=name&filter=a'"
     }
 
     test("includes the port") {
@@ -47,10 +76,6 @@ internal class CurlCommandCopierTest : FunSpec({
                 "  'https://example.com/items'"
     }
 
-    test("uses --head for HEAD requests") {
-        sampleRequest(method = NetworkMethod.HEAD, endpoint = "/", headers = emptyList()) shouldCopy "curl --head \\\n  'https://example.com/'"
-    }
-
     test("escapes single quotes") {
         sampleRequest(
             method = NetworkMethod.PUT,
@@ -71,6 +96,10 @@ internal class CurlCommandCopierTest : FunSpec({
     }
 
     test("omits an empty body") {
-        sampleRequest(method = NetworkMethod.POST, endpoint = "/", headers = emptyList(), body = ByteArray(0)) shouldCopy "curl -X POST \\\n  'https://example.com/'"
+        sampleRequest(
+            method = NetworkMethod.POST,
+            endpoint = "/", headers = emptyList(),
+            body = ByteArray(0)
+        ) shouldCopy "curl -X POST \\\n  'https://example.com/'"
     }
 })

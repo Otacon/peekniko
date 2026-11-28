@@ -17,7 +17,9 @@ import peekniko.internal.support.viewById
 import peekniko.internal.support.viewModels
 import peekniko.library.R
 
-internal class SummaryFragment : FlowCollectionFragment(R.layout.fragment_network_call_summary, resumedAndVisibleOnly = true), MenuProvider {
+internal class SummaryFragment :
+    FlowCollectionFragment(R.layout.fragment_network_call_summary, resumedAndVisibleOnly = true),
+    MenuProvider {
 
     private val viewModel: SummaryViewModel by viewModels {
         val transactionId = requireArguments().getString(ARG_TRANSACTION_ID) ?: error("Missing transaction ID")
@@ -31,15 +33,15 @@ internal class SummaryFragment : FlowCollectionFragment(R.layout.fragment_networ
     private val responseHeadersContent: TextView by viewById(R.id.summaryResponseHeadersContent)
 
     private val menuHost: MenuHost get() = (requireParentFragment() as NetworkCallDetailFragment).menuHost
-    private var menuCanCopyAsCurl = false
+    private var menuShowShare = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
         collectInView {
             viewModel.state.collect { state ->
-                if (state.showCopyAsCurl != menuCanCopyAsCurl) {
-                    menuCanCopyAsCurl = state.showCopyAsCurl
+                if (state.showShareMenu != menuShowShare) {
+                    menuShowShare = state.showShareMenu
                     menuHost.invalidateMenu()
                 }
                 progress.isVisible = state.isLoading
@@ -53,12 +55,17 @@ internal class SummaryFragment : FlowCollectionFragment(R.layout.fragment_networ
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_call_summary, menu)
-        menu.findItem(R.id.menuSummaryShare).isVisible = menuCanCopyAsCurl
+        menu.findItem(R.id.menuSummaryShare).isVisible = menuShowShare
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
         R.id.menuSummaryCopyAsCurl -> {
             viewModel.onCopyAsCurlClick()
+            true
+        }
+
+        R.id.menuSummaryCopyAsText -> {
+            viewModel.onCopyAsTextClick()
             true
         }
 
