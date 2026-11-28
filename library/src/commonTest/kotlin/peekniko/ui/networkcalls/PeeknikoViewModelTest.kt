@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.map
 import peekniko.internal.formatting.toReadableTime
 import peekniko.*
-import peekniko.ui.PeeknikoCallRowItem
 
 internal class PeeknikoViewModelTest : FunSpec({
     val pendingCall = sampleCall(
@@ -41,7 +40,7 @@ internal class PeeknikoViewModelTest : FunSpec({
     val createdTime = createdCall.request.timestamp.toReadableTime(includeMillis = true)
     val notFoundTime = notFoundCall.request.timestamp.toReadableTime(includeMillis = true)
     val errorTime = errorCall.request.timestamp.toReadableTime(includeMillis = true)
-    val pendingMappedCall = PeeknikoCallRowItem(
+    val pendingMappedCall = NetworkCallListItem(
         id = "pending",
         method = "GET",
         urlPath = "/users",
@@ -53,7 +52,7 @@ internal class PeeknikoViewModelTest : FunSpec({
         subtitle = "$pendingTime · 0 B",
         isSelected = false,
     )
-    val createdMappedCall = PeeknikoCallRowItem(
+    val createdMappedCall = NetworkCallListItem(
         id = "created",
         method = "POST",
         urlPath = "/users/1",
@@ -65,7 +64,7 @@ internal class PeeknikoViewModelTest : FunSpec({
         subtitle = "$createdTime · 50 ms · 0 B",
         isSelected = false,
     )
-    val notFoundMappedCall = PeeknikoCallRowItem(
+    val notFoundMappedCall = NetworkCallListItem(
         id = "not-found",
         method = "GET",
         urlPath = "/missing",
@@ -77,7 +76,7 @@ internal class PeeknikoViewModelTest : FunSpec({
         subtitle = "$notFoundTime · 50 ms · 0 B",
         isSelected = false,
     )
-    val errorMappedCall = PeeknikoCallRowItem(
+    val errorMappedCall = NetworkCallListItem(
         id = "error",
         method = "GET",
         urlPath = "/offline",
@@ -106,12 +105,6 @@ internal class PeeknikoViewModelTest : FunSpec({
         test("has no calls") {
             withFixture { viewModel.state.value.calls shouldBe emptyList() }
         }
-        test("has zero total count") {
-            withFixture { viewModel.state.value.totalCount shouldBe 0 }
-        }
-        test("has zero filtered count") {
-            withFixture { viewModel.state.value.filteredCount shouldBe 0 }
-        }
         test("has no active filters") {
             withFixture { viewModel.state.value.hasActiveFilters shouldBe false }
         }
@@ -136,7 +129,6 @@ internal class PeeknikoViewModelTest : FunSpec({
                     callsFlow.emit(calls)
                     val state = awaitItem()
                     state.calls shouldBe listOf(pendingMappedCall, createdMappedCall, notFoundMappedCall, errorMappedCall)
-                    state.totalCount shouldBe calls.size
                     cancelAndIgnoreRemainingEvents()
                 }
             }
@@ -222,18 +214,6 @@ internal class PeeknikoViewModelTest : FunSpec({
             }
         }
 
-        test("sets the selected method in state") {
-            withFixture {
-                viewModel.onMethodFilterSelected(NetworkMethod.POST)
-
-                viewModel.state.test {
-                    awaitItem()
-                    callsFlow.emit(calls)
-                    awaitItem().method shouldBe NetworkMethod.POST
-                    cancelAndIgnoreRemainingEvents()
-                }
-            }
-        }
     }
 
     context("status filter") {
@@ -300,7 +280,7 @@ internal class PeeknikoViewModelTest : FunSpec({
                 viewModel.state.test {
                     awaitItem()
                     callsFlow.emit(calls)
-                    awaitItem().method shouldBe null
+                    awaitItem().calls shouldBe listOf(pendingMappedCall, createdMappedCall, notFoundMappedCall, errorMappedCall)
                     cancelAndIgnoreRemainingEvents()
                 }
             }
@@ -314,7 +294,7 @@ internal class PeeknikoViewModelTest : FunSpec({
                 viewModel.state.test {
                     awaitItem()
                     callsFlow.emit(calls)
-                    awaitItem().status shouldBe null
+                    awaitItem().calls shouldBe listOf(pendingMappedCall, createdMappedCall, notFoundMappedCall, errorMappedCall)
                     cancelAndIgnoreRemainingEvents()
                 }
             }

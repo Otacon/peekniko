@@ -14,8 +14,8 @@ internal class FragmentViewModelStore(private val fragment: Fragment) {
             return owner.store
         }
 
-    internal fun <T : ViewModel> get(modelClass: KClass<T>, factory: ViewModelFactory): T =
-        store.getOrCreate(modelClass, factory)
+    internal fun <T : ViewModel> get(modelClass: KClass<T>, create: () -> T): T =
+        store.getOrCreate(modelClass, create = create)
 
     private companion object {
         const val STORE_TAG = "peekniko-model-store"

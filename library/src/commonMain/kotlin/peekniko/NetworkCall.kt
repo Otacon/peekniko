@@ -30,11 +30,9 @@ public data class NetworkRequest(
     public val body: ByteArray?,
     public val headers: List<NetworkHeader> = emptyList(),
     public val timestamp: Instant,
-) {
-    public companion object
-}
+)
 
-public val NetworkRequest.fullUrl: String
+internal val NetworkRequest.fullUrl: String
     get() = buildString {
         append(scheme)
         append("://")
@@ -46,7 +44,7 @@ public val NetworkRequest.fullUrl: String
         }
     }
 
-public val NetworkRequest.pathAndQueryParams: String
+internal val NetworkRequest.pathAndQueryParams: String
     get() = buildString {
         append(endpoint)
         if (queryParams.isNotEmpty()) {
@@ -54,7 +52,7 @@ public val NetworkRequest.pathAndQueryParams: String
         }
     }
 
-public val NetworkRequest.isSsl: Boolean get() = scheme.equals("https", ignoreCase = true)
+internal val NetworkRequest.isSsl: Boolean get() = scheme.equals("https", ignoreCase = true)
 
 public sealed interface NetworkResponse {
     public val timestamp: Instant
@@ -67,17 +65,13 @@ public sealed interface NetworkResponse {
         public val tlsVersion: String?,
         public val cipherSuite: String?,
         override val timestamp: Instant,
-    ) : NetworkResponse {
-        public companion object
-    }
+    ) : NetworkResponse
 
     public data class Error(
         public val exceptionMessage: String,
         public val stackTrace: String,
         override val timestamp: Instant,
-    ) : NetworkResponse {
-        public companion object
-    }
+    ) : NetworkResponse
 }
 
 public data class NetworkCall(
@@ -87,8 +81,6 @@ public data class NetworkCall(
 ) {
     public fun sameContent(other: NetworkCall): Boolean =
         id == other.id && request.sameContent(other.request) && response.sameContent(other.response)
-
-    public companion object
 }
 
 private fun NetworkRequest.sameContent(other: NetworkRequest): Boolean =
@@ -124,7 +116,7 @@ public data class NetworkCallSummary(
     public val exceptionMessage: String?,
 )
 
-public val NetworkCallSummary.pathAndQueryParams: String
+internal val NetworkCallSummary.pathAndQueryParams: String
     get() = buildString {
         append(endpoint)
         if (queryParams.isNotEmpty()) {

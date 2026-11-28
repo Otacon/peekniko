@@ -7,7 +7,6 @@ import peekniko.pathAndQueryParams
 import peekniko.internal.formatting.formatPayloadSize
 import peekniko.internal.formatting.toReadableTime
 import peekniko.internal.support.ViewModel
-import peekniko.ui.PeeknikoCallRowItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,12 +18,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
-public typealias NetworkCallListItem = PeeknikoCallRowItem
-
 internal class PeeknikoViewModel(
     private val networkRepository: NetworkRepository,
     backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
-) : ViewModel(backgroundDispatcher) {
+) : ViewModel() {
 
     private val methodFilter = MutableStateFlow<NetworkMethod?>(null)
     private val statusFilter = MutableStateFlow<CallStatusFilter?>(null)
@@ -48,10 +45,6 @@ internal class PeeknikoViewModel(
             isLoading = false,
             calls = filtered,
             query = url,
-            method = method,
-            status = status,
-            totalCount = calls.size,
-            filteredCount = filtered.size,
             hasActiveFilters = hasActiveFilters,
             showFilteredEmptyState = hasActiveFilters && calls.isNotEmpty() && filtered.isEmpty(),
             showResetFilters = hasActiveFilters,
@@ -76,11 +69,11 @@ internal class PeeknikoViewModel(
         networkRepository.clear()
     }
 
-    fun onCallClick(item: PeeknikoCallRowItem) = viewModelScope.launch {
+    fun onCallClick(item: NetworkCallListItem) = viewModelScope.launch {
         selectedCallId.value = item.id
     }
 
-    internal fun NetworkCallSummary.toListItem(isSelected: Boolean): PeeknikoCallRowItem {
+    internal fun NetworkCallSummary.toListItem(isSelected: Boolean): NetworkCallListItem {
         val durationMillis = responseTimestamp?.let { (it - requestTimestamp).inWholeMilliseconds.coerceAtLeast(0L) }
         val details = buildList {
             durationMillis?.let { add("$it ms") }
@@ -96,7 +89,7 @@ internal class PeeknikoViewModel(
         val formattedTime = requestTimestamp.toReadableTime(includeMillis = true)
         val subtitle = exceptionMessage ?: "$formattedTime · $details"
 
-        return PeeknikoCallRowItem(
+        return NetworkCallListItem(
             id = id,
             method = method.name,
             urlPath = pathAndQueryParams,
@@ -139,22 +132,31 @@ internal class PeeknikoViewModel(
         url.isNotBlank() || method != null || status != null
 }
 
-public enum class CallStatusFilter {
+internal enum class CallStatusFilter {
     SUCCESS_2XX,
     NON_SUCCESS,
     EXCEPTION;
 }
 
-public data class State(
-    public val isLoading: Boolean = true,
-    public val calls: List<PeeknikoCallRowItem> = emptyList(),
-    public val totalCount: Int = 0,
-    public val filteredCount: Int = 0,
-    public val query: String = "",
-    public val method: NetworkMethod? = null,
-    public val status: CallStatusFilter? = null,
-    public val showResetFilters: Boolean = false,
-    public val showClearCalls: Boolean = false,
-    public val hasActiveFilters: Boolean = false,
-    public val showFilteredEmptyState: Boolean = false,
+internal data class State(
+    val isLoading: Boolean = true,
+    val calls: List<NetworkCallListItem> = emptyList(),
+    val query: String = "",
+    val showResetFilters: Boolean = false,
+    val showClearCalls: Boolean = false,
+    val hasActiveFilters: Boolean = false,
+    val showFilteredEmptyState: Boolean = false,
+)
+
+internal data class NetworkCallListItem(
+    val id: String,
+    val method: String,
+    val urlPath: String,
+    val requestTime: String?,
+    val details: String,
+    val responseCode: Int?,
+    val exceptionMessage: String?,
+    val statusBadge: String,
+    val subtitle: String,
+    val isSelected: Boolean,
 )

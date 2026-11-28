@@ -7,14 +7,9 @@ import peekniko.internal.formatting.ReadableTimeFormatter
 import peekniko.internal.notifications.Notifications
 import peekniko.internal.notifications.RepositoryNotificationObserver
 import peekniko.internal.notifications.createNotifications
-import peekniko.internal.support.ViewModelFactory
-import peekniko.internal.support.ViewModelStore
-import peekniko.internal.support.initializer
-import peekniko.internal.support.viewModelFactory
 import peekniko.ui.details.BodyViewModel
 import peekniko.ui.details.NetworkCallDetailViewModel
 import peekniko.ui.details.SummaryViewModel
-import peekniko.ui.networkcalls.PeeknikoViewModel
 
 public object Peekniko {
     private val initializationLock = SynchronizedObject()
@@ -57,15 +52,6 @@ public object Peekniko {
             ),
         )
     }
-
-    internal val peeknikoViewModel: ViewModelFactory by lazy {
-        viewModelFactory {
-            initializer { PeeknikoViewModel(networkRepository) }
-        }
-    }
-
-    internal fun getPeeknikoViewModel(store: ViewModelStore): PeeknikoViewModel =
-        store.getOrCreate(PeeknikoViewModel::class, peeknikoViewModel)
 
     internal fun createNetworkCallDetailViewModel(transactionId: String?): NetworkCallDetailViewModel =
         NetworkCallDetailViewModel(

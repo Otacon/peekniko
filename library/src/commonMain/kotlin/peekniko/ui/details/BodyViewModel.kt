@@ -20,7 +20,7 @@ internal class BodyViewModel(
     transactionId: String,
     private val isRequest: Boolean,
     backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
-) : ViewModel(backgroundDispatcher) {
+) : ViewModel() {
 
     private val theme = MutableStateFlow(themeProvider.theme)
     private val isPrettyPrintEnabled = MutableStateFlow(true)

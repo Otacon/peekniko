@@ -23,7 +23,7 @@ internal class SummaryViewModel(
     transactionId: String,
     backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
     private val timeFormatter: TimeFormatter,
-) : ViewModel(backgroundDispatcher) {
+) : ViewModel() {
     private val transaction = repository.observeById(transactionId)
 
     val state: StateFlow<State> = transaction
