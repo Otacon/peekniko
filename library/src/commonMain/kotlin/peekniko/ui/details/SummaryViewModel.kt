@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import peekniko.NetworkCall
 import peekniko.NetworkRepository
 import peekniko.NetworkResponse
@@ -37,12 +38,12 @@ internal class SummaryViewModel(
         .flowOn(backgroundDispatcher)
         .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = State())
 
-    fun onCopyAsCurlClick() {
-        latestCall?.let(curlExporter::export)
+    fun onCopyAsCurlClick() = viewModelScope.launch {
+        latestCall?.let { curlExporter.export(it) }
     }
 
-    fun onCopyAsTextClick() {
-        latestCall?.let(textExporter::export)
+    fun onCopyAsTextClick() = viewModelScope.launch {
+        latestCall?.let { textExporter.export(it) }
     }
 
     private fun NetworkCall?.toHeadersUiState(): State {

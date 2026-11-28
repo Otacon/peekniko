@@ -36,7 +36,7 @@ internal class PeeknikoInterceptor(
             endpoint = request.url.encodedPath.ifEmpty { "/" },
             queryParams = request.url.encodedQuery.orEmpty(),
             method = knownMethod ?: NetworkMethod.UNKNOWN,
-            headers = request.headers.toNetworkHeaders(),
+            headers = request.requestHeaders(),
             timestamp = Clock.System.now(),
             body = null
         )
@@ -92,6 +92,13 @@ internal class PeeknikoInterceptor(
     }
 
     private fun Headers.toNetworkHeaders(): List<NetworkHeader> = map { (name, value) -> NetworkHeader(name, value) }
+
+    private fun Request.requestHeaders(): List<NetworkHeader> {
+        val headers = headers.toNetworkHeaders()
+        val contentType = body?.contentType() ?: return headers
+        if (headers.any { it.name.equals("Content-Type", ignoreCase = true) }) return headers
+        return headers + NetworkHeader("Content-Type", contentType.toString())
+    }
 
     private fun Request.captureBody(onBodyCaptured: (ByteArray) -> Unit): Request {
         val originalBody = body ?: return this

@@ -170,23 +170,7 @@ internal class NetworkCallDetailViewModel(
             overviewHeaders = overview,
             rawRequestBody = request.body?.decodeToString(),
             rawResponseBody = responseBody?.decodeToString(),
-            curl = buildCurl(),
         )
     }
 
-    private fun NetworkCall.buildCurl(): String {
-        val builder = StringBuilder("curl")
-        builder.append(" -X ").append(request.method.name)
-        request.headers.forEach { header ->
-            val escaped = header.value.replace("'", "'\\''")
-            builder.append(" \\\n  -H '").append(header.name).append(": ").append(escaped).append("'")
-        }
-        val body = request.body?.decodeToString()
-        if (!body.isNullOrEmpty()) {
-            val escapedBody = body.replace("'", "'\\''")
-            builder.append(" \\\n  --data '").append(escapedBody).append("'")
-        }
-        builder.append(" \\\n  '").append(request.fullUrl.replace("'", "'\\''")).append("'")
-        return builder.toString()
-    }
 }

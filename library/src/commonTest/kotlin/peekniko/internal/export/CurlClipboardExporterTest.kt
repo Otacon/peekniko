@@ -1,6 +1,7 @@
 package peekniko.internal.export
 
 import io.kotest.core.spec.style.FunSpec
+import kotlinx.coroutines.Dispatchers
 import dev.mokkery.answering.returns
 import dev.mokkery.every
 import dev.mokkery.matcher.any
@@ -16,9 +17,9 @@ import peekniko.sampleRequest
 
 internal class CurlClipboardExporterTest : FunSpec({
 
-    infix fun NetworkRequest.shouldCopy(expected: String) {
+    suspend infix fun NetworkRequest.shouldCopy(expected: String) {
         val clipboard = mock<Clipboard> { every { copy(any()) } returns true }
-        CurlClipboardExporter(clipboard).export(sampleCall(request = this))
+        CurlClipboardExporter(clipboard, Dispatchers.Unconfined).export(sampleCall(request = this))
         verify(exactly(1)) { clipboard.copy(expected) }
     }
 
@@ -101,5 +102,100 @@ internal class CurlClipboardExporterTest : FunSpec({
             endpoint = "/", headers = emptyList(),
             body = ByteArray(0)
         ) shouldCopy "curl -X POST \\\n  'https://example.com/'"
+    }
+
+    context("body") {
+        test("keeps newlines inside the quoted body") {
+            sampleRequest(
+                method = NetworkMethod.POST,
+                endpoint = "/",
+                headers = emptyList(),
+                body = "line 1\nline 2".encodeToByteArray(),
+            ) shouldCopy "curl -X POST \\\n" +
+                    "  --data-raw 'line 1\nline 2' \\\n" +
+                    "  'https://example.com/'"
+        }
+
+        test("sets GET explicitly so the body doesn't turn it into a POST") {
+            sampleRequest(
+                method = NetworkMethod.GET,
+                endpoint = "/_search",
+                headers = emptyList(),
+                body = "{}".encodeToByteArray(),
+            ) shouldCopy "curl -X GET \\\n" +
+                    "  --data-raw '{}' \\\n" +
+                    "  'https://example.com/_search'"
+        }
+
+        test("drops the body of a HEAD request") {
+            sampleRequest(
+                method = NetworkMethod.HEAD,
+                endpoint = "/",
+                headers = emptyList(),
+                body = "ignored".encodeToByteArray(),
+            ) shouldCopy "curl --head \\\n  'https://example.com/'"
+        }
+
+        test("omits a binary body and says so") {
+            sampleRequest(
+                method = NetworkMethod.POST,
+                endpoint = "/upload",
+                headers = emptyList(),
+                body = byteArrayOf(0xFF.toByte(), 0xFE.toByte()),
+            ) shouldCopy "curl -X POST \\\n" +
+                    "  'https://example.com/upload'\n" +
+                    "# encoded or binary request body omitted"
+        }
+
+        test("omits a body containing NUL characters") {
+            sampleRequest(
+                method = NetworkMethod.POST,
+                endpoint = "/upload",
+                headers = emptyList(),
+                body = "a\u0000b".encodeToByteArray(),
+            ) shouldCopy "curl -X POST \\\n" +
+                    "  'https://example.com/upload'\n" +
+                    "# encoded or binary request body omitted"
+        }
+
+        test("omits an image body") {
+            sampleRequest(
+                method = NetworkMethod.PUT,
+                endpoint = "/avatar",
+                headers = listOf(NetworkHeader("Content-Type", "image/png")),
+                body = "not really a png".encodeToByteArray(),
+            ) shouldCopy "curl -X PUT \\\n" +
+                    "  -H 'Content-Type: image/png' \\\n" +
+                    "  'https://example.com/avatar'\n" +
+                    "# encoded or binary request body omitted"
+        }
+    }
+
+    context("URL globbing") {
+        test("adds --globoff when the URL contains brackets") {
+            sampleRequest(endpoint = "/items", queryParams = "page[1]=x", headers = emptyList()) shouldCopy
+                    "curl --globoff \\\n  'https://example.com/items?page[1]=x'"
+        }
+
+        test("adds --globoff when the URL contains braces") {
+            sampleRequest(endpoint = "/items", queryParams = "filter={a}", headers = emptyList()) shouldCopy
+                    "curl --globoff \\\n  'https://example.com/items?filter={a}'"
+        }
+    }
+
+    test("drops Content-Length regardless of case") {
+        sampleRequest(
+            endpoint = "/",
+            headers = listOf(NetworkHeader("content-length", "0")),
+        ) shouldCopy "curl 'https://example.com/'"
+    }
+
+    test("keeps repeated headers") {
+        sampleRequest(
+            endpoint = "/",
+            headers = listOf(NetworkHeader("X-Label", "first"), NetworkHeader("X-Label", "second")),
+        ) shouldCopy "curl -H 'X-Label: first' \\\n" +
+                "  -H 'X-Label: second' \\\n" +
+                "  'https://example.com/'"
     }
 })

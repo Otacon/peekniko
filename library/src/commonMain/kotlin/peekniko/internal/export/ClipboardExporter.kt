@@ -4,6 +4,6 @@ import peekniko.NetworkCall
 
 internal interface ClipboardExporter {
 
-    fun export(call: NetworkCall)
+    suspend fun export(call: NetworkCall)
 
 }

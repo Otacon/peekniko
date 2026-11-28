@@ -4,11 +4,14 @@ import app.cash.turbine.test
 import dev.mokkery.answering.calls
 import dev.mokkery.answering.returns
 import dev.mokkery.every
+import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
-import dev.mokkery.verify
+import dev.mokkery.verifySuspend
 import dev.mokkery.verify.VerifyMode.Companion.not
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.MutableSharedFlow
 import peekniko.*
@@ -318,43 +321,43 @@ internal class SummaryViewModelTest : FunSpec({
         }
 
         test("copies the loaded call as cURL") {
-            val curlExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
+            val curlExporter = mock<ClipboardExporter> { everySuspend { export(any()) } returns Unit }
             val call = sampleCall(request = sampleRequest(endpoint = "/copied"))
             withFixture(curlExporter = curlExporter) { transaction ->
                 state.test {
                     awaitItem()
                     transaction.emit(call)
                     awaitItem()
-                    onCopyAsCurlClick()
-                    verify { curlExporter.export(call) }
+                    onCopyAsCurlClick().shouldNotBeNull().join()
+                    verifySuspend { curlExporter.export(call) }
                     cancelAndIgnoreRemainingEvents()
                 }
             }
         }
 
         test("copies the loaded call as text") {
-            val textExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
+            val textExporter = mock<ClipboardExporter> { everySuspend { export(any()) } returns Unit }
             val call = sampleCall(request = sampleRequest(endpoint = "/copied"))
             withFixture(textExporter = textExporter) { transaction ->
                 state.test {
                     awaitItem()
                     transaction.emit(call)
                     awaitItem()
-                    onCopyAsTextClick()
-                    verify { textExporter.export(call) }
+                    onCopyAsTextClick().shouldNotBeNull().join()
+                    verifySuspend { textExporter.export(call) }
                     cancelAndIgnoreRemainingEvents()
                 }
             }
         }
 
         test("copies nothing before the transaction is loaded") {
-            val curlExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
-            val textExporter = mock<ClipboardExporter> { every { export(any()) } returns Unit }
+            val curlExporter = mock<ClipboardExporter> { everySuspend { export(any()) } returns Unit }
+            val textExporter = mock<ClipboardExporter> { everySuspend { export(any()) } returns Unit }
             withFixture(curlExporter = curlExporter, textExporter = textExporter) {
-                onCopyAsCurlClick()
-                onCopyAsTextClick()
-                verify(not) { curlExporter.export(any()) }
-                verify(not) { textExporter.export(any()) }
+                onCopyAsCurlClick().shouldBeNull()
+                onCopyAsTextClick().shouldBeNull()
+                verifySuspend(not) { curlExporter.export(any()) }
+                verifySuspend(not) { textExporter.export(any()) }
             }
         }
     }

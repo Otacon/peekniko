@@ -8,6 +8,7 @@ import dev.mokkery.mock
 import dev.mokkery.verify
 import dev.mokkery.verify.VerifyMode.Companion.exactly
 import io.kotest.core.spec.style.FunSpec
+import kotlinx.coroutines.Dispatchers
 import peekniko.NetworkCall
 import peekniko.NetworkHeader
 import peekniko.NetworkMethod
@@ -22,7 +23,7 @@ import kotlin.time.Instant
 
 internal class TextClipboardExporterTest : FunSpec({
 
-    infix fun NetworkCall.shouldCopy(expected: String) {
+    suspend infix fun NetworkCall.shouldCopy(expected: String) {
         val clipboard = mock<Clipboard> { every { copy(any()) } returns true }
         val bodyRenderer = mock<BodyRenderer> {
             every { supports(any()) } calls { (contentType: String) -> contentType == "application/json" }
@@ -31,7 +32,7 @@ internal class TextClipboardExporterTest : FunSpec({
         val timeFormatter = mock<TimeFormatter> {
             every { format(any()) } calls { (instant: Instant) -> "t${instant.toEpochMilliseconds()}" }
         }
-        TextClipboardExporter(clipboard, bodyRenderer, timeFormatter).export(this)
+        TextClipboardExporter(clipboard, bodyRenderer, timeFormatter, Dispatchers.Unconfined).export(this)
         verify(exactly(1)) { clipboard.copy(expected) }
     }
 

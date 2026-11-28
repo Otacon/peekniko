@@ -1,5 +1,8 @@
 package peekniko.internal.export
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import peekniko.NetworkCall
 import peekniko.NetworkHeader
 import peekniko.NetworkResponse
@@ -10,17 +13,18 @@ import peekniko.internal.formatting.TimeFormatter
 import peekniko.internal.formatting.formatPayloadSize
 import peekniko.internal.http.contentType
 import peekniko.internal.http.httpMessage
-import peekniko.internal.http.isRasterImageContentType
 import peekniko.isSsl
 
 internal class TextClipboardExporter(
     private val clipboard: Clipboard,
     private val bodyRenderer: BodyRenderer,
     private val timeFormatter: TimeFormatter,
+    private val backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ClipboardExporter {
 
-    override fun export(call: NetworkCall) {
-        clipboard.copy(call.toText())
+    override suspend fun export(call: NetworkCall) {
+        val text = withContext(backgroundDispatcher) { call.toText() }
+        clipboard.copy(text)
     }
 
     private fun NetworkCall.toText(): String {
@@ -86,9 +90,7 @@ internal class TextClipboardExporter(
 
     private fun formatBody(contentType: String?, body: ByteArray?): String {
         if (body == null || body.isEmpty()) return BODY_EMPTY
-        if (contentType?.isRasterImageContentType() == true) return BODY_OMITTED
-        val text = body.decodeToString()
-        if (REPLACEMENT_CHARACTER in text) return BODY_OMITTED
+        val text = decodeTextBody(body, contentType) ?: return BODY_OMITTED
         if (text.isBlank()) return BODY_EMPTY
         val supportedContentType = contentType?.takeIf(bodyRenderer::supports) ?: return text
         return bodyRenderer.format(text, supportedContentType) ?: text
@@ -97,6 +99,5 @@ internal class TextClipboardExporter(
     private companion object {
         const val BODY_EMPTY = "(body is empty)"
         const val BODY_OMITTED = "(encoded or binary body omitted)"
-        const val REPLACEMENT_CHARACTER = '�'
     }
 }
