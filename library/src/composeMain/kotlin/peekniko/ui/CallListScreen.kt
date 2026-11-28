@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import peekniko.NetworkMethod
 import peekniko.ui.networkcalls.CallStatusFilter
+import peekniko.ui.networkcalls.NetworkCallListItem
 import peekniko.ui.networkcalls.PeeknikoViewModel
 import peekniko.ui.networkcalls.State
 
@@ -279,7 +280,7 @@ private fun CallStatusFilter.label(): String = when (this) {
 
 @Composable
 private fun CallListItem(
-    item: PeeknikoCallRowItem,
+    item: NetworkCallListItem,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -340,7 +341,7 @@ private fun CallBadge(
 }
 
 @Composable
-private fun PeeknikoCallRowItem.statusChipColors(): Color = when {
+private fun NetworkCallListItem.statusChipColors(): Color = when {
     exceptionMessage != null -> StatusError
     responseCode == null -> MaterialTheme.colorScheme.onSurface
     responseCode in 200..299 -> StatusSuccess
@@ -348,7 +349,7 @@ private fun PeeknikoCallRowItem.statusChipColors(): Color = when {
 }
 
 @Composable
-private fun PeeknikoCallRowItem.statusChipContentColor(): Color = when {
+private fun NetworkCallListItem.statusChipContentColor(): Color = when {
     exceptionMessage == null && responseCode == null -> MaterialTheme.colorScheme.surface
     else -> OnStatus
 }

@@ -1,6 +1,5 @@
 <resources>
     <string name="peekniko_title" translatable="false">Peekniko</string>
-    <string name="peekniko_detail_title">Call details</string>
 
     <!-- Notification -->
     <string name="peekniko_notification_channel">Network calls</string>
@@ -50,7 +49,6 @@
     <string name="peekniko_menu_pretty_print_disabled">Pretty print disabled</string>
 
     <!-- Errors -->
-    <string name="peekniko_call_not_found">Network call not found</string>
     <string name="peekniko_empty_body">Empty body</string>
     <string name="peekniko_body_image">Body image</string>
     <string name="peekniko_body_image_error">Unable to render image</string>
@@ -60,6 +58,4 @@
     <string name="peekniko_status_pending" translatable="false">...</string>
 
     <!-- Accessibility -->
-    <string name="peekniko_status_error_description">Request failed</string>
-    <string name="peekniko_status_pending_description">Request pending</string>
 </resources>

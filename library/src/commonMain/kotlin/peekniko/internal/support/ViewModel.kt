@@ -1,25 +1,15 @@
 package peekniko.internal.support
 
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 
-internal abstract class ViewModel(
-    protected val backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
-) {
-    private val viewModelJob = SupervisorJob()
-
+internal abstract class ViewModel {
     protected val viewModelScope: CoroutineScope =
-        CoroutineScope(viewModelJob + Dispatchers.Main.immediate)
-
-    protected open fun onCleared(): Unit = Unit
+        CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     internal fun clear() {
-        try {
-            onCleared()
-        } finally {
-            viewModelJob.cancel()
-        }
+        viewModelScope.cancel()
     }
 }

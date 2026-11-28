@@ -82,8 +82,8 @@ private fun CallDetailsContent(
             }
         }
 
-        callId != null && state.transaction != null -> {
-            // Not state.transaction.id: right after the selection changes, collectAsState() can still hold the
+        callId != null && state.callFound -> {
+            // Not the call id from state: right after the selection changes, collectAsState() can still hold the
             // previous call's state, which would create the tab ViewModels for the wrong call.
             CallDetailsTabView(
                 callId = callId,

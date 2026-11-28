@@ -6,7 +6,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import peekniko.internal.support.ViewModel
 import peekniko.internal.support.ViewModelStore
-import peekniko.internal.support.viewModelFactory
 import kotlin.reflect.KClass
 
 internal val LocalViewModelStore = staticCompositionLocalOf<ViewModelStore> {
@@ -26,7 +25,7 @@ internal fun rememberViewModelStore(key: Any?): ViewModelStore {
 internal fun <T : ViewModel> retainedViewModel(modelClass: KClass<T>, key: String? = null, create: () -> T): T {
     val store = LocalViewModelStore.current
     return remember(store, modelClass, key) {
-        store.getOrCreate(modelClass, viewModelFactory { addInitializer(modelClass, create) }, key)
+        store.getOrCreate(modelClass, key, create)
     }
 }
 

@@ -51,8 +51,8 @@ internal class NetworkCallDetailFragment : FlowCollectionFragment(R.layout.fragm
         collectInView {
             detailViewModel.state.collect {
                 toolbar.title = it.title
-                content.isVisible = it.transaction != null
-                emptyState.isVisible = it.transaction == null
+                content.isVisible = it.callFound
+                emptyState.isVisible = !it.callFound
                 emptyState.text = it.emptyMessage
             }
         }
