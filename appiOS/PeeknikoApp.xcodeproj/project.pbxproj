@@ -7,12 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		53AB5EC330B8C2CD003AD679 /* Peekniko in Frameworks */ = {isa = PBXBuildFile; productRef = 53AB5EC230B8C2CD003AD679 /* Peekniko */; };
+		A1000000000000000000001A /* PeeknikoCoreNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* PeeknikoCoreNoop.swift */; };
 		A10000000000000000000001 /* PeeknikoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* PeeknikoApp.swift */; };
 		A10000000000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000016 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A10000000000000000000019 /* PeeknikoCoreNoop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeeknikoCoreNoop.swift; path = "../library-ios/noop/PeeknikoCoreNoop.swift"; sourceTree = SOURCE_ROOT; };
 		A10000000000000000000002 /* PeeknikoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeeknikoApp.swift; sourceTree = "<group>"; };
 		A10000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10000000000000000000005 /* Peekniko.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Peekniko.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -24,7 +25,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				53AB5EC330B8C2CD003AD679 /* Peekniko in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +45,7 @@
 				A10000000000000000000002 /* PeeknikoApp.swift */,
 				A10000000000000000000016 /* Assets.xcassets */,
 				A10000000000000000000003 /* Info.plist */,
+				A10000000000000000000019 /* PeeknikoCoreNoop.swift */,
 			);
 			path = .;
 			sourceTree = "<group>";
@@ -64,6 +65,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A1000000000000000000000C /* Build configuration list for PBXNativeTarget "Peekniko" */;
 			buildPhases = (
+				A10000000000000000000018 /* Build Kotlin framework */,
 				A1000000000000000000000E /* Sources */,
 				A10000000000000000000006 /* Frameworks */,
 				A1000000000000000000000F /* Resources */,
@@ -73,9 +75,6 @@
 			dependencies = (
 			);
 			name = Peekniko;
-			packageProductDependencies = (
-				53AB5EC230B8C2CD003AD679 /* Peekniko */,
-			);
 			productName = Peekniko;
 			productReference = A10000000000000000000005 /* Peekniko.app */;
 			productType = "com.apple.product-type.application";
@@ -103,9 +102,6 @@
 				Base,
 			);
 			mainGroup = A10000000000000000000007;
-			packageReferences = (
-				53AB5EC130B8C2CD003AD679 /* XCRemoteSwiftPackageReference "peekniko" */,
-			);
 			productRefGroup = A1000000000000000000000A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -126,12 +122,31 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		A10000000000000000000018 /* Build Kotlin framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build Kotlin framework";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\nif [ \"$CONFIGURATION\" != \"Debug\" ]; then\n  echo \"$CONFIGURATION uses the Peekniko no-op: skipping the Kotlin framework.\"\n  exit 0\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  JAVA_HOME=\"$(/usr/libexec/java_home -v 21 2>/dev/null || true)\"\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  for candidate in \"$HOME\"/.gradle/jdks/*/Contents/Home \"$HOME\"/.gradle/jdks/*/*/Contents/Home; do\n    if [ -x \"$candidate/bin/java\" ]; then\n      JAVA_HOME=\"$candidate\"\n      break\n    fi\n  done\nfi\nif [ -z \"${JAVA_HOME:-}\" ] || [ ! -x \"$JAVA_HOME/bin/java\" ]; then\n  echo \"error: No Java runtime found. Install JDK 21 or set JAVA_HOME.\"\n  exit 1\nfi\nexport JAVA_HOME\ncd \"$SRCROOT/..\"\n./gradlew :library-ios:embedAndSignAppleFrameworkForXcode\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		A1000000000000000000000E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000001 /* PeeknikoApp.swift in Sources */,
+				A1000000000000000000001A /* PeeknikoCoreNoop.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,7 +182,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				EXCLUDED_SOURCE_FILE_NAMES = PeeknikoCoreNoop.swift;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../library-ios/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Peekniko;
@@ -179,6 +200,11 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios;
 				PRODUCT_MODULE_NAME = PeeknikoApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					PeeknikoCore,
+				);
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -193,8 +219,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
-				EXCLUDED_SOURCE_FILE_NAMES = PeeknikoCore.framework;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Peekniko;
@@ -202,10 +228,6 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
-				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-Wl,-dead_strip_dylibs",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.cyanotic.peekniko.app.ios;
 				PRODUCT_MODULE_NAME = PeeknikoApp;
@@ -237,25 +259,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		53AB5EC130B8C2CD003AD679 /* XCRemoteSwiftPackageReference "peekniko" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Otacon/peekniko";
-			requirement = {
-				kind = exactVersion;
-				version = "1.1.0-alpha01";
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		53AB5EC230B8C2CD003AD679 /* Peekniko */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 53AB5EC130B8C2CD003AD679 /* XCRemoteSwiftPackageReference "peekniko" */;
-			productName = Peekniko;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A10000000000000000000010 /* Project object */;
 }

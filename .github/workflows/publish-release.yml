@@ -91,7 +91,7 @@ jobs:
 
   maven:
     name: Publish to Maven Central
-    needs: validate
+    needs: xcframeworks
     runs-on: macos-latest
     env:
       ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version }}

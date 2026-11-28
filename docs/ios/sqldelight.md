@@ -4,6 +4,10 @@ Keep your captured requests and responses between app launches with SQLDelight s
 
 ## Gradle dependencies
 
+With the Swift package, skip to [configuring the storage](#configure-peekniko-and-storage).
+
+In a Kotlin Multiplatform app, add the storage module to your shared module:
+
 ```kotlin title="build.gradle.kts"
 kotlin {
     sourceSets {
@@ -43,7 +47,7 @@ Peekniko.configure {
 }
 ```
 
-Or from Swift, with the framework exporting the storage module:
+From Swift:
 
 ```swift
 Peekniko.shared.configure { configuration in

@@ -1,5 +1,7 @@
 import SwiftUI
-import Peekniko
+#if DEBUG
+import PeeknikoCore
+#endif
 
 @main
 struct PeeknikoApp: App {
