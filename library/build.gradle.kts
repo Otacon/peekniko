@@ -3,7 +3,6 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
@@ -43,8 +42,6 @@ val generateKotlinGrammarSource =
 kotlin {
     applyDefaultHierarchyTemplate()
 
-    val xcf = XCFramework("PeeknikoCore")
-
     compilerOptions {
         freeCompilerArgs.add("-Xexplicit-api=strict")
         freeCompilerArgs.add("-Xexpect-actual-classes")
@@ -70,16 +67,8 @@ kotlin {
             jvmTarget = JvmTarget.JVM_21
         }
     }
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { target ->
-        target.binaries.framework {
-            baseName = "PeeknikoCore"
-            isStatic = true
-            xcf.add(this)
-        }
-    }
+    iosArm64()
+    iosSimulatorArm64()
     js {
         browser()
         binaries.executable()

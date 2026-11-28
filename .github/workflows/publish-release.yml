@@ -1,31 +1,51 @@
 name: Publish release
 
 on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-*'
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (e.g. 1.0.0-alpha01)
+        description: Release version (x.y.z, or x.y.z-suffix)
         type: string
         required: true
 
 permissions:
   contents: read
 
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
 env:
-  ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-  ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-  ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
-  ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+  VERSION: ${{ inputs.version }}
+  CORE_ZIP: PeeknikoCore.xcframework.zip
 
 jobs:
-  publish:
+  validate:
+    name: Validate version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check version format and that it is not released yet
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Version '$VERSION' must be x.y.z or x.y.z-suffix"
+            exit 1
+          fi
+          if gh api "repos/$GH_REPO/git/ref/tags/$VERSION" --silent 2>/dev/null; then
+            echo "::error::Tag '$VERSION' already exists"
+            exit 1
+          fi
+
+  xcframeworks:
+    name: Build XCFrameworks
+    needs: validate
     runs-on: macos-latest
+    outputs:
+      core-checksum: ${{ steps.checksum.outputs.core }}
     env:
-      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version || github.ref_name }}
+      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,43 +61,107 @@ jobs:
         with:
           cache-disabled: true
 
-      - name: Build
+      - name: Build XCFramework
         run: |
           ./gradlew \
-            :library-client-noop:assemble \
-            :library-client-ktor:assemble \
-            :library-client-okhttp:assemble \
-            :library-storage-sqldelight:assemble
+            --max-workers=1 \
+            -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8" \
+            -Pkotlin.compiler.execution.strategy=in-process \
+            :library-ios:assemblePeeknikoCoreReleaseXCFramework
+
+      - name: Zip XCFramework
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            library-ios/build/XCFrameworks/release/PeeknikoCore.xcframework \
+            "$CORE_ZIP"
+
+      - name: Compute checksum
+        id: checksum
+        run: |
+          core=$(swift package compute-checksum "$CORE_ZIP")
+          echo "core=$core" >> "$GITHUB_OUTPUT"
+          echo "SwiftPM checksum: $CORE_ZIP $core"
+
+      - name: Upload XCFramework
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcframeworks
+          path: ${{ env.CORE_ZIP }}
+          if-no-files-found: error
+
+  maven:
+    name: Publish to Maven Central
+    needs: xcframeworks
+    runs-on: macos-latest
+    env:
+      ORG_GRADLE_PROJECT_peeknikoVersion: ${{ inputs.version }}
+      ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+      ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+      ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_KEY_CONTENTS }}
+      ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK Temurin 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
 
       - name: Publish libraries
         run: ./gradlew publishToMavenCentral --no-parallel
 
   github-release:
-    name: Create GitHub release
-    needs: publish
+    name: Tag and create GitHub release
+    needs: [xcframeworks, maven]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      CORE_CHECKSUM: ${{ needs.xcframeworks.outputs.core-checksum }}
     steps:
-      - name: Create release with generated release notes
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
-          COMMIT_SHA: ${{ github.sha }}
-          VERSION: ${{ inputs.version || github.ref_name }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download XCFramework
+        uses: actions/download-artifact@v4
+        with:
+          name: xcframeworks
+
+      - name: Generate Package.swift, commit and tag
         run: |
-          tag="$VERSION"
-          args=(--target "$COMMIT_SHA")
-          if [[ "$EVENT_NAME" == "push" ]]; then
-            tag="$REF_NAME"
-            args=(--verify-tag)
-          fi
+          base="https://github.com/$GH_REPO/releases/download/$VERSION"
+          .github/scripts/generate-package-swift.sh "$VERSION" \
+            "$base/$CORE_ZIP" "$CORE_CHECKSUM" \
+            Package.swift
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Package.swift
+          git commit -m "Release $VERSION"
+          git tag -a "$VERSION" -m "Peekniko $VERSION"
+          git push origin "refs/tags/$VERSION"
+
+      - name: Create release
+        run: |
+          args=()
           if [[ "$VERSION" == *-* ]]; then
             args+=(--prerelease)
           fi
-          gh release create "$tag" \
-            --title "Peekniko ${VERSION}" \
+          gh release create "$VERSION" "$CORE_ZIP" \
+            --verify-tag \
+            --title "Peekniko $VERSION" \
             --generate-notes \
             "${args[@]}"
+
+      - name: Publish versioned docs
+        run: gh workflow run docs.yml --ref "$VERSION"

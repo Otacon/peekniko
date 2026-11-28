@@ -1,4 +1,5 @@
 *.iml
+.build
 .kotlin
 .gradle
 **/build/
@@ -22,7 +23,7 @@ node_modules/
 kotlin-js-store/
 library/gen/
 .vscode
-library/.build/
-library/.swiftpm/
+library-ios/.build/
+library-ios/.swiftpm/
 *.db
 docs/demo/

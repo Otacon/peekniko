@@ -4,6 +4,8 @@ Capture `URLSession` traffic by registering Peekniko's `URLProtocol`.
 
 ## Setup
 
+With the Swift package, no setup is needed.
+
 In a Kotlin Multiplatform app, add the dependency to your shared module and export it from your framework:
 
 ```kotlin title="build.gradle.kts"
@@ -16,17 +18,13 @@ kotlin {
 }
 ```
 
-In a Swift-only app, build the framework and add the `library` folder to Xcode as a local package, then `import PeeknikoCore`:
-
-```sh
-./gradlew :library:assemblePeeknikoCoreDebugXCFramework
-```
-
 ## Register the protocol
 
 Register the protocol once at startup, after configuring Peekniko and before creating requests:
 
 ```swift
+import Peekniko
+
 Peekniko.shared.registerUrlProtocol()
 ```
 
